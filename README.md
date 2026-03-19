@@ -14,3 +14,7 @@ Things to do in the process of learning dbt and building this project.
 2. Sign up for Snowflake trial
 3. Write a function to load the data into the free snowflake account
 4. Connect dbt to Snowflake
+
+# data
+
+https://opendataportal-lasvegas.opendata.arcgis.com/datasets/c630117f44774db8814ab88c8ec97853_0/explore
