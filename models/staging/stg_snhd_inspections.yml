@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_snhd_inspections
+    description: "Cleaned and typed SNHD restaurant inspection records"
+    columns:
+      - name: serial_number
+        description: "Unique inspection record identifier"
+        tests:
+          - not_null
+
+      - name: permit_number
+        description: "Restaurant permit number"
+        tests:
+          - not_null
+
+      - name: inspection_date
+        description: "Date the inspection took place"
+
+      - name: inspection_result
+        description: "Outcome of the inspection (open-ended values in source data)"
+
+      - name: inspection_grade
+        description: "Grade assigned at inspection (A/B/C/F/N/P/S/O and others in source data)"
+
+      - name: violation_count
+        description: "Number of violations cited"
+        tests:
+          - not_null

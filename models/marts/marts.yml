@@ -1,0 +1,92 @@
+version: 2
+
+models:
+  - name: mart_restaurant_grades
+    description: "One row per restaurant with current grade and historical inspection summary"
+    columns:
+      - name: permit_number
+        description: "Unique restaurant permit number"
+        tests:
+          - not_null
+          - unique
+
+      - name: current_grade
+        description: "Most recent health grade"
+
+      - name: compliance_rate_pct
+        description: "Percentage of inspections with a Compliant result"
+
+      - name: total_inspections
+        description: "Total number of inspections on record"
+        tests:
+          - not_null
+
+  - name: mart_inspections_over_time
+    description: "Monthly inspection counts and compliance rates by inspection type"
+    columns:
+      - name: inspection_month
+        description: "Month the inspections occurred (truncated to first of month)"
+        tests:
+          - not_null
+
+      - name: inspection_count
+        description: "Number of inspections that month"
+        tests:
+          - not_null
+
+  - name: mart_top_violations
+    description: "Violation code frequency by category and inspection type"
+    columns:
+      - name: violation_code
+        description: "Individual violation code"
+        tests:
+          - not_null
+
+      - name: occurrence_count
+        description: "Number of times this violation was cited"
+        tests:
+          - not_null
+
+  - name: mart_fire_prevention_inspections
+    description: "One row per property summarizing fire prevention inspection history and violation totals"
+    columns:
+      - name: property_name
+        description: "Name of the inspected residential property"
+
+      - name: total_violations
+        description: "Total violations written across all inspection periods"
+        tests:
+          - not_null
+
+      - name: inspection_count
+        description: "Number of inspection periods on record for this property"
+        tests:
+          - not_null
+
+      - name: avg_pct_dwellings_with_violations
+        description: "Average percentage of dwellings with violations across all inspections"
+
+  - name: mart_art_work_points
+    description: "City of Las Vegas public art collection with coordinates and parsed metadata, ready for mapping"
+    columns:
+      - name: objectid
+        description: "Unique artwork identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: artwork_name
+        description: "Title and year of the artwork"
+
+      - name: artist
+        description: "Artist name"
+
+      - name: latitude
+        description: "Latitude coordinate for map placement"
+        tests:
+          - not_null
+
+      - name: longitude
+        description: "Longitude coordinate for map placement"
+        tests:
+          - not_null

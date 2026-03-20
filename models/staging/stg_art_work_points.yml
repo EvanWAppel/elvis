@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_art_work_points
+    description: "Cleaned City of Las Vegas public art records with parsed description fields and typed coordinates"
+    columns:
+      - name: objectid
+        description: "Unique record identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: artwork_name
+        description: "Title and year of the artwork"
+        tests:
+          - not_null
+
+      - name: artist
+        description: "Artist name, parsed from pipe-delimited description"
+
+      - name: medium
+        description: "Artistic medium, parsed from pipe-delimited description"
+
+      - name: location_detail
+        description: "Building/floor location detail, parsed from pipe-delimited description"
+
+      - name: address
+        description: "Street address of the artwork, parsed from pipe-delimited description"
+
+      - name: ward
+        description: "City ward, parsed from pipe-delimited description"
+
+      - name: latitude
+        description: "Latitude coordinate"
+        tests:
+          - not_null
+
+      - name: longitude
+        description: "Longitude coordinate"
+        tests:
+          - not_null
