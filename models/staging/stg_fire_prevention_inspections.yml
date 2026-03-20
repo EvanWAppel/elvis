@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: stg_fire_prevention_inspections
+    description: "Cleaned and typed fire prevention inspection records for multi-unit residential properties in Las Vegas"
+    columns:
+      - name: objectid
+        description: "Unique record identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: property_name
+        description: "Name of the inspected property"
+
+      - name: inspection_month
+        description: "Month the inspection period covers (first of month)"
+
+      - name: fiscal_year
+        description: "City fiscal year of the inspection"
+        tests:
+          - not_null
+
+      - name: inspections_conducted
+        description: "Number of inspections conducted (IMPs)"
+
+      - name: unit_count
+        description: "Total number of residential units at the property"
+
+      - name: last_inspected_date
+        description: "Date of the most recent inspection"
+
+      - name: violations_written
+        description: "Number of violations written during the inspection period"
+
+      - name: pct_dwellings_with_violations
+        description: "Percentage of inspected dwellings that had violations written"
