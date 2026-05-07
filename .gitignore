@@ -1,4 +1,5 @@
 *.csv
+*.parquet
 .venv
 .dbt
 .env
