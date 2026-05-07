@@ -1835,3 +1835,747 @@ order by occurrence_count desc
 
 /* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_top_violations", "profile_name": "user", "target_name": "default"} */;
 
+============================== e3521b61-90fc-4b7f-b62a-3aea6f30feba ==============================
+-- created_at: 2026-03-20T18:58:32.228953433+00:00
+-- finished_at: 2026-03-20T18:58:32.581531150+00:00
+-- elapsed: 352ms
+-- outcome: error
+-- error vendor code: 2003
+-- error message: NotFound: [Snowflake] 002003 (42S02): SQL compilation error:
+Table 'PC_DBT_DB.DBT_EAPPEL.STG_ART_WORK_POINTS' does not exist or not authorized.
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: not available
+-- desc: Get table schema
+describe table "PC_DBT_DB"."DBT_EAPPEL"."STG_ART_WORK_POINTS";
+-- created_at: 2026-03-20T18:58:34.394201168+00:00
+-- finished_at: 2026-03-20T18:58:34.555748820+00:00
+-- elapsed: 161ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c328f2-0308-29ec-0023-c55300045792
+-- desc: execute adapter call
+show terse schemas in database PC_DBT_DB
+    limit 10000
+/* {"app": "dbt", "connection_name": "", "dbt_version": "2.0.0", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T18:58:35.034050110+00:00
+-- finished_at: 2026-03-20T18:58:35.301431880+00:00
+-- elapsed: 267ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_art_work_points
+-- query_id: 01c328f2-0308-2a04-0023-c55300044786
+-- desc: get_relation > list_relations call
+SHOW OBJECTS IN SCHEMA "PC_DBT_DB"."DBT_EAPPEL" LIMIT 10000;
+-- created_at: 2026-03-20T18:58:35.304008375+00:00
+-- finished_at: 2026-03-20T18:58:35.465627142+00:00
+-- elapsed: 161ms
+-- outcome: error
+-- error vendor code: 2003
+-- error message: NotFound: [Snowflake] 002003 (42S02): SQL compilation error:
+Object 'PC_DBT_DB.DBT_EAPPEL.STG_ART_WORK_POINTS' does not exist or not authorized.
+-- dialect: snowflake
+-- node_id: model.elvis.mart_art_work_points
+-- query_id: not available
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_art_work_points
+    
+    
+    
+    as (
+
+with artworks as (
+    select * from PC_DBT_DB.dbt_EAppel.stg_art_work_points
+)
+
+select
+    objectid,
+    artwork_name,
+    artist,
+    medium,
+    location_detail,
+    address,
+    ward,
+    latitude,
+    longitude,
+    pic_url,
+    thumb_url
+from artworks
+order by ward, artwork_name
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_art_work_points", "profile_name": "user", "target_name": "default"} */;
+
+============================== a7678274-1216-45ab-aa25-9d2240464878 ==============================
+
+============================== da20629c-b71d-49ff-a34d-c66553f9a140 ==============================
+-- created_at: 2026-03-20T19:04:25.387662533+00:00
+-- finished_at: 2026-03-20T19:04:25.597091857+00:00
+-- elapsed: 209ms
+-- outcome: error
+-- error vendor code: 2003
+-- error message: NotFound: [Snowflake] 002003 (42S02): SQL compilation error:
+Table 'PC_DBT_DB.DBT_EAPPEL.STG_ART_WORK_POINTS' does not exist or not authorized.
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: not available
+-- desc: Get table schema
+describe table "PC_DBT_DB"."DBT_EAPPEL"."STG_ART_WORK_POINTS";
+-- created_at: 2026-03-20T19:04:27.482366024+00:00
+-- finished_at: 2026-03-20T19:04:27.615231573+00:00
+-- elapsed: 132ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c328f8-0308-28d8-0023-c5530003ea7a
+-- desc: execute adapter call
+show terse schemas in database PC_DBT_DB
+    limit 10000
+/* {"app": "dbt", "connection_name": "", "dbt_version": "2.0.0", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T19:04:28.108320720+00:00
+-- finished_at: 2026-03-20T19:04:28.306029993+00:00
+-- elapsed: 197ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_art_work_points
+-- query_id: 01c328f8-0308-29eb-0023-c55300041a22
+-- desc: get_relation > list_relations call
+SHOW OBJECTS IN SCHEMA "PC_DBT_DB"."DBT_EAPPEL" LIMIT 10000;
+-- created_at: 2026-03-20T19:04:28.308625355+00:00
+-- finished_at: 2026-03-20T19:04:28.519666431+00:00
+-- elapsed: 211ms
+-- outcome: error
+-- error vendor code: 2003
+-- error message: NotFound: [Snowflake] 002003 (42S02): SQL compilation error:
+Object 'PC_DBT_DB.DBT_EAPPEL.STG_ART_WORK_POINTS' does not exist or not authorized.
+-- dialect: snowflake
+-- node_id: model.elvis.mart_art_work_points
+-- query_id: not available
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_art_work_points
+    
+    
+    
+    as (
+
+with artworks as (
+    select * from PC_DBT_DB.dbt_EAppel.stg_art_work_points
+)
+
+select
+    objectid,
+    artwork_name,
+    artist,
+    medium,
+    location_detail,
+    address,
+    ward,
+    latitude,
+    longitude,
+    pic_url,
+    thumb_url
+from artworks
+order by ward, artwork_name
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_art_work_points", "profile_name": "user", "target_name": "default"} */;
+
+============================== ef5fa462-d57d-4ada-92ca-d106d537c372 ==============================
+-- created_at: 2026-03-20T19:05:06.512950012+00:00
+-- finished_at: 2026-03-20T19:05:06.836537816+00:00
+-- elapsed: 323ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c328f9-0308-29ec-0023-c5530004590a
+-- desc: Get table schema
+describe table "PC_DBT_DB"."RAW"."ART_WORK_POINTS";
+-- created_at: 2026-03-20T19:05:07.903225108+00:00
+-- finished_at: 2026-03-20T19:05:08.038187714+00:00
+-- elapsed: 134ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c328f9-0308-26c9-0023-c5530003f9ca
+-- desc: execute adapter call
+show terse schemas in database PC_DBT_DB
+    limit 10000
+/* {"app": "dbt", "connection_name": "", "dbt_version": "2.0.0", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T19:05:08.692964157+00:00
+-- finished_at: 2026-03-20T19:05:08.920595292+00:00
+-- elapsed: 227ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.stg_art_work_points
+-- query_id: 01c328f9-0308-28d8-0023-c5530003ea8e
+-- desc: get_relation > list_relations call
+SHOW OBJECTS IN SCHEMA "PC_DBT_DB"."DBT_EAPPEL" LIMIT 10000;
+-- created_at: 2026-03-20T19:05:08.923076980+00:00
+-- finished_at: 2026-03-20T19:05:09.794391342+00:00
+-- elapsed: 871ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.stg_art_work_points
+-- query_id: 01c328f9-0308-29ec-0023-c5530004590e
+-- desc: execute adapter call
+create or replace   view PC_DBT_DB.dbt_EAppel.stg_art_work_points
+  
+  
+  
+  
+  as (
+    with source as (
+    select * from PC_DBT_DB.RAW.art_work_points
+),
+
+renamed as (
+    select
+        objectid,
+        name                                as artwork_name,
+        trim(split_part(description, '|', 1)) as artist,
+        trim(split_part(description, '|', 2)) as medium,
+        trim(split_part(description, '|', 3)) as location_detail,
+        trim(split_part(description, '|', 4)) as address,
+        trim(split_part(description, '|', 5)) as ward,
+        description                         as full_description,
+        pic_url,
+        thumb_url,
+        icon_color,
+        lat_1::float                        as latitude,
+        long::float                         as longitude
+    from source
+)
+
+select * from renamed
+  )
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.stg_art_work_points", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T19:05:09.798610109+00:00
+-- finished_at: 2026-03-20T19:05:12.984540427+00:00
+-- elapsed: 3.2s
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_art_work_points
+-- query_id: 01c328f9-0308-24a8-0023-c553000503ee
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_art_work_points
+    
+    
+    
+    as (
+
+with artworks as (
+    select * from PC_DBT_DB.dbt_EAppel.stg_art_work_points
+)
+
+select
+    objectid,
+    artwork_name,
+    artist,
+    medium,
+    location_detail,
+    address,
+    ward,
+    latitude,
+    longitude,
+    pic_url,
+    thumb_url
+from artworks
+order by ward, artwork_name
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_art_work_points", "profile_name": "user", "target_name": "default"} */;
+
+============================== 0d74f31b-1b40-4d0d-a01e-4ca1cfd7fa10 ==============================
+-- created_at: 2026-03-20T21:49:29.403211809+00:00
+-- finished_at: 2026-03-20T21:49:29.547022969+00:00
+-- elapsed: 143ms
+-- outcome: error
+-- error vendor code: 2003
+-- error message: NotFound: [Snowflake] 002003 (42S02): SQL compilation error:
+Table 'PC_DBT_DB.DBT_EAPPEL.STG_FIRE_PREVENTION_INSPECTIONS' does not exist or not authorized.
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: not available
+-- desc: Get table schema
+describe table "PC_DBT_DB"."DBT_EAPPEL"."STG_FIRE_PREVENTION_INSPECTIONS";
+-- created_at: 2026-03-20T21:49:29.537605252+00:00
+-- finished_at: 2026-03-20T21:49:29.735694859+00:00
+-- elapsed: 198ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c3299d-0308-28d7-0023-c5530005e4ee
+-- desc: Get table schema
+describe table "PC_DBT_DB"."DBT_EAPPEL"."STG_SNHD_INSPECTIONS";
+-- created_at: 2026-03-20T21:49:29.742861327+00:00
+-- finished_at: 2026-03-20T21:49:30.067628707+00:00
+-- elapsed: 324ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c3299d-0308-28d8-0023-c55300054cbe
+-- desc: Get table schema
+describe table "PC_DBT_DB"."RAW"."EMPLOYEE_COMPENSATION";
+-- created_at: 2026-03-20T21:49:31.420675492+00:00
+-- finished_at: 2026-03-20T21:49:31.558086485+00:00
+-- elapsed: 137ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c3299d-0308-28d7-0023-c5530005e4f2
+-- desc: execute adapter call
+show terse schemas in database PC_DBT_DB
+    limit 10000
+/* {"app": "dbt", "connection_name": "", "dbt_version": "2.0.0", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:49:32.147482526+00:00
+-- finished_at: 2026-03-20T21:49:32.337689641+00:00
+-- elapsed: 190ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.stg_employee_compensation
+-- query_id: 01c3299d-0308-2a3c-0023-c55300061032
+-- desc: get_relation > list_relations call
+SHOW OBJECTS IN SCHEMA "PC_DBT_DB"."DBT_EAPPEL" LIMIT 10000;
+-- created_at: 2026-03-20T21:49:32.340389568+00:00
+-- finished_at: 2026-03-20T21:49:32.891627731+00:00
+-- elapsed: 551ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.stg_employee_compensation
+-- query_id: 01c3299d-0308-28d7-0023-c5530005e4f6
+-- desc: execute adapter call
+create or replace   view PC_DBT_DB.dbt_EAppel.stg_employee_compensation
+  
+  
+  
+  
+  as (
+    with source as (
+    select * from PC_DBT_DB.RAW.employee_compensation
+),
+
+renamed as (
+    select
+        objectid,
+        person_name,
+        organization,
+        split_part(organization, ' - ', 1)  as dept_code,
+        job,
+        work_group,
+        left(year_ending, 4)::integer        as fiscal_year,
+        gross_wages,
+        base_salary,
+        longevity_pay,
+        overtime,
+        other,
+        annual_buybacks,
+        pers_contributions,
+        er_paid
+    from source
+)
+
+select * from renamed
+  )
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.stg_employee_compensation", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:49:33.292810971+00:00
+-- finished_at: 2026-03-20T21:49:33.539495158+00:00
+-- elapsed: 246ms
+-- outcome: error
+-- error vendor code: 2003
+-- error message: NotFound: [Snowflake] 002003 (42S02): SQL compilation error:
+Object 'PC_DBT_DB.DBT_EAPPEL.STG_FIRE_PREVENTION_INSPECTIONS' does not exist or not authorized.
+-- dialect: snowflake
+-- node_id: model.elvis.mart_fire_dept_staffing_vs_inspections
+-- query_id: not available
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_fire_dept_staffing_vs_inspections
+    
+    
+    
+    as (
+
+with fire_employees as (
+    select
+        fiscal_year,
+        count(*)                            as headcount,
+        round(sum(gross_wages), 2)         as total_payroll,
+        round(avg(base_salary), 2)         as avg_base_salary,
+        round(sum(overtime), 2)            as total_overtime
+    from PC_DBT_DB.dbt_EAppel.stg_employee_compensation
+    where dept_code = 'FR'
+    group by 1
+),
+
+fire_inspections as (
+    select
+        fiscal_year,
+        count(*)                            as property_inspection_periods,
+        sum(inspections_conducted)          as total_inspections_conducted,
+        sum(violations_written)             as total_violations_written,
+        sum(unit_count)                     as total_units_in_scope,
+        round(avg(pct_dwellings_with_violations), 2) as avg_pct_units_with_violations
+    from PC_DBT_DB.dbt_EAppel.stg_fire_prevention_inspections
+    group by 1
+)
+
+select
+    coalesce(e.fiscal_year, i.fiscal_year)  as fiscal_year,
+    e.headcount,
+    e.total_payroll,
+    e.avg_base_salary,
+    e.total_overtime,
+    i.property_inspection_periods,
+    i.total_inspections_conducted,
+    i.total_violations_written,
+    i.total_units_in_scope,
+    i.avg_pct_units_with_violations
+from fire_employees e
+full outer join fire_inspections i
+    on e.fiscal_year = i.fiscal_year
+order by fiscal_year
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_fire_dept_staffing_vs_inspections", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:49:33.265589761+00:00
+-- finished_at: 2026-03-20T21:49:35.489259425+00:00
+-- elapsed: 2.2s
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_job_pay_bands
+-- query_id: 01c3299d-0308-2a04-0023-c55300059b32
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_job_pay_bands
+    
+    
+    
+    as (
+
+with employees as (
+    select * from PC_DBT_DB.dbt_EAppel.stg_employee_compensation
+)
+
+select
+    job,
+    work_group,
+    fiscal_year,
+    count(*)                                as headcount,
+    round(min(base_salary), 2)             as min_base_salary,
+    round(avg(base_salary), 2)             as avg_base_salary,
+    round(max(base_salary), 2)             as max_base_salary,
+    round(max(base_salary)
+        - min(base_salary), 2)             as base_salary_spread,
+    round(avg(gross_wages), 2)             as avg_gross_wages,
+    round(avg(overtime), 2)               as avg_overtime
+from employees
+group by 1, 2, 3
+having count(*) > 1
+order by avg_base_salary desc
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_job_pay_bands", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:49:33.312791131+00:00
+-- finished_at: 2026-03-20T21:49:35.557416247+00:00
+-- elapsed: 2.2s
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_org_compensation_summary
+-- query_id: 01c3299d-0308-2a3c-0023-c55300061036
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_org_compensation_summary
+    
+    
+    
+    as (
+
+with employees as (
+    select * from PC_DBT_DB.dbt_EAppel.stg_employee_compensation
+)
+
+select
+    organization,
+    dept_code,
+    fiscal_year,
+    count(*)                                                            as headcount,
+    sum(gross_wages)                                                    as total_gross_wages,
+    round(avg(base_salary), 2)                                         as avg_base_salary,
+    min(base_salary)                                                    as min_base_salary,
+    max(base_salary)                                                    as max_base_salary,
+    sum(overtime)                                                       as total_overtime,
+    round(sum(overtime) / nullif(sum(gross_wages), 0) * 100, 2)       as overtime_pct_of_payroll,
+    sum(pers_contributions)                                             as total_pers_contributions
+from employees
+group by 1, 2, 3
+order by organization, fiscal_year
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_org_compensation_summary", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:49:33.317248095+00:00
+-- finished_at: 2026-03-20T21:49:35.558002028+00:00
+-- elapsed: 2.2s
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_compensation_trends
+-- query_id: 01c3299d-0308-29eb-0023-c55300056c86
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_compensation_trends
+    
+    
+    
+    as (
+
+with employees as (
+    select * from PC_DBT_DB.dbt_EAppel.stg_employee_compensation
+)
+
+select
+    fiscal_year,
+    count(*)                                                            as headcount,
+    count(distinct organization)                                        as org_count,
+    round(sum(gross_wages), 2)                                         as total_payroll,
+    round(avg(gross_wages), 2)                                         as avg_gross_wages,
+    round(avg(base_salary), 2)                                         as avg_base_salary,
+    round(sum(overtime), 2)                                            as total_overtime,
+    round(sum(overtime) / nullif(sum(gross_wages), 0) * 100, 2)       as overtime_pct_of_payroll,
+    round(sum(pers_contributions), 2)                                  as total_pers_contributions,
+    round(sum(longevity_pay), 2)                                       as total_longevity_pay
+from employees
+group by 1
+order by 1
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_compensation_trends", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:49:32.895956235+00:00
+-- finished_at: 2026-03-20T21:49:35.640876143+00:00
+-- elapsed: 2.7s
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_overtime_analysis
+-- query_id: 01c3299d-0308-28d8-0023-c55300054cc2
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_overtime_analysis
+    
+    
+    
+    as (
+
+with employees as (
+    select * from PC_DBT_DB.dbt_EAppel.stg_employee_compensation
+)
+
+select
+    organization,
+    dept_code,
+    work_group,
+    fiscal_year,
+    count(*)                                                            as headcount,
+    count(case when overtime > 0 then 1 end)                          as employees_with_overtime,
+    round(sum(overtime), 2)                                            as total_overtime,
+    round(avg(case when overtime > 0 then overtime end), 2)           as avg_overtime_per_earner,
+    round(sum(base_salary), 2)                                         as total_base_salary,
+    round(sum(overtime) / nullif(sum(base_salary), 0) * 100, 2)       as overtime_pct_of_base
+from employees
+group by 1, 2, 3, 4
+having sum(overtime) > 0
+order by total_overtime desc
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_overtime_analysis", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:49:33.389841359+00:00
+-- finished_at: 2026-03-20T21:49:36.122638325+00:00
+-- elapsed: 2.7s
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_city_payroll_vs_inspection_compliance
+-- query_id: 01c3299d-0308-2621-0023-c5530005b726
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_city_payroll_vs_inspection_compliance
+    
+    
+    
+    as (
+
+-- Note: SNHD is a county agency, not a city agency, so restaurant inspectors
+-- do not appear in city payroll data. This mart shows city-wide staffing and
+-- payroll trends alongside SNHD inspection volume and compliance rates by year,
+-- useful for understanding the broader public-sector context.
+
+with city_payroll as (
+    select
+        fiscal_year,
+        count(*)                                as headcount,
+        round(sum(gross_wages), 2)             as total_payroll,
+        round(avg(base_salary), 2)             as avg_base_salary
+    from PC_DBT_DB.dbt_EAppel.stg_employee_compensation
+    group by 1
+),
+
+restaurant_inspections as (
+    select
+        year(inspection_date)                   as fiscal_year,
+        count(*)                                as inspection_count,
+        round(
+            sum(case when inspection_result = 'Compliant' then 1 else 0 end)
+            / nullif(count(*), 0) * 100, 1
+        )                                       as compliance_rate_pct,
+        round(avg(inspection_demerits), 2)     as avg_demerits
+    from PC_DBT_DB.dbt_EAppel.stg_snhd_inspections
+    where inspection_date is not null
+    group by 1
+)
+
+select
+    coalesce(p.fiscal_year, r.fiscal_year)  as fiscal_year,
+    p.headcount                              as city_headcount,
+    p.total_payroll                          as city_total_payroll,
+    p.avg_base_salary                        as city_avg_base_salary,
+    r.inspection_count,
+    r.compliance_rate_pct,
+    r.avg_demerits
+from city_payroll p
+full outer join restaurant_inspections r
+    on p.fiscal_year = r.fiscal_year
+order by fiscal_year
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_city_payroll_vs_inspection_compliance", "profile_name": "user", "target_name": "default"} */;
+
+============================== 784e72e9-81f6-499e-8023-6ed3a99893a9 ==============================
+-- created_at: 2026-03-20T21:55:31.109431002+00:00
+-- finished_at: 2026-03-20T21:55:31.255431891+00:00
+-- elapsed: 146ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c329a3-0308-2a3c-0023-c553000610ce
+-- desc: Get table schema
+describe table "PC_DBT_DB"."DBT_EAPPEL"."STG_EMPLOYEE_COMPENSATION";
+-- created_at: 2026-03-20T21:55:31.130413261+00:00
+-- finished_at: 2026-03-20T21:55:31.278021144+00:00
+-- elapsed: 147ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c329a3-0308-2a37-0023-c5530005c476
+-- desc: Get table schema
+describe table "PC_DBT_DB"."RAW"."FIRE_PREVENTION_INSPECTIONS";
+-- created_at: 2026-03-20T21:55:32.137191127+00:00
+-- finished_at: 2026-03-20T21:55:32.301746684+00:00
+-- elapsed: 164ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: not available
+-- query_id: 01c329a3-0308-29ec-0023-c55300058c02
+-- desc: execute adapter call
+show terse schemas in database PC_DBT_DB
+    limit 10000
+/* {"app": "dbt", "connection_name": "", "dbt_version": "2.0.0", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:55:32.804034961+00:00
+-- finished_at: 2026-03-20T21:55:33.017310896+00:00
+-- elapsed: 213ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.stg_fire_prevention_inspections
+-- query_id: 01c329a3-0308-26c9-0023-c55300057bd6
+-- desc: get_relation > list_relations call
+SHOW OBJECTS IN SCHEMA "PC_DBT_DB"."DBT_EAPPEL" LIMIT 10000;
+-- created_at: 2026-03-20T21:55:33.019757216+00:00
+-- finished_at: 2026-03-20T21:55:33.495997674+00:00
+-- elapsed: 476ms
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.stg_fire_prevention_inspections
+-- query_id: 01c329a3-0308-28d7-0023-c5530005e566
+-- desc: execute adapter call
+create or replace   view PC_DBT_DB.dbt_EAppel.stg_fire_prevention_inspections
+  
+  
+  
+  
+  as (
+    with source as (
+    select * from PC_DBT_DB.RAW.fire_prevention_inspections
+),
+
+renamed as (
+    select
+        objectid,
+        name                                                    as property_name,
+        address,
+        city,
+        state,
+        zip,
+        try_to_date(left(i_moyr, 10))                          as inspection_month,
+        i_fy::integer                                          as fiscal_year,
+        imps::integer                                          as inspections_conducted,
+        no_of_units::integer                                   as unit_count,
+        try_to_date(left(last_inspected, 10))                  as last_inspected_date,
+        try_to_number(no_violations_written)                   as violations_written,
+        try_to_number(no_dwellings_insp_mtd)                   as dwellings_inspected_mtd,
+        try_to_number(no_dwellings_insp_cumulative)            as dwellings_inspected_cumulative,
+        try_to_number(no_dwellings_viol_written)               as dwellings_with_violations,
+        try_to_number(pcnt_dwellings_violations)               as pct_dwellings_with_violations,
+        location
+    from source
+)
+
+select * from renamed
+  )
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.stg_fire_prevention_inspections", "profile_name": "user", "target_name": "default"} */;
+-- created_at: 2026-03-20T21:55:33.500209755+00:00
+-- finished_at: 2026-03-20T21:55:36.527029313+00:00
+-- elapsed: 3.0s
+-- outcome: success
+-- dialect: snowflake
+-- node_id: model.elvis.mart_fire_dept_staffing_vs_inspections
+-- query_id: 01c329a3-0308-29ec-0023-c55300058c06
+-- desc: execute adapter call
+create or replace transient  table PC_DBT_DB.dbt_EAppel.mart_fire_dept_staffing_vs_inspections
+    
+    
+    
+    as (
+
+with fire_employees as (
+    select
+        fiscal_year,
+        count(*)                            as headcount,
+        round(sum(gross_wages), 2)         as total_payroll,
+        round(avg(base_salary), 2)         as avg_base_salary,
+        round(sum(overtime), 2)            as total_overtime
+    from PC_DBT_DB.dbt_EAppel.stg_employee_compensation
+    where dept_code = 'FR'
+    group by 1
+),
+
+fire_inspections as (
+    select
+        fiscal_year,
+        count(*)                            as property_inspection_periods,
+        sum(inspections_conducted)          as total_inspections_conducted,
+        sum(violations_written)             as total_violations_written,
+        sum(unit_count)                     as total_units_in_scope,
+        round(avg(pct_dwellings_with_violations), 2) as avg_pct_units_with_violations
+    from PC_DBT_DB.dbt_EAppel.stg_fire_prevention_inspections
+    group by 1
+)
+
+select
+    coalesce(e.fiscal_year, i.fiscal_year)  as fiscal_year,
+    e.headcount,
+    e.total_payroll,
+    e.avg_base_salary,
+    e.total_overtime,
+    i.property_inspection_periods,
+    i.total_inspections_conducted,
+    i.total_violations_written,
+    i.total_units_in_scope,
+    i.avg_pct_units_with_violations
+from fire_employees e
+full outer join fire_inspections i
+    on e.fiscal_year = i.fiscal_year
+order by fiscal_year
+    )
+
+/* {"app": "dbt", "dbt_version": "2.0.0", "node_id": "model.elvis.mart_fire_dept_staffing_vs_inspections", "profile_name": "user", "target_name": "default"} */;
+

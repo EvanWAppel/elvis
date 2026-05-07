@@ -33,6 +33,15 @@ def ART_WORK_POINTS(
     )
     return lf
 
+def EMPLOYEE_COMPENSATION(
+
+) -> pl.LazyFrame:
+    lf:pl.LazyFrame = pl.scan_csv(
+        variables.EMPLOYEE_COMPENSATION,
+        infer_schema_length=None,
+    )
+    return lf
+
 def main(
         
 ) -> Any:

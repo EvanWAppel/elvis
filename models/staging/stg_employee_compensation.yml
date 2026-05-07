@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: stg_employee_compensation
+    description: "Cleaned City of Las Vegas employee compensation records with parsed department code and fiscal year"
+    columns:
+      - name: objectid
+        description: "Unique record identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: person_name
+        description: "Employee full name"
+        tests:
+          - not_null
+
+      - name: organization
+        description: "Full department/organization name"
+
+      - name: dept_code
+        description: "Two-letter department prefix parsed from organization (e.g. FR, BS, PN)"
+
+      - name: job
+        description: "Job title"
+
+      - name: work_group
+        description: "Bargaining unit or work classification code"
+
+      - name: fiscal_year
+        description: "Fiscal year extracted from year_ending date"
+        tests:
+          - not_null
+
+      - name: gross_wages
+        description: "Total gross wages paid to the employee"
+
+      - name: base_salary
+        description: "Base annual salary"
+
+      - name: longevity_pay
+        description: "Longevity pay based on years of service"
+
+      - name: overtime
+        description: "Overtime wages paid"
+
+      - name: annual_buybacks
+        description: "Annual leave buyback payments"
+
+      - name: pers_contributions
+        description: "Public Employees Retirement System contributions"
+
+      - name: er_paid
+        description: "Employer-paid portion of benefits"

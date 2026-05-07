@@ -88,6 +88,28 @@ CREATE TABLE IF NOT EXISTS {ART_TABLE_NAME} (
 )
 """
 
+EMP_TABLE_NAME = "EMPLOYEE_COMPENSATION"
+
+EMP_CREATE_TABLE_SQL = f"""
+CREATE TABLE IF NOT EXISTS {EMP_TABLE_NAME} (
+    PERSON_NAME        VARCHAR,
+    ORGANIZATION       VARCHAR,
+    JOB                VARCHAR,
+    WORK_GROUP         VARCHAR,
+    GROSS_WAGES        FLOAT,
+    BASE_SALARY        FLOAT,
+    LONGEVITY_PAY      FLOAT,
+    OVERTIME           FLOAT,
+    OTHER              FLOAT,
+    SEPERATION_PAY     FLOAT,
+    ANNUAL_BUYBACKS    FLOAT,
+    PERS_CONTRIBUTIONS FLOAT,
+    ER_PAID            FLOAT,
+    YEAR_ENDING        VARCHAR,
+    OBJECTID           INTEGER
+)
+"""
+
 
 def table_exists(cur, table_name: str) -> bool:
     cur.execute(f"SHOW TABLES LIKE '{table_name}'")
@@ -129,9 +151,10 @@ def main(overwrite: bool):
     cur.execute("USE SCHEMA RAW")
 
     tables = [
-        (TABLE_NAME,      CREATE_TABLE_SQL,      variables.SNHD_INSPECTIONS,            {"quote_char": None}),
+        (TABLE_NAME,      CREATE_TABLE_SQL,       variables.SNHD_INSPECTIONS,            {"quote_char": None}),
         (FIRE_TABLE_NAME, FIRE_CREATE_TABLE_SQL,  variables.FIRE_PREVENTION_INSPECTIONS, {}),
         (ART_TABLE_NAME,  ART_CREATE_TABLE_SQL,   variables.ART_WORK_POINTS,             {}),
+        (EMP_TABLE_NAME,  EMP_CREATE_TABLE_SQL,   variables.EMPLOYEE_COMPENSATION,       {}),
     ]
 
     for table_name, create_sql, csv_path, read_kwargs in tables:

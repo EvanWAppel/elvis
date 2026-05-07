@@ -66,6 +66,61 @@ models:
       - name: avg_pct_dwellings_with_violations
         description: "Average percentage of dwellings with violations across all inspections"
 
+  - name: mart_org_compensation_summary
+    description: "Compensation summary by organization and fiscal year — headcount, total payroll, avg salary, and overtime burden"
+    columns:
+      - name: organization
+        tests:
+          - not_null
+      - name: fiscal_year
+        tests:
+          - not_null
+      - name: headcount
+        tests:
+          - not_null
+
+  - name: mart_compensation_trends
+    description: "City-wide compensation trends by fiscal year — total payroll, headcount, average wages, and overtime"
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+          - unique
+      - name: headcount
+        tests:
+          - not_null
+
+  - name: mart_overtime_analysis
+    description: "Overtime burden by organization, work group, and fiscal year — only includes rows where overtime was earned"
+    columns:
+      - name: total_overtime
+        tests:
+          - not_null
+
+  - name: mart_job_pay_bands
+    description: "Pay band summary by job title, work group, and fiscal year — min/avg/max base salary and spread"
+    columns:
+      - name: job
+        tests:
+          - not_null
+      - name: avg_base_salary
+        tests:
+          - not_null
+
+  - name: mart_fire_dept_staffing_vs_inspections
+    description: "Fire department headcount and payroll (FR orgs) joined to fire prevention inspection volume by fiscal year"
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+
+  - name: mart_city_payroll_vs_inspection_compliance
+    description: "City-wide payroll and headcount trends alongside SNHD restaurant inspection volume and compliance rates by year. Note: SNHD inspectors are county employees and do not appear in city payroll data."
+    columns:
+      - name: fiscal_year
+        tests:
+          - not_null
+
   - name: mart_art_work_points
     description: "City of Las Vegas public art collection with coordinates and parsed metadata, ready for mapping"
     columns:
