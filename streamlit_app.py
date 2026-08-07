@@ -1,14 +1,30 @@
-import streamlit as st
-import pydeck as pdk
+"""Las Vegas public-art map — the interactive demo behind the portfolio landing page.
+
+In Snowflake this app read the MART_ART_WORK_POINTS table live via
+get_active_session(). For the public portfolio deploy (Streamlit Community
+Cloud) there is no Snowflake connection, so it reads a committed snapshot of
+that same mart, rebuilt from the public source by build_snapshot.py.
+"""
+
+from pathlib import Path
+
 import pandas as pd
-from snowflake.snowpark.context import get_active_session
+import pydeck as pdk
+import streamlit as st
 
 st.set_page_config(page_title="Las Vegas Public Art", layout="wide")
 st.title("City of Las Vegas Public Art Collection")
 
-session = get_active_session()
+DATA_PATH = Path(__file__).parent / "app_data" / "mart_art_work_points.csv"
 
-df = session.sql("SELECT * FROM PC_DBT_DB.DBT_EAPPEL.MART_ART_WORK_POINTS").to_pandas()
+
+@st.cache_data
+def load_data() -> pd.DataFrame:
+    """Load the mart snapshot (mirrors the Snowflake MART_ART_WORK_POINTS table)."""
+    return pd.read_csv(DATA_PATH)
+
+
+df = load_data()
 
 # --- Sidebar filters ---
 st.sidebar.header("Filters")
@@ -49,7 +65,7 @@ row = filtered[filtered["ARTWORK_NAME"] == selected].iloc[0]
 col1, col2 = st.columns([1, 2])
 with col1:
     if pd.notna(row["PIC_URL"]):
-        st.image(row["PIC_URL"], use_column_width=True)
+        st.image(row["PIC_URL"], use_container_width=True)
 with col2:
     st.markdown(f"**Artist:** {row['ARTIST']}")
     st.markdown(f"**Medium:** {row['MEDIUM']}")
