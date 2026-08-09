@@ -2,12 +2,12 @@ version: 2
 
 sources:
   - name: raw
-    database: PC_DBT_DB
-    schema: RAW
+    database: vegas
+    schema: raw
     tables:
       - name: snhd_inspections
-        description: "Southern Nevada Health District restaurant inspection records"
+        description: "Southern Nevada Health District restaurant inspection records (Clark County-wide). Public open-data export: inspection facts only — restaurant name/address/grade columns are null."
       - name: fire_prevention_inspections
         description: "City of Las Vegas fire prevention inspection records for multi-unit residential properties"
       - name: art_work_points
-        description: "City of Las Vegas public art collection with geospatial coordinates"
+        description: "City of Las Vegas public art collection with coordinates parsed from source fields"

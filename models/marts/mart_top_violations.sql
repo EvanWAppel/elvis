@@ -9,13 +9,12 @@ with inspections as (
 
 flattened as (
     select
-        i.category_name,
-        i.inspection_type,
-        i.inspection_grade,
-        i.inspection_date,
-        trim(v.value::varchar) as violation_code
-    from inspections i,
-    lateral flatten(input => split(i.violation_codes, '|')) v
+        category_name,
+        inspection_type,
+        inspection_grade,
+        inspection_date,
+        trim(unnest(string_split(violation_codes, '|'))) as violation_code
+    from inspections
 ),
 
 codes as (
@@ -30,7 +29,7 @@ select
     f.inspection_type,
     count(*) as occurrence_count
 from flattened f
-left join codes c on f.violation_code = c.violation_code::varchar
+left join codes c on f.violation_code = cast(c.violation_code as varchar)
 where f.violation_code != ''
 group by 1, 2, 3, 4, 5
 order by occurrence_count desc

@@ -13,23 +13,23 @@ renamed as (
         city,
         state,
         zip,
-        current_demerits::integer    as current_demerits,
+        try_cast(current_demerits as integer)          as current_demerits,
         current_grade,
-        try_to_date(date_current)    as date_current,
-        try_to_date(inspection_date) as inspection_date,
+        try_cast(date_current as timestamp)::date       as date_current,
+        try_cast(inspection_date as timestamp)::date    as inspection_date,
         inspection_time,
         employee_id,
         inspection_type,
-        inspection_demerits::integer as inspection_demerits,
+        try_cast(inspection_demerits as integer)        as inspection_demerits,
         inspection_grade,
         permit_status,
         inspection_result,
-        violations                   as violation_codes,
+        violations                                      as violation_codes,
         case
             when violations is null or violations = '' then 0
-            else array_size(split(violations, '|'))
-        end                          as violation_count,
-        try_to_timestamp(record_updated) as record_updated,
+            else len(string_split(violations, '|'))
+        end                                             as violation_count,
+        try_cast(record_updated as timestamp)           as record_updated,
         objectid
     from source
 )

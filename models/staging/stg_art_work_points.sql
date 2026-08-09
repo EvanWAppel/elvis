@@ -1,79 +1,81 @@
 -- The source DESCRIPTION is a pipe-delimited blob with a *variable* number of
 -- parts: artist | medium | <one or more location parts> | Ward N. The ward is
--- sometimes absent (UNLV campus / county pieces) and its typo variants
--- ("Ward 5 (CLV Collection", "Colllection") mean a fixed split_part(..., 5)
--- both misses it and produces dirty values. Instead we explode the field,
--- locate the "Ward N" token wherever it lands, and rebuild the columns around
--- it. This mirrors build_snapshot.py, which powers the public Streamlit demo.
+-- sometimes absent (UNLV campus / county pieces) and has typo variants
+-- ("Ward 5 (CLV Collection", "Colllection"), so a fixed split position both
+-- misses it and produces dirty values. Instead we split into a cleaned list,
+-- locate the "Ward N" token wherever it lands, normalize it, and rebuild the
+-- location_detail / address around it. Mirrors build_warehouse.py's parse.
 
 with source as (
     select * from {{ source('raw', 'art_work_points') }}
 ),
 
--- One trimmed part per row, keeping its position within the description.
-parts as (
+parsed as (
     select
-        s.objectid,
-        f.index                                                   as part_index,
-        trim(f.value::string)                                     as part,
-        regexp_substr(trim(f.value::string), 'Ward\\s+\\d+', 1, 1, 'i')
-            is not null                                           as is_ward
-    from source s,
-         lateral flatten(input => split(s.description, '|')) f
-    where trim(f.value::string) <> ''
-),
+        objectid,
+        name        as artwork_name,
+        description as full_description,
+        pic_url,
+        thumb_url,
+        icon_color,
+        try_cast(lat_1 as double) as latitude,
+        try_cast("long" as double) as longitude,
 
--- Position of the ward token per artwork (null when the piece has no ward).
-ward_index as (
-    select objectid, max(part_index) as ward_pos
-    from parts
-    where is_ward
-    group by objectid
+        -- Cleaned, trimmed, non-empty parts (DuckDB lists are 1-indexed).
+        list_filter(
+            list_transform(string_split(description, '|'), x -> trim(x)),
+            x -> x <> ''
+        ) as parts,
+
+        -- 1-based index of the (last) part that contains a "Ward N" token.
+        list_max(
+            list_filter(
+                list_transform(
+                    list_filter(
+                        list_transform(string_split(description, '|'), x -> trim(x)),
+                        x -> x <> ''
+                    ),
+                    (x, i) -> case when regexp_matches(x, 'Ward\s+\d+') then i end
+                ),
+                x -> x is not null
+            )
+        ) as ward_pos,
+
+        -- Ward number extracted from anywhere in the description.
+        regexp_extract(description, 'Ward\s+(\d+)', 1) as ward_num
+    from source
 ),
 
 fields as (
     select
-        p.objectid,
-        max(case when p.part_index = 0 then p.part end)           as artist,
-        max(case when p.part_index = 1 then p.part end)           as medium,
-        max(case when p.part_index = 2 then p.part end)           as location_detail,
-        -- Everything after location_detail and before the ward, space-joined.
-        listagg(
-            case
-                when p.part_index >= 3
-                     and (wi.ward_pos is null or p.part_index < wi.ward_pos)
-                then p.part
-            end,
-            ' '
-        ) within group (order by p.part_index)                    as address,
-        -- Normalize the matched token to a clean "Ward N".
-        max(
-            case when p.is_ward
-                then 'Ward ' || regexp_substr(p.part, 'Ward\\s+(\\d+)', 1, 1, 'ie', 1)
-            end
-        )                                                          as ward
-    from parts p
-    left join ward_index wi on p.objectid = wi.objectid
-    group by p.objectid
-),
-
-renamed as (
-    select
-        s.objectid,
-        s.name              as artwork_name,
-        f.artist,
-        f.medium,
-        f.location_detail,
-        f.address,
-        f.ward,
-        s.description       as full_description,
-        s.pic_url,
-        s.thumb_url,
-        s.icon_color,
-        s.lat_1::float      as latitude,
-        s.long::float       as longitude
-    from source s
-    join fields f on s.objectid = f.objectid
+        objectid,
+        artwork_name,
+        full_description,
+        pic_url,
+        thumb_url,
+        icon_color,
+        latitude,
+        longitude,
+        parts[1] as artist,
+        parts[2] as medium,
+        case when ward_num <> '' then 'Ward ' || ward_num end as ward,
+        -- Parts after the medium (index 3) and before the ward.
+        array_slice(parts, 3, coalesce(ward_pos - 1, len(parts))) as middle
+    from parsed
 )
 
-select * from renamed
+select
+    objectid,
+    artwork_name,
+    artist,
+    medium,
+    middle[1] as location_detail,
+    array_to_string(array_slice(middle, 2, len(middle)), ' ') as address,
+    ward,
+    full_description,
+    pic_url,
+    thumb_url,
+    icon_color,
+    latitude,
+    longitude
+from fields

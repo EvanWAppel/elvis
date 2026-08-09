@@ -1,1 +1,0 @@
-select distinct inspection_grade from PC_DBT_DB.dbt_EAppel.stg_snhd_inspections order by 1
