@@ -1,4 +1,6 @@
 *.csv
+# Committed data snapshot that powers the public Streamlit demo (source CSVs stay ignored)
+!app_data/mart_art_work_points.csv
 .venv
 .dbt
 .env
