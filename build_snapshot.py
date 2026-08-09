@@ -12,6 +12,14 @@ transform the dbt models perform:
     mart_art_work_points -> select the map-ready columns, ordered by
                             ward, artwork_name.
 
+NOTE ON WARD: the source DESCRIPTION has a *variable* number of pipe parts
+(4, 5, or 6), so a fixed split_part(..., 5) — as the current dbt model does —
+misses the ward whenever there are fewer than 5 parts, and trips over typo
+variants ("Ward 5 (CLV Collection", "Colllection"). Here we instead pull the
+"Ward N" token out of the whole description by regex and normalize it to
+"Ward N". Five UNLV/county pieces legitimately have no ward and stay blank.
+The dbt model should be updated to match (REGEXP_SUBSTR) for parity.
+
 Intentionally dependency-free (standard library only) so it runs in any
 environment without touching the project's dependencies. Run with:
 
@@ -23,8 +31,12 @@ Snowflake mart the original app queried).
 
 import csv
 import json
+import re
 import urllib.request
 from pathlib import Path
+
+# Matches the "Ward N" token wherever it appears in the DESCRIPTION field.
+WARD_RE = re.compile(r"Ward\s+(\d+)", re.IGNORECASE)
 
 SOURCE_URL = (
     "https://services1.arcgis.com/F1v0ufATbBQScMtY/arcgis/rest/services/"
@@ -51,25 +63,45 @@ MART_COLUMNS = [
 ]
 
 
-def _split_part(description: str, index: int) -> str:
-    """Mirror Snowflake split_part(description, '|', index) with trim()."""
-    parts = (description or "").split("|")
-    if index <= len(parts):
-        return parts[index - 1].strip()
-    return ""
+def parse_description(description: str) -> dict:
+    """Split the pipe-delimited DESCRIPTION into its component fields.
+
+    The field is ``artist | medium | <location parts...> | Ward N`` but the
+    number of location parts varies and the ward is sometimes absent, so the
+    ward is located by regex rather than by position. Everything between the
+    medium and the ward becomes location_detail (first part) + address (rest).
+    """
+    parts = [p.strip() for p in (description or "").split("|") if p.strip()]
+
+    ward = ""
+    ward_idx = None
+    for i, part in enumerate(parts):
+        match = WARD_RE.search(part)
+        if match:
+            ward = f"Ward {match.group(1)}"
+            ward_idx = i
+
+    middle = parts[2 : (ward_idx if ward_idx is not None else len(parts))]
+    return {
+        "ARTIST": parts[0] if parts else "",
+        "MEDIUM": parts[1] if len(parts) > 1 else "",
+        "LOCATION_DETAIL": middle[0] if middle else "",
+        "ADDRESS": " ".join(middle[1:]) if len(middle) > 1 else "",
+        "WARD": ward,
+    }
 
 
 def stage(props: dict) -> dict:
     """Reproduce stg_art_work_points for a single raw record."""
-    description = props.get("DESCRIPTION") or ""
+    fields = parse_description(props.get("DESCRIPTION") or "")
     return {
         "OBJECTID": props.get("ObjectId"),
         "ARTWORK_NAME": props.get("NAME"),
-        "ARTIST": _split_part(description, 1),
-        "MEDIUM": _split_part(description, 2),
-        "LOCATION_DETAIL": _split_part(description, 3),
-        "ADDRESS": _split_part(description, 4),
-        "WARD": _split_part(description, 5),
+        "ARTIST": fields["ARTIST"],
+        "MEDIUM": fields["MEDIUM"],
+        "LOCATION_DETAIL": fields["LOCATION_DETAIL"],
+        "ADDRESS": fields["ADDRESS"],
+        "WARD": fields["WARD"],
         "LATITUDE": float(props["LAT_1"]) if props.get("LAT_1") is not None else None,
         "LONGITUDE": float(props["LONG"]) if props.get("LONG") is not None else None,
         "PIC_URL": props.get("PIC_URL"),

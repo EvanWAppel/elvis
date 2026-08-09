@@ -26,9 +26,13 @@ def load_data() -> pd.DataFrame:
 
 df = load_data()
 
+# A handful of pieces (UNLV campus, county-located) have no council ward;
+# bucket them as "Other" so they stay filterable and visible on the map.
+df["WARD"] = df["WARD"].fillna("Other")
+
 # --- Sidebar filters ---
 st.sidebar.header("Filters")
-wards = sorted(df["WARD"].dropna().unique())
+wards = sorted(df["WARD"].unique())
 selected_wards = st.sidebar.multiselect("Ward", wards, default=wards)
 
 filtered = df[df["WARD"].isin(selected_wards)]
