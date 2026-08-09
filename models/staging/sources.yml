@@ -17,3 +17,13 @@ sources:
         description: "City of Las Vegas fire prevention inspection records for multi-unit residential properties"
       - name: art_work_points
         description: "City of Las Vegas public art collection with coordinates parsed from source fields"
+      - name: crime_calls
+        description: "LVMPD calls-for-service for the two most recent years, with incident type, time-of-day fields, zip, and WGS84 coordinates."
+      - name: building_permits
+        description: "City of Las Vegas archived building permits with valuation and issue date (non-spatial)."
+      - name: business_licenses
+        description: "City of Las Vegas business license registry: name, type, status, zip, city-limits flag (non-spatial)."
+      - name: short_term_rentals
+        description: "City of Las Vegas short-term rental licenses with status, category, and WGS84 point coordinates."
+      - name: parks
+        description: "City of Las Vegas parks with type, acreage, ward, and polygon-centroid WGS84 coordinates."

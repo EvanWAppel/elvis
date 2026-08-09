@@ -38,6 +38,11 @@ logging.basicConfig(
 log = logging.getLogger("build_warehouse")
 
 ORG = "https://services1.arcgis.com/F1v0ufATbBQScMtY/arcgis/rest/services"
+# LVMPD publishes calls-for-service in its own ArcGIS Online org, not the City's.
+LVMPD_ORG = "https://services.arcgis.com/jjSk6t82vIntwDbs/arcgis/rest/services"
+# Only the two most recent LVMPD yearly layers are loaded — enough for month/hour
+# /weekday patterns and a recent trend without baking millions of rows into the image.
+CRIME_YEARS = [2025, 2026]
 DB_PATH = Path(__file__).parent / "vegas.duckdb"
 
 SNHD_ZIP_URL = (
@@ -64,13 +69,26 @@ def _get_json(url: str) -> dict:
         return json.load(resp)
 
 
-def _layer_metadata(service: str) -> dict:
-    return _get_json(f"{ORG}/{service}/FeatureServer/0?f=json")
+def fetch_layer(
+    service: str,
+    org: str = ORG,
+    layer: int = 0,
+    geometry: bool = False,
+    centroid: bool = False,
+    out_sr: int = 4326,
+) -> pd.DataFrame:
+    """Fetch all attribute rows of an ArcGIS FeatureServer layer, paginated.
 
-
-def fetch_layer(service: str) -> pd.DataFrame:
-    """Fetch all attribute rows of an ArcGIS FeatureServer layer, paginated."""
-    meta = _layer_metadata(service)
+    Args:
+        service: FeatureServer service name.
+        org: ArcGIS org REST base (defaults to the City of Las Vegas org).
+        layer: layer id within the service (some services put data on 1/113, not 0).
+        geometry: also pull point geometry into ``longitude``/``latitude`` columns.
+        centroid: for polygon layers, pull the centroid into ``longitude``/``latitude``.
+        out_sr: spatial reference to reproject geometry into (4326 = WGS84 lat/long).
+    """
+    base = f"{org}/{service}/FeatureServer/{layer}"
+    meta = _get_json(f"{base}?f=json")
     page = min(meta.get("maxRecordCount") or PAGE_SIZE, PAGE_SIZE)
     esri_date_fields = {
         f["name"]
@@ -82,21 +100,30 @@ def fetch_layer(service: str) -> pd.DataFrame:
     rows: list[dict] = []
     offset = 0
     while True:
-        params = urllib.parse.urlencode(
-            {
-                "where": "1=1",
-                "outFields": "*",
-                "returnGeometry": "false",
-                "f": "json",
-                "resultOffset": offset,
-                "resultRecordCount": page,
-            }
-        )
-        data = _get_json(f"{ORG}/{service}/FeatureServer/0/query?{params}")
+        query = {
+            "where": "1=1",
+            "outFields": "*",
+            "returnGeometry": "true" if geometry else "false",
+            "f": "json",
+            "resultOffset": offset,
+            "resultRecordCount": page,
+        }
+        if centroid:
+            query["returnCentroid"] = "true"
+        if geometry or centroid:
+            query["outSR"] = out_sr
+        params = urllib.parse.urlencode(query)
+        data = _get_json(f"{base}/query?{params}")
         feats = data.get("features", [])
         if not feats:
             break
-        rows.extend(f["attributes"] for f in feats)
+        for feat in feats:
+            attrs = dict(feat["attributes"])
+            point = feat.get("geometry") if geometry else feat.get("centroid")
+            if point:
+                attrs["longitude"] = point.get("x")
+                attrs["latitude"] = point.get("y")
+            rows.append(attrs)
         offset += len(feats)
         log.info("  %s: %d rows fetched", service, len(rows))
         if len(feats) < page:
@@ -208,6 +235,17 @@ def load_raw(con: duckdb.DuckDBPyConnection, table: str, df: pd.DataFrame) -> No
     log.info("Loaded raw.%s: %d rows, %d cols", table, len(df), len(df.columns))
 
 
+def fetch_crime() -> pd.DataFrame:
+    """Concatenate LVMPD calls-for-service across the configured recent years."""
+    frames = []
+    for year in CRIME_YEARS:
+        log.info("Fetching LVMPD calls-for-service %d ...", year)
+        frames.append(
+            fetch_layer(f"LVMPD_Calls_For_Service_{year}", org=LVMPD_ORG)
+        )
+    return pd.concat(frames, ignore_index=True)
+
+
 def main() -> None:
     con = duckdb.connect(str(DB_PATH))
     try:
@@ -219,6 +257,29 @@ def main() -> None:
             con,
             "fire_prevention_inspections",
             fetch_layer("Fire_Prevention_Inspections"),
+        )
+
+        log.info("Fetching crime / calls-for-service (LVMPD ArcGIS) ...")
+        load_raw(con, "crime_calls", fetch_crime())
+
+        log.info("Fetching building_permits (ArcGIS) ...")
+        load_raw(con, "building_permits", fetch_layer("Archived_Building_Permits"))
+
+        log.info("Fetching business_licenses (ArcGIS) ...")
+        load_raw(con, "business_licenses", fetch_layer("Business_Licenses_OpenData"))
+
+        log.info("Fetching short_term_rentals (ArcGIS) ...")
+        load_raw(
+            con,
+            "short_term_rentals",
+            fetch_layer("CLV_Short_Term_Rental", layer=1, geometry=True),
+        )
+
+        log.info("Fetching parks (ArcGIS) ...")
+        load_raw(
+            con,
+            "parks",
+            fetch_layer("CLV_Parks", layer=113, centroid=True),
         )
 
         log.info("Loading SNHD restaurant bundle ...")

@@ -18,6 +18,11 @@ pages = [
     st.Page("views/public_art.py", title="Public Art", icon="🗺️"),
     st.Page("views/restaurants.py", title="Restaurant Inspections", icon="🍽️"),
     st.Page("views/fire.py", title="Fire Inspections", icon="🔥"),
+    st.Page("views/crime.py", title="Metro Calls", icon="🚨"),
+    st.Page("views/building_permits.py", title="Building Permits", icon="🏗️"),
+    st.Page("views/business_licenses.py", title="Business Licenses", icon="📋"),
+    st.Page("views/short_term_rentals.py", title="Short-Term Rentals", icon="🏠"),
+    st.Page("views/parks.py", title="Parks", icon="🌳"),
 ]
 
 st.navigation(pages).run()

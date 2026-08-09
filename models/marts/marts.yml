@@ -125,3 +125,71 @@ models:
         description: "Longitude coordinate for map placement"
         tests:
           - not_null
+
+  - name: mart_crime_by_type
+    description: "LVMPD call counts by classification and incident type."
+    columns:
+      - name: incident_count
+        tests:
+          - not_null
+
+  - name: mart_crime_by_hour_weekday
+    description: "LVMPD call counts by hour of day and day of week, for a heatmap."
+    columns:
+      - name: incident_count
+        tests:
+          - not_null
+
+  - name: mart_crime_monthly
+    description: "LVMPD calls per month across the loaded years."
+    columns:
+      - name: incident_month
+        tests:
+          - not_null
+
+  - name: mart_crime_map_sample
+    description: "A ~12k-row random sample of geolocated calls (bounded to the valley) for mapping."
+
+  - name: mart_permits_monthly
+    description: "City of Las Vegas building permits per month with total and average valuation."
+    columns:
+      - name: issue_month
+        tests:
+          - not_null
+
+  - name: mart_permits_by_type
+    description: "Building permit counts and valuation by application type."
+    columns:
+      - name: application_type
+        tests:
+          - not_null
+
+  - name: mart_business_licenses
+    description: "One row per City of Las Vegas business license for the searchable roster."
+    columns:
+      - name: license_no
+        description: "Business license number (may repeat across renewals)."
+
+  - name: mart_licenses_by_type
+    description: "Business license counts (and active counts) by type of business."
+    columns:
+      - name: type_of_business
+        tests:
+          - not_null
+
+  - name: mart_short_term_rentals
+    description: "Licensed short-term rentals with WGS84 coordinates for mapping."
+    columns:
+      - name: latitude
+        tests:
+          - not_null
+      - name: longitude
+        tests:
+          - not_null
+
+  - name: mart_parks
+    description: "City of Las Vegas parks with centroid coordinates, acreage, and amenities."
+    columns:
+      - name: park_name
+        tests:
+          - not_null
