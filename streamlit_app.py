@@ -27,6 +27,7 @@ pages = [
     st.Page("views/tourism.py", title="Tourism & Gaming", icon="🎢"),
     st.Page("views/lake_mead.py", title="Lake Mead", icon="🏜️"),
     st.Page("views/weather.py", title="Desert Heat", icon="🌡️"),
+    st.Page("views/air_quality.py", title="Air Quality", icon="💨"),
 ]
 
 st.navigation(pages).run()

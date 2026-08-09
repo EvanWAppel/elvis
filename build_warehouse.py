@@ -35,6 +35,7 @@ import datetime
 import io
 import json
 import logging
+import os
 import re
 import tempfile
 import urllib.error
@@ -90,6 +91,14 @@ LVCVA_REPORT_URL = (
     "https://www.lvcva.com/research/reports/post/"
     "lvcva-executive-summary-of-southern-nevada-tourism-indicators/"
 )
+
+# EPA AQS daily air-quality summaries for Clark County (FIPS state 32, county
+# 003). Requires free credentials, read from the environment so the key stays
+# out of git; the loader skips gracefully when they're absent.
+AQS_URL = "https://aqs.epa.gov/data/api/dailyData/byCounty"
+AQS_STATE, AQS_COUNTY = "32", "003"
+AQS_PARAMS = {"88101": "PM2.5", "44201": "Ozone"}  # param code -> label
+AQS_START_YEAR = 2015
 # The SNHD exports are semicolon-delimited, unquoted, and Windows-1252 encoded.
 SNHD_ENCODING = "cp1252"
 
@@ -393,6 +402,51 @@ def fetch_lvcva() -> pd.DataFrame:
     return combined.drop_duplicates(subset=["metric", "month"], keep="last")
 
 
+def fetch_air_quality() -> pd.DataFrame:
+    """EPA AQS daily PM2.5 / ozone for Clark County, one request per param-year.
+
+    Reads ``AQS_EMAIL`` and ``AQS_KEY`` from the environment. If either is unset
+    the dataset is skipped (empty frame) so a deploy without the key still builds.
+    """
+    email = os.environ.get("AQS_EMAIL")
+    key = os.environ.get("AQS_KEY")
+    if not email or not key:
+        log.warning("air quality: AQS_EMAIL/AQS_KEY not set, skipping")
+        return pd.DataFrame(
+            columns=["parameter", "date_local", "arithmetic_mean", "aqi", "local_site_name"]
+        )
+
+    this_year = datetime.datetime.now(tz=datetime.UTC).year
+    keep = ["date_local", "arithmetic_mean", "aqi", "local_site_name"]
+    rows = []
+    for param, label in AQS_PARAMS.items():
+        for year in range(AQS_START_YEAR, this_year + 1):
+            params = urllib.parse.urlencode(
+                {
+                    "email": email,
+                    "key": key,
+                    "param": param,
+                    "bdate": f"{year}0101",
+                    "edate": f"{year}1231",
+                    "state": AQS_STATE,
+                    "county": AQS_COUNTY,
+                }
+            )
+            log.info("Fetching air quality %s %d ...", label, year)
+            try:
+                with _urlopen(f"{AQS_URL}?{params}", timeout=180) as r:
+                    payload = json.load(r)
+            except urllib.error.HTTPError as exc:
+                log.warning("air quality: %s %d failed (%s), skipping", label, year, exc)
+                continue
+            data = payload.get("Data", [])
+            for d in data:
+                row = {k: d.get(k) for k in keep}
+                row["parameter"] = label
+                rows.append(row)
+    return pd.DataFrame(rows, columns=["parameter", *keep])
+
+
 # --------------------------------------------------------------------------- #
 def load_raw(con: duckdb.DuckDBPyConnection, table: str, df: pd.DataFrame) -> None:
     con.execute("CREATE SCHEMA IF NOT EXISTS raw")
@@ -460,6 +514,9 @@ def main() -> None:
 
         log.info("Fetching LVCVA tourism / gaming / airport indicators ...")
         load_raw(con, "lvcva_indicators", fetch_lvcva())
+
+        log.info("Fetching air quality (EPA AQS) ...")
+        load_raw(con, "air_quality", fetch_air_quality())
 
         log.info("Loading SNHD restaurant bundle ...")
         load_snhd(con)
