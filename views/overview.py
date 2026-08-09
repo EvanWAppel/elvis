@@ -14,9 +14,9 @@ st.markdown(
 # --- Headline numbers, straight from the dbt marts ---
 art_n = int(query("select count(*) as n from main.mart_art_work_points")["n"][0])
 insp_n = int(
-    query("select sum(total_inspections) as n from main.mart_restaurant_grades")["n"][0]
+    query("select sum(total_inspections) as n from main.mart_restaurants")["n"][0]
 )
-rest_n = int(query("select count(*) as n from main.mart_restaurant_grades")["n"][0])
+rest_n = int(query("select count(*) as n from main.mart_restaurants")["n"][0])
 fire_n = int(query("select count(*) as n from main.mart_fire_prevention_inspections")["n"][0])
 
 c1, c2, c3 = st.columns(3)
@@ -37,8 +37,9 @@ with col_a:
         "- **🗺️ Public Art** — an interactive map of the City's public art "
         "collection, filterable by council ward.\n"
         "- **🍽️ Restaurant Inspections** — Southern Nevada Health District "
-        "inspections across **all of Clark County**: grades, top violations, and "
-        "compliance trends over two decades.\n"
+        "inspections across **all of Clark County**: a searchable, sortable "
+        "restaurant list with names and addresses, grades, top violations, and "
+        "compliance trends since 2020.\n"
         "- **🔥 Fire Inspections** — City of Las Vegas fire-prevention "
         "inspections of multi-unit residential properties."
     )

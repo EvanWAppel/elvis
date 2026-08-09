@@ -5,20 +5,9 @@ config-version: 2
 profile: 'elvis'
 
 model-paths: ["models"]
-seed-paths: ["seeds"]
 test-paths: ["tests"]
 snapshot-paths: ["snapshots"]
 clean-targets: ["target", "dbt_packages"]
-
-seeds:
-  elvis:
-    violation_codes:
-      +column_types:
-        Violation_ID: integer
-        Violation_Code: varchar
-        Violation_Demerits: integer
-        Violation_Description: varchar
-        ObjectId: integer
 
 models:
   elvis:

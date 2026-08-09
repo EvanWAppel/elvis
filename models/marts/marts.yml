@@ -1,8 +1,8 @@
 version: 2
 
 models:
-  - name: mart_restaurant_grades
-    description: "One row per permit (restaurant) summarizing inspection history, keyed on permit_number. The public SNHD export nulls out name/address/current_grade, so the latest grade is derived from per-inspection grades."
+  - name: mart_restaurants
+    description: "One row per restaurant (permit), joining SNHD establishment detail (name, address, geo, current grade) to aggregated inspection history. Establishments with no inspections keep zeroed counts."
     columns:
       - name: permit_number
         description: "Unique restaurant permit number"
@@ -10,16 +10,27 @@ models:
           - not_null
           - unique
 
-      - name: latest_grade
-        description: "Grade from the most recent inspection (derived from inspection_grade)"
+      - name: restaurant_name
+        description: "Establishment name from the SNHD developer bundle"
+
+      - name: current_grade
+        description: "Most recent grade on file for the establishment"
 
       - name: compliance_rate_pct
-        description: "Percentage of inspections with a Compliant result"
+        description: "Percentage of passing inspections (an \"A\" grade / Compliant)"
 
       - name: total_inspections
-        description: "Total number of inspections on record"
+        description: "Number of inspections on record (0 if none)"
         tests:
           - not_null
+
+      - name: failed_inspections
+        description: "Inspections that were a B/C downgrade or a closure"
+        tests:
+          - not_null
+
+      - name: failure_rate_pct
+        description: "failed_inspections as a percentage of total_inspections"
 
   - name: mart_inspections_over_time
     description: "Monthly inspection counts and compliance rates by inspection type"
@@ -31,6 +42,30 @@ models:
 
       - name: inspection_count
         description: "Number of inspections that month"
+        tests:
+          - not_null
+
+  - name: mart_inspection_history
+    description: "One row per inspection, keyed on permit_number for per-restaurant drill-down (date, type, grade, result, demerits, violation count)."
+    columns:
+      - name: permit_number
+        description: "Restaurant permit number"
+        tests:
+          - not_null
+      - name: serial_number
+        description: "Unique inspection identifier"
+        tests:
+          - not_null
+
+  - name: mart_inspection_violations
+    description: "One row per (inspection, violation), decoding violation codes to descriptions and demerit weights. Keyed on serial_number and permit_number."
+    columns:
+      - name: serial_number
+        description: "Inspection identifier the violation was cited on"
+        tests:
+          - not_null
+      - name: violation_code
+        description: "Cited violation code"
         tests:
           - not_null
 

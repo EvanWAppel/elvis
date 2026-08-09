@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: stg_snhd_establishments
+    description: "One row per SNHD restaurant establishment: permit_number to name, address, geo, and current grade."
+    columns:
+      - name: permit_number
+        description: "Unique restaurant permit number"
+        tests:
+          - not_null
+          - unique
+
+      - name: restaurant_name
+        description: "Establishment name"
+
+      - name: latitude
+        description: "Latitude (source columns are swapped and corrected here)"
+
+      - name: longitude
+        description: "Longitude (source columns are swapped and corrected here)"
