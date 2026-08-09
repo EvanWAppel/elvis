@@ -27,3 +27,11 @@ sources:
         description: "City of Las Vegas short-term rental licenses with status, category, and WGS84 point coordinates."
       - name: parks
         description: "City of Las Vegas parks with type, acreage, ward, and polygon-centroid WGS84 coordinates."
+      - name: marriage_licenses
+        description: "Clark County marriage licenses, one row per license (2007-2024), with issue date, mailing origin, and party genders."
+      - name: lake_mead
+        description: "Daily Lake Mead reservoir elevation (feet) from USBR RISE catalog item 6123, 1935-present."
+      - name: weather
+        description: "NOAA GHCN-Daily observations for the Las Vegas airport station (temps in tenths degC, precip in tenths mm)."
+      - name: lvcva_indicators
+        description: "LVCVA monthly Southern Nevada tourism indicators in long form (metric, month, value): visitor volume, occupancy, ADR, airport passengers, gaming revenue by area."

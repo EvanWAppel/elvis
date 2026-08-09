@@ -193,3 +193,62 @@ models:
       - name: park_name
         tests:
           - not_null
+
+  - name: mart_marriage_monthly
+    description: "Clark County marriage licenses per month."
+    columns:
+      - name: license_month
+        tests:
+          - not_null
+
+  - name: mart_marriage_daily
+    description: "Marriage licenses per calendar day, for spotting Valentine's / NYE / novelty-date spikes."
+    columns:
+      - name: license_date
+        tests:
+          - not_null
+
+  - name: mart_marriage_by_origin
+    description: "Marriage licenses by mailing origin (US state, else country)."
+    columns:
+      - name: origin
+        tests:
+          - not_null
+
+  - name: mart_marriage_by_gender_year
+    description: "Same-sex vs different-sex marriage licenses per year."
+    columns:
+      - name: license_year
+        tests:
+          - not_null
+
+  - name: mart_lake_mead_monthly
+    description: "Monthly average / min / max Lake Mead elevation (feet)."
+    columns:
+      - name: reading_month
+        tests:
+          - not_null
+
+  - name: mart_weather_monthly
+    description: "Monthly average high/low and record high/low at the Las Vegas airport station."
+    columns:
+      - name: observed_month
+        tests:
+          - not_null
+
+  - name: mart_weather_extreme_days
+    description: "Count of 100F+ and 110F+ days per year, plus average daily high."
+    columns:
+      - name: observed_year
+        tests:
+          - not_null
+
+  - name: mart_lvcva_indicators
+    description: "Long-form monthly LVCVA indicators (metric, month, value): visitor volume, occupancy, ADR, airport passengers, gaming revenue by area."
+    columns:
+      - name: metric
+        tests:
+          - not_null
+      - name: indicator_month
+        tests:
+          - not_null

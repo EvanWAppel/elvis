@@ -21,6 +21,17 @@ fire_n = int(query("select count(*) as n from main.mart_fire_prevention_inspecti
 crime_n = int(query("select sum(incident_count) as n from main.mart_crime_monthly")["n"][0])
 permit_n = int(query("select sum(permit_count) as n from main.mart_permits_monthly")["n"][0])
 lic_n = int(query("select count(*) as n from main.mart_business_licenses")["n"][0])
+marriage_n = int(query("select sum(license_count) as n from main.mart_marriage_monthly")["n"][0])
+lake_ft = float(
+    query(
+        "select avg_elevation_ft as n from main.mart_lake_mead_monthly order by reading_month desc limit 1"
+    )["n"][0]
+)
+hot_days = int(
+    query(
+        "select days_110f_plus as n from main.mart_weather_extreme_days order by observed_year desc limit 1 offset 1"
+    )["n"][0]
+)
 
 c1, c2, c3 = st.columns(3)
 c1.metric("Public artworks", f"{art_n:,}", help="City of Las Vegas")
@@ -35,6 +46,11 @@ c4, c5, c6 = st.columns(3)
 c4.metric("Metro calls for service", f"{crime_n:,}", help="LVMPD, two most recent years")
 c5.metric("Building permits", f"{permit_n:,}", help="City of Las Vegas, 2004–2017")
 c6.metric("Business licenses", f"{lic_n:,}", help="City of Las Vegas")
+
+c7, c8, c9 = st.columns(3)
+c7.metric("Marriage licenses", f"{marriage_n:,}", help="Clark County, 2007–2024")
+c8.metric("Lake Mead elevation", f"{lake_ft:,.0f} ft", help="latest monthly average")
+c9.metric("110°F+ days last year", f"{hot_days}", help="Las Vegas airport station")
 
 st.divider()
 
@@ -56,7 +72,13 @@ with col_a:
         "valley's boom years.\n"
         "- **📋 Business Licenses** — a searchable registry of what businesses "
         "operate in the city.\n"
-        "- **🏠 Short-Term Rentals** & **🌳 Parks** — mapped City of Las Vegas rosters."
+        "- **🏠 Short-Term Rentals** & **🌳 Parks** — mapped City of Las Vegas rosters.\n"
+        "- **💍 Marriage Licenses** — the wedding capital's spikes, seasonality, "
+        "and where couples come from.\n"
+        "- **🎢 Tourism & Gaming** — LVCVA visitor volume, hotel rates, airport "
+        "passengers, and monthly gaming revenue by area.\n"
+        "- **🏜️ Lake Mead** & **🌡️ Desert Heat** — the Colorado River drought and "
+        "the valley's rising extreme-heat days."
     )
 
 with col_b:
@@ -71,5 +93,6 @@ with col_b:
     st.link_button("Source on GitHub ↗", "https://github.com/EvanWAppel/elvis")
 
 st.caption(
-    "Data: City of Las Vegas & Southern Nevada Health District open data portals."
+    "Data: City of Las Vegas, Clark County & LVMPD open data, SNHD, LVCVA, "
+    "USBR (Lake Mead), and NOAA."
 )

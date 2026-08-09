@@ -1,17 +1,27 @@
 """Build the Elvis DuckDB warehouse from Las Vegas / Clark County open data.
 
-Two upstream sources feed the ``raw`` schema of ``vegas.duckdb``, which dbt then
-transforms into staging + mart models:
+Several upstream sources feed the ``raw`` schema of ``vegas.duckdb``, which dbt
+then transforms into staging + mart models:
 
-    ArcGIS (City of Las Vegas org F1v0ufATbBQScMtY)
+    ArcGIS — City of Las Vegas org F1v0ufATbBQScMtY
         art_work_points               ~63 rows   (geocoded public art)
-        fire_prevention_inspections   ~3.9k rows (City of Las Vegas only)
+        fire_prevention_inspections   ~3.9k rows
+        building_permits              ~217k rows  (archived, with valuation)
+        business_licenses             ~212k rows  (non-spatial registry)
+        short_term_rentals            ~225 rows   (points, reprojected to WGS84)
+        parks                         ~89 rows    (polygon centroids)
+
+    ArcGIS — LVMPD org jjSk6t82vIntwDbs
+        crime_calls                   ~693k rows  (calls-for-service, recent years)
 
     SNHD nightly developer bundle (restaurants.zip)
-        snhd_inspections        ~118k rows  restaurant inspection facts (2020+)
-        snhd_establishments     ~36k rows   permit -> name / address / geo / grade
-        snhd_violations         ~900 rows   violation code -> description / demerits
-        snhd_inspection_types   7 rows       inspection_type_id -> label
+        snhd_inspections / snhd_establishments / snhd_violations / snhd_inspection_types
+
+    Time-series feeds
+        marriage_licenses   Clark County marriage licenses, one CSV per year
+        lake_mead           USBR RISE daily reservoir elevation
+        weather             NOAA NCEI GHCN-Daily, Las Vegas airport station
+        lvcva_indicators    LVCVA monthly tourism / gaming / airport indicators (XLSX)
 
 The SNHD open-data ArcGIS layer nulls out restaurant names and addresses, so the
 restaurant pages source the SNHD developer bundle instead, which carries the full
@@ -21,9 +31,13 @@ Usage:
     uv run python build_warehouse.py
 """
 
+import datetime
+import io
 import json
 import logging
+import re
 import tempfile
+import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
@@ -47,6 +61,34 @@ DB_PATH = Path(__file__).parent / "vegas.duckdb"
 
 SNHD_ZIP_URL = (
     "https://www.southernnevadahealthdistrict.org/restaurants/download/restaurants.zip"
+)
+
+# Some hosts 403 a bare urllib agent; send a browser-ish UA where needed.
+USER_AGENT = {"User-Agent": "Mozilla/5.0 (compatible; elvis-data/1.0)"}
+
+# Clark County marriage licenses — one record-level CSV per year (rehosted from
+# the County Clerk). Schema is stable across years.
+MARRIAGE_URL = "https://weddings.vegas/wp-content/uploads/2025/05/{year}-marriage.csv"
+MARRIAGE_YEARS = range(2007, 2026)  # 2007–2025
+
+# Lake Mead daily elevation, USBR RISE catalog item 6123 (CSV download form).
+LAKE_MEAD_URL = (
+    "https://data.usbr.gov/rise/api/result/download"
+    "?itemId=6123&type=csv&after=1935-01-01&before={before}"
+)
+
+# NOAA NCEI GHCN-Daily, Harry Reid International Airport station (no key needed).
+WEATHER_URL = (
+    "https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/"
+    "access/USW00023169.csv"
+)
+
+# LVCVA "Executive Summary of Southern Nevada Tourism Indicators" — the report
+# page links one wide-format monthly XLSX per year (visitor volume, occupancy,
+# ADR, airport passengers, and gaming revenue by area).
+LVCVA_REPORT_URL = (
+    "https://www.lvcva.com/research/reports/post/"
+    "lvcva-executive-summary-of-southern-nevada-tourism-indicators/"
 )
 # The SNHD exports are semicolon-delimited, unquoted, and Windows-1252 encoded.
 SNHD_ENCODING = "cp1252"
@@ -227,6 +269,131 @@ def load_snhd(con: duckdb.DuckDBPyConnection) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Time-series sources (marriage / weather / Lake Mead / LVCVA)                 #
+# --------------------------------------------------------------------------- #
+def _urlopen(url: str, headers: dict | None = None, timeout: int = 300):
+    return urllib.request.urlopen(
+        urllib.request.Request(url, headers=headers or {}), timeout=timeout
+    )
+
+
+def fetch_marriage() -> pd.DataFrame:
+    """Clark County marriage licenses, concatenated across years (subset of cols)."""
+    keep = {
+        "LicenseIssueDate",
+        "MailingState",
+        "MailingCountry",
+        "Party1Gender",
+        "Party2Gender",
+    }
+    frames = []
+    for year in MARRIAGE_YEARS:
+        log.info("Fetching marriage licenses %d ...", year)
+        try:
+            resp = _urlopen(MARRIAGE_URL.format(year=year), USER_AGENT)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:  # a year not (yet) posted at this path
+                log.warning("marriage: %d not available (404), skipping", year)
+                continue
+            raise
+        with resp as r:
+            frames.append(
+                pd.read_csv(
+                    io.BytesIO(r.read()),
+                    usecols=lambda c: c in keep,
+                    dtype=str,
+                    encoding="cp1252",
+                    encoding_errors="replace",
+                )
+            )
+    return pd.concat(frames, ignore_index=True)
+
+
+def fetch_lake_mead() -> pd.DataFrame:
+    """Daily Lake Mead elevation from the RISE CSV (skip the comment/preamble block)."""
+    before = datetime.datetime.now(tz=datetime.UTC).date().isoformat()
+    with _urlopen(LAKE_MEAD_URL.format(before=before)) as r:
+        text = r.read().decode("utf-8")
+    lines = text.splitlines()
+    start = next(i for i, ln in enumerate(lines) if "#SERIES DATA#" in ln)
+    df = pd.read_csv(io.StringIO("\n".join(lines[start + 1 :])))
+    return df.rename(
+        columns={"Datetime (UTC)": "datetime_utc", "Result": "elevation_ft"}
+    )[["datetime_utc", "elevation_ft"]]
+
+
+def fetch_weather() -> pd.DataFrame:
+    """GHCN-Daily observations for the Las Vegas airport station."""
+    keep = {"STATION", "DATE", "TMAX", "TMIN", "TAVG", "PRCP"}
+    with _urlopen(WEATHER_URL) as r:
+        return pd.read_csv(io.BytesIO(r.read()), usecols=lambda c: c in keep)
+
+
+def _parse_lvcva(data: bytes) -> pd.DataFrame:
+    """Melt one LVCVA summary workbook's Las Vegas sheet to (metric, month, value).
+
+    The sheet is wide: a month-date header row, then one indicator per row with
+    values in the odd columns and revision flags in the even columns. We take the
+    first date-header row (absolute values) and stop at the first blank label,
+    which excludes the "Change from Previous Year" section further down.
+
+    Date cells are matched as ``datetime.datetime`` (which ``pd.Timestamp``
+    subclasses): pandas types a month column as datetime64 only when every value
+    below the header is empty, so populated months arrive as plain datetimes.
+    """
+    xl = pd.ExcelFile(io.BytesIO(data))
+    sheet = next(s for s in xl.sheet_names if s.lower().startswith("las vegas"))
+    raw = pd.read_excel(io.BytesIO(data), sheet_name=sheet, header=None)
+
+    def is_date(v) -> bool:
+        # pd.Timestamp subclasses datetime; pd.NaT also passes isinstance, so
+        # exclude missing values explicitly.
+        return isinstance(v, datetime.datetime) and not pd.isna(v)
+
+    header_idx = next(
+        i for i in range(len(raw)) if sum(is_date(v) for v in raw.iloc[i]) >= 4
+    )
+    month_cols = [
+        (c, raw.iat[header_idx, c])
+        for c in range(raw.shape[1])
+        if is_date(raw.iat[header_idx, c])
+    ]
+
+    records = []
+    for i in range(header_idx + 1, len(raw)):
+        label = raw.iat[i, 0]
+        if pd.isna(label) or not str(label).strip():
+            break  # end of the absolute-values block
+        metric = re.sub(r"\s+", " ", str(label)).strip()
+        for col, month in month_cols:
+            val = raw.iat[i, col]
+            if pd.notna(val) and not isinstance(val, str):
+                records.append((metric, month.date().isoformat(), float(val)))
+    return pd.DataFrame(records, columns=["metric", "month", "value"])
+
+
+def fetch_lvcva() -> pd.DataFrame:
+    """Scrape the per-year XLSX links off the report page and melt each one."""
+    with _urlopen(LVCVA_REPORT_URL, USER_AGENT, timeout=120) as r:
+        html = r.read().decode("utf-8", "replace")
+    links = sorted(
+        set(re.findall(r'https://assets\.simpleviewcms\.com/[^"\']+?\.xlsx', html))
+    )
+    log.info("LVCVA: %d yearly workbooks found", len(links))
+    frames = []
+    for url in links:
+        name = url.rsplit("/", 1)[-1]
+        try:
+            with _urlopen(url, USER_AGENT, timeout=120) as r:
+                frames.append(_parse_lvcva(r.read()))
+        except Exception as exc:  # noqa: BLE001 — skip an unparseable year, keep the rest
+            log.warning("LVCVA: skipping %s (%s)", name, exc)
+    combined = pd.concat(frames, ignore_index=True)
+    # Overlapping years (revised vs. year-end) can repeat a month; keep the last.
+    return combined.drop_duplicates(subset=["metric", "month"], keep="last")
+
+
+# --------------------------------------------------------------------------- #
 def load_raw(con: duckdb.DuckDBPyConnection, table: str, df: pd.DataFrame) -> None:
     con.execute("CREATE SCHEMA IF NOT EXISTS raw")
     con.register("_df", df)
@@ -281,6 +448,18 @@ def main() -> None:
             "parks",
             fetch_layer("CLV_Parks", layer=113, centroid=True),
         )
+
+        log.info("Fetching marriage licenses (Clark County) ...")
+        load_raw(con, "marriage_licenses", fetch_marriage())
+
+        log.info("Fetching Lake Mead elevation (USBR RISE) ...")
+        load_raw(con, "lake_mead", fetch_lake_mead())
+
+        log.info("Fetching weather (NOAA NCEI GHCN-Daily) ...")
+        load_raw(con, "weather", fetch_weather())
+
+        log.info("Fetching LVCVA tourism / gaming / airport indicators ...")
+        load_raw(con, "lvcva_indicators", fetch_lvcva())
 
         log.info("Loading SNHD restaurant bundle ...")
         load_snhd(con)
