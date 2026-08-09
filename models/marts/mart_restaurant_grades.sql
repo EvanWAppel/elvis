@@ -1,24 +1,21 @@
 {{ config(materialized='table') }}
 
+-- One row per permit (restaurant) summarizing its inspection history.
+-- The public SNHD open-data export nulls out restaurant_name / address /
+-- current_grade, so this mart is keyed on permit_number and derives the
+-- latest grade from the populated per-inspection `inspection_grade` field
+-- rather than the (null) `current_grade` column.
+
 with inspections as (
     select * from {{ ref('stg_snhd_inspections') }}
     where inspection_date is not null
 ),
 
-latest_per_restaurant as (
+latest_grade as (
     select
         permit_number,
-        restaurant_name,
-        location_name,
-        category_name,
-        address,
-        city,
-        state,
-        zip,
-        current_grade,
-        current_demerits,
-        date_current,
-        permit_status,
+        inspection_grade as latest_grade,
+        inspection_date  as latest_inspection_date,
         row_number() over (
             partition by permit_number
             order by inspection_date desc
@@ -26,13 +23,13 @@ latest_per_restaurant as (
     from inspections
 ),
 
-restaurant_history as (
+history as (
     select
         permit_number,
-        count(*)                          as total_inspections,
-        avg(inspection_demerits)          as avg_demerits,
-        min(inspection_date)              as first_inspection,
-        max(inspection_date)              as last_inspection,
+        count(*)                           as total_inspections,
+        round(avg(inspection_demerits), 1) as avg_demerits,
+        min(inspection_date)               as first_inspection,
+        max(inspection_date)               as last_inspection,
         sum(case when inspection_result = 'Compliant' then 1 else 0 end)  as compliant_count,
         sum(case when inspection_result != 'Compliant' then 1 else 0 end) as non_compliant_count
     from inspections
@@ -40,27 +37,15 @@ restaurant_history as (
 )
 
 select
-    l.permit_number,
-    l.restaurant_name,
-    l.location_name,
-    l.category_name,
-    l.address,
-    l.city,
-    l.state,
-    l.zip,
-    l.current_grade,
-    l.current_demerits,
-    l.date_current,
-    l.permit_status,
+    h.permit_number,
+    g.latest_grade,
+    g.latest_inspection_date,
     h.total_inspections,
-    round(h.avg_demerits, 1)   as avg_demerits,
+    h.avg_demerits,
     h.first_inspection,
     h.last_inspection,
     h.compliant_count,
     h.non_compliant_count,
-    round(
-        h.compliant_count / nullif(h.total_inspections, 0) * 100, 1
-    )                          as compliance_rate_pct
-from latest_per_restaurant l
-join restaurant_history h using (permit_number)
-where l.rn = 1
+    round(h.compliant_count / nullif(h.total_inspections, 0) * 100, 1) as compliance_rate_pct
+from history h
+join latest_grade g on h.permit_number = g.permit_number and g.rn = 1

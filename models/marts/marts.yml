@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: mart_restaurant_grades
-    description: "One row per restaurant with current grade and historical inspection summary"
+    description: "One row per permit (restaurant) summarizing inspection history, keyed on permit_number. The public SNHD export nulls out name/address/current_grade, so the latest grade is derived from per-inspection grades."
     columns:
       - name: permit_number
         description: "Unique restaurant permit number"
@@ -10,8 +10,8 @@ models:
           - not_null
           - unique
 
-      - name: current_grade
-        description: "Most recent health grade"
+      - name: latest_grade
+        description: "Grade from the most recent inspection (derived from inspection_grade)"
 
       - name: compliance_rate_pct
         description: "Percentage of inspections with a Compliant result"

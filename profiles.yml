@@ -1,0 +1,10 @@
+# Project-local dbt profile. Run dbt with `--profiles-dir .`
+# DuckDB warehouse is a single file (vegas.duckdb) built by build_warehouse.py.
+elvis:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: 'vegas.duckdb'
+      schema: main
+      threads: 4

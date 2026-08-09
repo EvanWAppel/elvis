@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Elvis — A Las Vegas Open-Data Pipeline · Evan Appel</title>
-<meta name="description" content="An analytics-engineering portfolio project: raw Las Vegas open data modeled with dbt on Snowflake and served through an interactive map. Built by Evan Appel." />
+<meta name="description" content="An analytics-engineering portfolio project: raw Las Vegas open data modeled with dbt in DuckDB and served through an interactive explorer. Built by Evan Appel." />
 <meta property="og:title" content="Elvis — A Las Vegas Open-Data Pipeline" />
-<meta property="og:description" content="Raw civic data → Snowflake → dbt → an interactive public-art map. An analytics-engineering portfolio project by Evan Appel." />
+<meta property="og:description" content="Raw civic data → DuckDB → dbt → an interactive open-data explorer. An analytics-engineering portfolio project by Evan Appel." />
 <meta property="og:type" content="website" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -180,8 +180,8 @@
     <h1>Turning raw Las&nbsp;Vegas<br />civic data into a<br /><span class="accent">living map.</span></h1>
     <p class="lede">
       <strong>Elvis</strong> is an end-to-end analytics pipeline: messy public datasets from the
-      Las Vegas Valley, loaded into Snowflake, modeled with dbt, and served through an
-      interactive map of the city's public art collection.
+      Las Vegas Valley, loaded into DuckDB, modeled with dbt, and served through an
+      interactive explorer of the valley's public art and health &amp; safety inspections.
     </p>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://elvis-production-e07a.up.railway.app" id="live-app" target="_blank" rel="noopener">▶ Explore the live map</a>
@@ -190,7 +190,7 @@
     </div>
     <div class="stats">
       <div class="stat"><div class="n">3</div><div class="l">public datasets modeled</div></div>
-      <div class="stat"><div class="n">dbt&nbsp;+&nbsp;Snowflake</div><div class="l">modern data stack</div></div>
+      <div class="stat"><div class="n">dbt&nbsp;+&nbsp;DuckDB</div><div class="l">modern data stack</div></div>
       <div class="stat"><div class="n">Streamlit</div><div class="l">interactive delivery</div></div>
     </div>
   </div>
@@ -209,10 +209,10 @@
         <span class="tech">CSV / GeoJSON</span>
       </div>
       <div class="stage">
-        <div class="ico">❄️</div>
+        <div class="ico">🦆</div>
         <h4>Load</h4>
-        <p>A Python loader lands raw files into a Snowflake <code style="font-size:.9em">RAW</code> schema.</p>
-        <span class="tech">Python · Polars</span>
+        <p>A Python loader pulls open data straight into a DuckDB <code style="font-size:.9em">RAW</code> schema.</p>
+        <span class="tech">Python · DuckDB</span>
       </div>
       <div class="stage">
         <div class="ico">🔧</div>
@@ -229,7 +229,7 @@
       <div class="stage">
         <div class="ico">🗺️</div>
         <h4>Serve</h4>
-        <p>A Streamlit app maps public art with filters &amp; detail panels.</p>
+        <p>A multi-page Streamlit app: a public-art map plus county-wide inspection analytics.</p>
         <span class="tech">Streamlit · pydeck</span>
       </div>
     </div>
@@ -243,8 +243,8 @@
     <p class="section-sub">The demo is the front door — but the real work is the engineering behind it. Take a look.</p>
     <div class="cards">
       <div class="card">
-        <h3>🗺️ The live map</h3>
-        <p>An interactive map of Las Vegas public art. Filter by council ward, click any point, and preview the artist, medium, and location.</p>
+        <h3>🗺️ The live app</h3>
+        <p>An interactive explorer: map the City's public art by ward, then dig into county-wide restaurant-inspection grades, top violations, and compliance trends.</p>
         <a class="more" href="https://elvis-production-e07a.up.railway.app" data-live target="_blank" rel="noopener">Launch the app →</a>
       </div>
       <div class="card">
@@ -254,7 +254,7 @@
       </div>
       <div class="card">
         <h3>💻 The source code</h3>
-        <p>The full repo — SQL models, the Snowflake loader, the Streamlit app, pre-commit hooks, and tests. Read every line.</p>
+        <p>The full repo — SQL models, the DuckDB loader, the multi-page Streamlit app, pre-commit hooks, and tests. Read every line.</p>
         <a class="more" href="https://github.com/EvanWAppel/elvis" target="_blank" rel="noopener">Browse on GitHub →</a>
       </div>
     </div>
@@ -269,7 +269,7 @@
       <div class="steps">
         <ol>
           <li>Find open data</li>
-          <li>Load to Snowflake</li>
+          <li>Load to DuckDB</li>
           <li>Model with dbt</li>
           <li>Test &amp; document</li>
           <li>Serve a product</li>
@@ -283,7 +283,7 @@
         <p>Three free datasets from the Las Vegas Valley: the City's <strong>public art collection</strong> (geocoded points), <strong>Southern Nevada Health District restaurant inspections</strong>, and <strong>fire-prevention inspections</strong> of multi-unit residential properties.</p>
 
         <h3>Load</h3>
-        <p>A Python script reads each CSV with <code>Polars</code> and batch-inserts it into a Snowflake <code>RAW</code> schema — idempotent, with an <code>--overwrite</code> flag so reloads are safe.</p>
+        <p>A dependency-light Python script pulls each dataset straight from the City &amp; SNHD open-data APIs and loads it into a <code>DuckDB</code> <code>RAW</code> schema — fully re-runnable, no warehouse credentials required.</p>
 
         <h3>Model</h3>
         <p>dbt does the heavy lifting across two layers. <strong>Staging</strong> models rename columns, cast types, and split the art collection's pipe-delimited <code>description</code> field into clean <code>artist</code>, <code>medium</code>, <code>location</code>, <code>address</code>, and <code>ward</code> columns. <strong>Mart</strong> models shape analytics-ready tables: restaurant grades over time, top violations, and map-ready art points.</p>
@@ -292,13 +292,13 @@
         <p>Every mart carries dbt tests — <code>not_null</code>, <code>unique</code>, and relationship checks — and column-level descriptions that flow straight into the generated docs site and lineage graph. Pre-commit hooks (ruff, ty) keep the Python clean.</p>
 
         <h3>Serve</h3>
-        <p>The final mart powers a <strong>Streamlit</strong> app: a <code>pydeck</code> scatter map of every artwork, filterable by council ward, with a detail panel showing each piece's image, artist, and medium. What started as a string blob is now a product you can click.</p>
+        <p>The final mart powers a <strong>Streamlit</strong> app: a <code>pydeck</code> map of every artwork filterable by council ward, plus <strong>county-wide</strong> restaurant-inspection analytics (grade distribution, top violations, compliance trends) and a fire-inspection breakdown. What started as string blobs is now a product you can click.</p>
 
         <div class="tags">
-          <span class="tag">Snowflake</span>
+          <span class="tag">DuckDB</span>
           <span class="tag">dbt</span>
           <span class="tag">Python</span>
-          <span class="tag">Polars</span>
+          <span class="tag">pandas</span>
           <span class="tag">Streamlit</span>
           <span class="tag">pydeck</span>
           <span class="tag">SQL</span>

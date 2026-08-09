@@ -3,6 +3,10 @@
 with inspections as (
     select * from {{ ref('stg_fire_prevention_inspections') }}
     where inspection_month is not null
+      -- The source injects "Monthly Total" summary rows (null address) that
+      -- are period aggregates, not real properties. Keep only actual buildings.
+      and address is not null
+      and property_name <> 'Monthly Total'
 )
 
 select

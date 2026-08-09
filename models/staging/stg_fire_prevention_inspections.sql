@@ -5,21 +5,21 @@ with source as (
 renamed as (
     select
         objectid,
-        name                                                    as property_name,
+        name                                            as property_name,
         address,
         city,
         state,
         zip,
-        try_to_date(left(i_moyr, 10))                          as inspection_month,
-        i_fy::integer                                          as fiscal_year,
-        imps::integer                                          as inspections_conducted,
-        no_of_units::integer                                   as unit_count,
-        try_to_date(left(last_inspected, 10))                  as last_inspected_date,
-        try_to_number(no_violations_written)                   as violations_written,
-        try_to_number(no_dwellings_insp_mtd)                   as dwellings_inspected_mtd,
-        try_to_number(no_dwellings_insp_cumulative)            as dwellings_inspected_cumulative,
-        try_to_number(no_dwellings_viol_written)               as dwellings_with_violations,
-        try_to_number(pcnt_dwellings_violations)               as pct_dwellings_with_violations,
+        try_cast(i_moyr as timestamp)::date             as inspection_month,
+        try_cast(i_fy as integer)                       as fiscal_year,
+        try_cast(imps as integer)                       as inspections_conducted,
+        try_cast(no_of_units as integer)                as unit_count,
+        try_cast(last_inspected as timestamp)::date     as last_inspected_date,
+        try_cast(no_violations_written as double)       as violations_written,
+        try_cast(no_dwellings_insp_mtd as double)       as dwellings_inspected_mtd,
+        try_cast(no_dwellings_insp_cumulative as double) as dwellings_inspected_cumulative,
+        try_cast(no_dwellings_viol_written as double)   as dwellings_with_violations,
+        try_cast(pcnt_dwellings_violations as double)   as pct_dwellings_with_violations,
         location
     from source
 )

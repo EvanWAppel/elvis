@@ -1,0 +1,16 @@
+[project]
+name = "elvis"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5.5",
+    "pandas>=3.0.5",
+    "pydeck>=0.9.3",
+    "streamlit>=1.61.1",
+]
+
+[dependency-groups]
+dev = [
+    "dbt-duckdb>=1.11.0",
+    "ruff>=0.16.2",
+]

@@ -1,1 +1,0 @@
-select distinct inspection_result from PC_DBT_DB.dbt_EAppel.stg_snhd_inspections order by 1
