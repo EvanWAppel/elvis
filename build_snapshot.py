@@ -18,7 +18,8 @@ misses the ward whenever there are fewer than 5 parts, and trips over typo
 variants ("Ward 5 (CLV Collection", "Colllection"). Here we instead pull the
 "Ward N" token out of the whole description by regex and normalize it to
 "Ward N". Five UNLV/county pieces legitimately have no ward and stay blank.
-The dbt model should be updated to match (REGEXP_SUBSTR) for parity.
+The dbt model (stg_art_work_points.sql) mirrors this logic with FLATTEN +
+REGEXP_SUBSTR so the Snowflake mart and this snapshot stay in parity.
 
 Intentionally dependency-free (standard library only) so it runs in any
 environment without touching the project's dependencies. Run with:

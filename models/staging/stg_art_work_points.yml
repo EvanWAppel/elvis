@@ -28,7 +28,7 @@ models:
         description: "Street address of the artwork, parsed from pipe-delimited description"
 
       - name: ward
-        description: "City ward, parsed from pipe-delimited description"
+        description: "City council ward (normalized to 'Ward N'), extracted by regex from the description. Null for UNLV campus / county pieces that have no council ward."
 
       - name: latitude
         description: "Latitude coordinate"
