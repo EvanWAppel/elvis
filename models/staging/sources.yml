@@ -6,7 +6,13 @@ sources:
     schema: raw
     tables:
       - name: snhd_inspections
-        description: "Southern Nevada Health District restaurant inspection records (Clark County-wide). Public open-data export: inspection facts only — restaurant name/address/grade columns are null."
+        description: "SNHD restaurant inspection facts (2020-present) from the nightly developer bundle. Keyed on permit_number; violation codes are comma-separated."
+      - name: snhd_establishments
+        description: "SNHD restaurant establishments: permit_number to restaurant name, address, geo coordinates, and current grade."
+      - name: snhd_violations
+        description: "SNHD violation-code reference: code to description and demerit weight."
+      - name: snhd_inspection_types
+        description: "Lookup mapping inspection_type_id to a human-readable inspection type."
       - name: fire_prevention_inspections
         description: "City of Las Vegas fire prevention inspection records for multi-unit residential properties"
       - name: art_work_points
