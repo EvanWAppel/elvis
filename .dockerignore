@@ -1,0 +1,13 @@
+.venv
+.git
+__pycache__
+*.pyc
+target
+logs
+vegas.duckdb
+vegas.duckdb.wal
+.ruff_cache
+.streamlit
+.DS_Store
+scratch.ipynb
+site
