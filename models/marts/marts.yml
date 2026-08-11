@@ -178,12 +178,29 @@ models:
           - not_null
 
   - name: mart_short_term_rentals
-    description: "Licensed short-term rentals with WGS84 coordinates for mapping."
+    description: "Metro-wide short-term rentals (Las Vegas, North Las Vegas, Henderson) with jurisdiction and WGS84 coordinates for mapping."
     columns:
+      - name: jurisdiction
+        tests:
+          - not_null
       - name: latitude
         tests:
           - not_null
       - name: longitude
+        tests:
+          - not_null
+
+  - name: mart_henderson_permits
+    description: "City of Henderson building permits per month by case type."
+    columns:
+      - name: issue_month
+        tests:
+          - not_null
+
+  - name: mart_henderson_licenses_by_type
+    description: "City of Henderson business license counts (and active counts) by license type."
+    columns:
+      - name: license_type
         tests:
           - not_null
 

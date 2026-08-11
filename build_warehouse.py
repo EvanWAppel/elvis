@@ -409,6 +409,115 @@ def fetch_parks_metro() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def fetch_str_metro() -> pd.DataFrame:
+    """Short-term rental registrations across Las Vegas, North Las Vegas, Henderson."""
+    rows: list[dict] = []
+
+    log.info("Fetching Las Vegas short-term rentals ...")
+    for attrs, geom in fetch_features(
+        f"{CLARK}/OpenData/ShortTermRentalData/MapServer/0",
+        out_fields="BUS_NAME,LICSTATUS,BUS_TYPE,ISSDTTM,BUS_ADDRES",
+        ssl_verify=False,
+    ):
+        lon, lat = _centroid(geom)
+        rows.append(
+            {
+                "jurisdiction": "Las Vegas",
+                "business_name": attrs.get("BUS_NAME"),
+                "status": attrs.get("LICSTATUS"),
+                "category": attrs.get("BUS_TYPE"),
+                "address": attrs.get("BUS_ADDRES"),
+                "issued_date": _epoch_to_date(attrs.get("ISSDTTM")),
+                "latitude": lat,
+                "longitude": lon,
+            }
+        )
+
+    log.info("Fetching North Las Vegas short-term rentals ...")
+    for attrs, geom in fetch_features(
+        f"{CLARK}/OpenData/ShortTermRentalData/MapServer/1",
+        out_fields="ADDRESS,OWNER,APPROVAL_D",
+        ssl_verify=False,
+    ):
+        lon, lat = _centroid(geom)
+        rows.append(
+            {
+                "jurisdiction": "North Las Vegas",
+                "business_name": attrs.get("OWNER"),
+                "status": "Approved",
+                "category": None,
+                "address": attrs.get("ADDRESS"),
+                "issued_date": _epoch_to_date(attrs.get("APPROVAL_D")),
+                "latitude": lat,
+                "longitude": lon,
+            }
+        )
+
+    log.info("Fetching Henderson short-term rentals ...")
+    for attrs, geom in fetch_features(
+        f"{HENDERSON}/public/OpenDataDevelopment/MapServer/14",
+        out_fields="BUSINESS_NAME,STATUS,REGISTERED_ADDRESS,LICENSE_ISSUE_DATE,MAX_OCCUPANCY",
+    ):
+        lon, lat = _centroid(geom)
+        occ = attrs.get("MAX_OCCUPANCY")
+        rows.append(
+            {
+                "jurisdiction": "Henderson",
+                "business_name": attrs.get("BUSINESS_NAME"),
+                "status": attrs.get("STATUS"),
+                "category": f"Max occupancy {int(occ)}" if occ else None,
+                "address": attrs.get("REGISTERED_ADDRESS"),
+                "issued_date": _epoch_to_date(attrs.get("LICENSE_ISSUE_DATE")),
+                "latitude": lat,
+                "longitude": lon,
+            }
+        )
+
+    return pd.DataFrame(rows)
+
+
+def fetch_henderson_permits() -> pd.DataFrame:
+    """City of Henderson building permits (counts by type/date; no valuation)."""
+    log.info("Fetching Henderson building permits ...")
+    rows = []
+    for attrs, _geom in fetch_features(
+        f"{HENDERSON}/public/OpenDevPermits/MapServer/1",
+        out_fields="CASETYPE,STATUS,ISSUEDATE,DESCRIPTION,MAIN_ADDRESS_LINE1",
+        geometry=False,
+    ):
+        rows.append(
+            {
+                "case_type": attrs.get("CASETYPE"),
+                "status": attrs.get("STATUS"),
+                "issue_date": _epoch_to_date(attrs.get("ISSUEDATE")),
+                "description": attrs.get("DESCRIPTION"),
+                "address": attrs.get("MAIN_ADDRESS_LINE1"),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def fetch_henderson_licenses() -> pd.DataFrame:
+    """City of Henderson business licenses."""
+    log.info("Fetching Henderson business licenses ...")
+    rows = []
+    for attrs, _geom in fetch_features(
+        f"{HENDERSON}/public/BusLicense/MapServer/4",
+        out_fields="DESCRIPTION,CASETYPE,STATUS,ISSUEDATE,MAIN_ADDRESS_LINE1",
+        geometry=False,
+    ):
+        rows.append(
+            {
+                "business_name": attrs.get("DESCRIPTION"),
+                "license_type": attrs.get("CASETYPE"),
+                "status": attrs.get("STATUS"),
+                "issue_date": _epoch_to_date(attrs.get("ISSUEDATE")),
+                "address": attrs.get("MAIN_ADDRESS_LINE1"),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 # --------------------------------------------------------------------------- #
 # SNHD developer bundle                                                        #
 # --------------------------------------------------------------------------- #
@@ -703,12 +812,14 @@ def main() -> None:
         log.info("Fetching business_licenses (ArcGIS) ...")
         load_raw(con, "business_licenses", fetch_layer("Business_Licenses_OpenData"))
 
-        log.info("Fetching short_term_rentals (ArcGIS) ...")
-        load_raw(
-            con,
-            "short_term_rentals",
-            fetch_layer("CLV_Short_Term_Rental", layer=1, geometry=True),
-        )
+        log.info("Fetching short_term_rentals (metro-wide, ArcGIS) ...")
+        load_raw(con, "short_term_rentals", fetch_str_metro())
+
+        log.info("Fetching Henderson building permits (ArcGIS) ...")
+        load_raw(con, "henderson_permits", fetch_henderson_permits())
+
+        log.info("Fetching Henderson business licenses (ArcGIS) ...")
+        load_raw(con, "henderson_licenses", fetch_henderson_licenses())
 
         log.info("Fetching parks (metro-wide, ArcGIS) ...")
         load_raw(con, "parks", fetch_parks_metro())

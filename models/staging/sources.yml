@@ -24,7 +24,11 @@ sources:
       - name: business_licenses
         description: "City of Las Vegas business license registry: name, type, status, zip, city-limits flag (non-spatial)."
       - name: short_term_rentals
-        description: "City of Las Vegas short-term rental licenses with status, category, and WGS84 point coordinates."
+        description: "Metro-wide short-term rentals (Las Vegas, North Las Vegas, Henderson) with jurisdiction, status, category, issue date, and WGS84 coordinates."
+      - name: henderson_permits
+        description: "City of Henderson building permits: case type, status, issue date, description, address (no valuation)."
+      - name: henderson_licenses
+        description: "City of Henderson business licenses: name, license type, status, issue date, address."
       - name: parks
         description: "Metro-wide parks (Las Vegas, Henderson, unincorporated Clark County, North Las Vegas) with jurisdiction, acreage, WGS84 centroid, and a has_water flag."
       - name: marriage_licenses

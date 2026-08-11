@@ -93,3 +93,54 @@ type_chart = (
 )
 st.altair_chart(type_chart, width="stretch")
 st.dataframe(by_type, width="stretch", hide_index=True)
+
+st.divider()
+
+# --- Henderson permits (counts only — the Henderson feed carries no valuation) ---
+st.header("🏙️ Henderson permits")
+st.caption(
+    "City of Henderson building permits. Henderson's feed has no valuation, so "
+    "this is by permit count — but it runs to the present, unlike the archived "
+    "Las Vegas series above."
+)
+hen_monthly = query(
+    """
+    select issue_month, sum(permit_count) as permit_count
+    from main.mart_henderson_permits
+    group by 1
+    order by 1
+    """
+)
+hen_line = (
+    alt.Chart(hen_monthly)
+    .mark_area(color="#e8590c", opacity=0.7)
+    .encode(
+        x=alt.X("issue_month:T", title=None),
+        y=alt.Y("permit_count:Q", title="Permits"),
+        tooltip=[
+            alt.Tooltip("issue_month:T", title="Month"),
+            alt.Tooltip("permit_count:Q", title="Permits", format=","),
+        ],
+    )
+)
+st.altair_chart(hen_line, width="stretch")
+
+hen_types = query(
+    """
+    select case_type, sum(permit_count) as permit_count
+    from main.mart_henderson_permits
+    group by 1
+    order by permit_count desc
+    limit 12
+    """
+)
+hen_type_chart = (
+    alt.Chart(hen_types)
+    .mark_bar(color="#e8590c")
+    .encode(
+        x=alt.X("permit_count:Q", title="Permits"),
+        y=alt.Y("case_type:N", sort="-x", title=None),
+        tooltip=["case_type", alt.Tooltip("permit_count:Q", title="Permits", format=",")],
+    )
+)
+st.altair_chart(hen_type_chart, width="stretch")

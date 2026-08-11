@@ -5,16 +5,14 @@ with strs as (
 )
 
 select
-    license_no,
+    jurisdiction,
     business_name,
-    business_type,
+    status,
     category,
-    license_status,
     address,
     issued_date,
-    expires_date,
     latitude,
     longitude
 from strs
 where latitude is not null and longitude is not null
-order by business_name
+order by jurisdiction, business_name
