@@ -15,6 +15,8 @@ select
     city,
     zip,
     unit_count,
+    any_value(latitude)                                 as latitude,
+    any_value(longitude)                                as longitude,
     count(*)                                            as inspection_count,
     max(last_inspected_date)                            as most_recent_inspection,
     sum(violations_written)                             as total_violations,

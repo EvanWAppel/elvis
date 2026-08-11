@@ -20,7 +20,10 @@ renamed as (
         try_cast(no_dwellings_insp_cumulative as double) as dwellings_inspected_cumulative,
         try_cast(no_dwellings_viol_written as double)   as dwellings_with_violations,
         try_cast(pcnt_dwellings_violations as double)   as pct_dwellings_with_violations,
-        location
+        location,
+        -- Location arrives as a "(lat, lng)" string; pull the two coordinates.
+        try_cast(regexp_extract(location, '\(([-0-9.]+),', 1) as double)   as latitude,
+        try_cast(regexp_extract(location, ',\s*([-0-9.]+)\)', 1) as double) as longitude
     from source
 )
 

@@ -1,6 +1,7 @@
 """LVMPD calls-for-service — recent-year patterns across type, time, and place."""
 
 import altair as alt
+import pandas as pd
 import pydeck as pdk
 import streamlit as st
 
@@ -116,28 +117,72 @@ st.altair_chart(heatmap, width="stretch")
 
 # --- Map (sampled) ---
 st.subheader("Where calls happen")
-st.caption("A random sample of ~12k geolocated calls, aggregated into a hex grid.")
+st.caption(
+    "A random sample of ~12k geolocated calls, binned into a hex grid over the "
+    "valley. Click a hexagon to see the calls there."
+)
 sample = query(
     """
-    select latitude, longitude, incident_type, address
+    select latitude, longitude, incident_type, classification, address
     from main.mart_crime_map_sample
     """
 )
 layer = pdk.Layer(
     "HexagonLayer",
+    id="hex",
     data=sample,
     get_position=["longitude", "latitude"],
-    radius=200,
-    elevation_scale=4,
-    elevation_range=[0, 1000],
+    radius=250,
+    # Shorter, less-steep pillars so the road network underneath stays readable.
+    elevation_scale=5,
+    elevation_range=[0, 700],
     extruded=True,
     pickable=True,
-    coverage=0.9,
+    auto_highlight=True,
+    coverage=0.8,
 )
 view_state = pdk.ViewState(
     latitude=sample["latitude"].mean(),
     longitude=sample["longitude"].mean(),
     zoom=10,
-    pitch=40,
+    pitch=35,
 )
-st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
+deck = pdk.Deck(
+    layers=[layer],
+    initial_view_state=view_state,
+    # Carto Positron: a light basemap with clear roads and labels, no API token.
+    map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+)
+event = st.pydeck_chart(
+    deck, on_select="rerun", selection_mode="single-object", key="crime_hex"
+)
+
+# --- Data card for the clicked hexagon ---
+picked = []
+if event and getattr(event, "selection", None):
+    picked = (event.selection.get("objects") or {}).get("hex", [])
+if picked:
+    obj = picked[0]
+    points = obj.get("points", [])
+    # deck.gl wraps each binned record as {"source": <row>}; fall back to the row.
+    rows = pd.DataFrame([p.get("source", p) for p in points]) if points else pd.DataFrame()
+    count = len(rows) if not rows.empty else int(obj.get("elevationValue", 0))
+    st.markdown(f"### 📍 {count:,} calls in this hexagon")
+    if not rows.empty:
+        top = (
+            rows["incident_type"].value_counts().head(8).rename_axis("Call type")
+            .reset_index(name="Calls")
+        )
+        c_a, c_b = st.columns([1, 1])
+        with c_a:
+            st.caption("Top call types here")
+            st.dataframe(top, width="stretch", hide_index=True)
+        with c_b:
+            st.caption("Sample of calls (address)")
+            st.dataframe(
+                rows[["incident_type", "address"]].head(12),
+                width="stretch",
+                hide_index=True,
+            )
+else:
+    st.caption("👆 No hexagon selected — click one on the map above.")
