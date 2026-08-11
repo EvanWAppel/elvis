@@ -254,7 +254,7 @@ models:
           - not_null
 
   - name: mart_air_quality_daily
-    description: "Daily worst-site AQI and average concentration by pollutant (PM2.5 / ozone) for Clark County. Empty without AQS credentials at build time."
+    description: "Daily worst-site AQI and average concentration by pollutant (PM2.5 / ozone) across the Las Vegas metro (Clark County)."
 
   - name: mart_air_quality_monthly
     description: "Monthly average and peak AQI by pollutant for Clark County."

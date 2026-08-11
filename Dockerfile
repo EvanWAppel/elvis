@@ -9,18 +9,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # App source.
 COPY . .
 
-# Optional EPA AQS credentials for the air-quality dataset. Passed as build args
-# (Railway forwards service variables to the build); if unset, build_warehouse
-# skips air quality and everything else still builds.
-ARG AQS_EMAIL=""
-ARG AQS_KEY=""
-
 # Bake the DuckDB warehouse into the image at build time. Railway's release
 # phase runs in a throwaway container, so the build must happen here (fetches
 # the SNHD bundle + ArcGIS layers, then materializes the dbt marts). The DB
 # stays out of git and is rebuilt fresh on every deploy.
-RUN AQS_EMAIL="$AQS_EMAIL" AQS_KEY="$AQS_KEY" \
-    python build_warehouse.py && dbt build --profiles-dir .
+RUN python build_warehouse.py && dbt build --profiles-dir .
 
 # Railway injects $PORT at runtime; default to 8501 for local runs.
 EXPOSE 8501

@@ -7,29 +7,14 @@ from app_db import query
 
 st.title("💨 Air Quality")
 st.caption(
-    "EPA Air Quality System daily AQI for Clark County — PM2.5 (fine particulates) "
-    "and ozone. Lower AQI is cleaner air; 50+ is 'Moderate', 100+ is unhealthy "
-    "for sensitive groups."
+    "EPA Air Quality System daily AQI across the Las Vegas metro (Clark County) — "
+    "PM2.5 (fine particulates) and ozone. Lower AQI is cleaner air; 50+ is "
+    "'Moderate', 100+ is unhealthy for sensitive groups."
 )
-
-# The dataset only exists when the warehouse was built with AQS credentials.
-exists = query(
-    """
-    select count(*) as n
-    from information_schema.tables
-    where table_schema = 'main' and table_name = 'mart_air_quality_daily'
-    """
-)["n"][0]
-if not exists:
-    st.info(
-        "Air-quality data isn't loaded in this build. It requires free EPA AQS "
-        "credentials (`AQS_EMAIL` / `AQS_KEY`) at warehouse-build time."
-    )
-    st.stop()
 
 daily = query("select observed_date, parameter, max_aqi from main.mart_air_quality_daily")
 if daily.empty:
-    st.info("No air-quality rows were returned by the AQS API for this build.")
+    st.info("No air-quality data is loaded in this build.")
     st.stop()
 
 # --- KPIs ---

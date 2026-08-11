@@ -35,8 +35,8 @@ import datetime
 import io
 import json
 import logging
-import os
 import re
+import socket
 import tempfile
 import urllib.error
 import urllib.parse
@@ -51,6 +51,20 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
 )
 log = logging.getLogger("build_warehouse")
+
+
+# Some upstreams (notably aqs.epa.gov) advertise an AAAA record but have broken
+# IPv6, so a default connect hangs in SYN_SENT until timeout. Prefer IPv4 for all
+# fetches, falling back to whatever's available if a host is IPv4-less.
+_orig_getaddrinfo = socket.getaddrinfo
+
+
+def _ipv4_first(*args, **kwargs):
+    results = _orig_getaddrinfo(*args, **kwargs)
+    return [r for r in results if r[0] == socket.AF_INET] or results
+
+
+socket.getaddrinfo = _ipv4_first
 
 ORG = "https://services1.arcgis.com/F1v0ufATbBQScMtY/arcgis/rest/services"
 # LVMPD publishes calls-for-service in its own ArcGIS Online org, not the City's.
@@ -92,10 +106,10 @@ LVCVA_REPORT_URL = (
     "lvcva-executive-summary-of-southern-nevada-tourism-indicators/"
 )
 
-# EPA AQS daily air-quality summaries for Clark County (FIPS state 32, county
-# 003). Requires free credentials, read from the environment so the key stays
-# out of git; the loader skips gracefully when they're absent.
-AQS_URL = "https://aqs.epa.gov/data/api/dailyData/byCounty"
+# EPA AQS pre-generated daily files: keyless, static, nationwide. We download one
+# file per pollutant-year and filter to Clark County (FIPS 32/003), which spans
+# the Las Vegas metro. No API key needed, and no rate limits.
+AQS_FILE_URL = "https://aqs.epa.gov/aqsweb/airdata/daily_{param}_{year}.zip"
 AQS_STATE, AQS_COUNTY = "32", "003"
 AQS_PARAMS = {"88101": "PM2.5", "44201": "Ozone"}  # param code -> label
 AQS_START_YEAR = 2015
@@ -403,48 +417,45 @@ def fetch_lvcva() -> pd.DataFrame:
 
 
 def fetch_air_quality() -> pd.DataFrame:
-    """EPA AQS daily PM2.5 / ozone for Clark County, one request per param-year.
+    """EPA AQS daily PM2.5 / ozone for Clark County from the keyless bulk files.
 
-    Reads ``AQS_EMAIL`` and ``AQS_KEY`` from the environment. If either is unset
-    the dataset is skipped (empty frame) so a deploy without the key still builds.
+    Downloads one pre-generated nationwide file per pollutant-year and filters to
+    Clark County (FIPS 32/003), which spans the Las Vegas metro. No API key.
     """
-    email = os.environ.get("AQS_EMAIL")
-    key = os.environ.get("AQS_KEY")
-    if not email or not key:
-        log.warning("air quality: AQS_EMAIL/AQS_KEY not set, skipping")
-        return pd.DataFrame(
-            columns=["parameter", "date_local", "arithmetic_mean", "aqi", "local_site_name"]
-        )
-
     this_year = datetime.datetime.now(tz=datetime.UTC).year
-    keep = ["date_local", "arithmetic_mean", "aqi", "local_site_name"]
-    rows = []
+    rename = {
+        "Date Local": "date_local",
+        "Arithmetic Mean": "arithmetic_mean",
+        "AQI": "aqi",
+        "Local Site Name": "local_site_name",
+    }
+    frames = []
     for param, label in AQS_PARAMS.items():
         for year in range(AQS_START_YEAR, this_year + 1):
-            params = urllib.parse.urlencode(
-                {
-                    "email": email,
-                    "key": key,
-                    "param": param,
-                    "bdate": f"{year}0101",
-                    "edate": f"{year}1231",
-                    "state": AQS_STATE,
-                    "county": AQS_COUNTY,
-                }
-            )
             log.info("Fetching air quality %s %d ...", label, year)
             try:
-                with _urlopen(f"{AQS_URL}?{params}", timeout=180) as r:
-                    payload = json.load(r)
+                with _urlopen(AQS_FILE_URL.format(param=param, year=year)) as r:
+                    data = r.read()
             except urllib.error.HTTPError as exc:
-                log.warning("air quality: %s %d failed (%s), skipping", label, year, exc)
-                continue
-            data = payload.get("Data", [])
-            for d in data:
-                row = {k: d.get(k) for k in keep}
-                row["parameter"] = label
-                rows.append(row)
-    return pd.DataFrame(rows, columns=["parameter", *keep])
+                if exc.code == 404:  # current-year file not published yet
+                    log.warning("air quality: %s %d not available (404)", label, year)
+                    continue
+                raise
+            zf = zipfile.ZipFile(io.BytesIO(data))
+            df = pd.read_csv(
+                zf.open(zf.namelist()[0]),
+                usecols=["State Code", "County Code", *rename],
+                dtype={"State Code": str, "County Code": str},
+            )
+            df = df[(df["State Code"] == AQS_STATE) & (df["County Code"] == AQS_COUNTY)]
+            df = df.rename(columns=rename)[list(rename.values())]
+            df["parameter"] = label
+            frames.append(df)
+    if not frames:
+        raise RuntimeError("air quality: no AQS bulk files could be downloaded")
+    return pd.concat(frames, ignore_index=True)[
+        ["parameter", "date_local", "arithmetic_mean", "aqi", "local_site_name"]
+    ]
 
 
 # --------------------------------------------------------------------------- #

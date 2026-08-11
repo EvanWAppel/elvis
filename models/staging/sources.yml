@@ -36,4 +36,4 @@ sources:
       - name: lvcva_indicators
         description: "LVCVA monthly Southern Nevada tourism indicators in long form (metric, month, value): visitor volume, occupancy, ADR, airport passengers, gaming revenue by area."
       - name: air_quality
-        description: "EPA AQS daily PM2.5 / ozone summaries for Clark County (per site, per day). Empty when the warehouse is built without AQS credentials."
+        description: "EPA AQS daily PM2.5 / ozone summaries for Clark County (per site, per day) from the keyless pre-generated bulk files, 2015-present."
