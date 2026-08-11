@@ -5,16 +5,13 @@ with parks as (
 )
 
 select
+    jurisdiction,
     park_name,
     address,
-    status,
-    public_access,
-    ward,
     acres,
-    park_type,
-    amenities,
+    has_water,
     latitude,
     longitude
 from parks
 where latitude is not null and longitude is not null
-order by park_name
+order by jurisdiction, park_name

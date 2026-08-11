@@ -26,7 +26,7 @@ sources:
       - name: short_term_rentals
         description: "City of Las Vegas short-term rental licenses with status, category, and WGS84 point coordinates."
       - name: parks
-        description: "City of Las Vegas parks with type, acreage, ward, and polygon-centroid WGS84 coordinates."
+        description: "Metro-wide parks (Las Vegas, Henderson, unincorporated Clark County, North Las Vegas) with jurisdiction, acreage, WGS84 centroid, and a has_water flag."
       - name: marriage_licenses
         description: "Clark County marriage licenses, one row per license (2007-2024), with issue date, mailing origin, and party genders."
       - name: lake_mead

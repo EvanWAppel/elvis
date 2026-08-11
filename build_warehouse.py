@@ -37,6 +37,7 @@ import json
 import logging
 import re
 import socket
+import ssl
 import tempfile
 import urllib.error
 import urllib.parse
@@ -69,6 +70,10 @@ socket.getaddrinfo = _ipv4_first
 ORG = "https://services1.arcgis.com/F1v0ufATbBQScMtY/arcgis/rest/services"
 # LVMPD publishes calls-for-service in its own ArcGIS Online org, not the City's.
 LVMPD_ORG = "https://services.arcgis.com/jjSk6t82vIntwDbs/arcgis/rest/services"
+# Other Las Vegas metro jurisdictions (for metro-wide parks / rentals / permits).
+HENDERSON = "https://maps.cityofhenderson.com/arcgis/rest/services"
+# Clark County's ArcGIS has a mis-configured TLS cert, so its fetches skip verify.
+CLARK = "https://gisgate.co.clark.nv.us/arcgis/rest/services"
 # Only the two most recent LVMPD yearly layers are loaded — enough for month/hour
 # /weekday patterns and a recent trend without baking millions of rows into the image.
 CRIME_YEARS = [2025, 2026]
@@ -204,6 +209,204 @@ def fetch_layer(
                 dt = pd.to_datetime(s, errors="coerce")
             df[col] = dt.dt.strftime("%Y-%m-%d %H:%M:%S")
     return df
+
+
+# --------------------------------------------------------------------------- #
+# Generic ArcGIS fetch (FeatureServer or MapServer, any org, optional TLS skip) #
+# --------------------------------------------------------------------------- #
+def _ssl_ctx(verify: bool) -> ssl.SSLContext | None:
+    if verify:
+        return None
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    return ctx
+
+
+def fetch_features(
+    base_url: str,
+    where: str = "1=1",
+    out_fields: str = "*",
+    geometry: bool = True,
+    out_sr: int = 4326,
+    ssl_verify: bool = True,
+) -> list[tuple[dict, dict | None]]:
+    """Paginate any ArcGIS layer URL, returning (attributes, geometry) per feature.
+
+    Works for FeatureServer and MapServer layers across orgs; ``ssl_verify=False``
+    tolerates the Clark County server's broken certificate.
+    """
+    ctx = _ssl_ctx(ssl_verify)
+
+    def get(url: str) -> dict:
+        with urllib.request.urlopen(url, timeout=180, context=ctx) as r:
+            return json.load(r)
+
+    meta = get(f"{base_url}?f=json")
+    page = min(meta.get("maxRecordCount") or PAGE_SIZE, PAGE_SIZE)
+    out: list[tuple[dict, dict | None]] = []
+    offset = 0
+    while True:
+        params = urllib.parse.urlencode(
+            {
+                "where": where,
+                "outFields": out_fields,
+                "returnGeometry": "true" if geometry else "false",
+                "outSR": out_sr,
+                "f": "json",
+                "resultOffset": offset,
+                "resultRecordCount": page,
+            }
+        )
+        feats = get(f"{base_url}/query?{params}").get("features", [])
+        if not feats:
+            break
+        out.extend((f.get("attributes", {}), f.get("geometry")) for f in feats)
+        offset += len(feats)
+        if len(feats) < page:
+            break
+    log.info("  %s: %d features", base_url.rsplit("/services/", 1)[-1], len(out))
+    return out
+
+
+def _centroid(geom: dict | None) -> tuple[float | None, float | None]:
+    """(lon, lat) for a point, or the vertex-average of a polygon's outer ring."""
+    if not geom:
+        return (None, None)
+    if "x" in geom:
+        return (geom.get("x"), geom.get("y"))
+    rings = geom.get("rings")
+    if rings:
+        ext = rings[0]
+        pts = ext[:-1] if len(ext) > 1 and ext[0] == ext[-1] else ext
+        if pts:
+            return (sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts))
+    return (None, None)
+
+
+def _point_in_ring(lon: float, lat: float, ring: list) -> bool:
+    """Ray-casting test: is (lon, lat) inside the polygon exterior ``ring``?"""
+    inside = False
+    j = len(ring) - 1
+    for i in range(len(ring)):
+        xi, yi = ring[i][0], ring[i][1]
+        xj, yj = ring[j][0], ring[j][1]
+        if (yi > lat) != (yj > lat) and lon < (xj - xi) * (lat - yi) / (yj - yi) + xi:
+            inside = not inside
+        j = i
+    return inside
+
+
+def _epoch_to_date(ms) -> str | None:
+    """ArcGIS epoch-millisecond timestamp -> ISO date string (None if missing)."""
+    if ms is None or (isinstance(ms, float) and pd.isna(ms)):
+        return None
+    dt = pd.to_datetime(ms, unit="ms", errors="coerce")
+    # AQS/ArcGIS use a 1900 sentinel for "no date"; treat pre-1990 as null.
+    if pd.isna(dt) or dt.year < 1990:
+        return None
+    return dt.strftime("%Y-%m-%d")
+
+
+# --------------------------------------------------------------------------- #
+# Metro-wide datasets (parks / short-term rentals / Henderson permits+licenses) #
+# --------------------------------------------------------------------------- #
+def _clv_water_points() -> list[tuple[float, float]]:
+    """CLV water-feature locations: pools, water bodies, and water-play areas."""
+    layers = [
+        f"{ORG}/Pools_View/FeatureServer/0",
+        f"{ORG}/Water_Body_View/FeatureServer/82",
+        f"{ORG}/Water_Play_Poly_View/FeatureServer/73",
+        f"{ORG}/Water_Play_Pts_View/FeatureServer/72",
+    ]
+    pts = []
+    for url in layers:
+        for _attrs, geom in fetch_features(url, out_fields="OBJECTID"):
+            lon, lat = _centroid(geom)
+            if lon is not None:
+                pts.append((lon, lat))
+    return pts
+
+
+def fetch_parks_metro() -> pd.DataFrame:
+    """Parks across the metro's jurisdictions, flagged with a water feature.
+
+    Henderson carries native swimming/water-play flags. For the City of Las Vegas
+    we spatial-join the dedicated water-feature layers into each park polygon.
+    Clark County (unincorporated) and North Las Vegas publish no water attribute.
+    """
+    log.info("Collecting CLV water features ...")
+    water = _clv_water_points()
+
+    def clv_has_water(geom: dict | None) -> bool:
+        rings = (geom or {}).get("rings")
+        if not rings:
+            return False
+        ring = rings[0]
+        return any(_point_in_ring(lon, lat, ring) for lon, lat in water)
+
+    rows: list[dict] = []
+
+    log.info("Fetching City of Las Vegas parks ...")
+    for attrs, geom in fetch_features(
+        f"{ORG}/CLV_Parks/FeatureServer/113", out_fields="NAME,ADDRESS,ACRES,WARD"
+    ):
+        lon, lat = _centroid(geom)
+        rows.append(
+            {
+                "jurisdiction": "Las Vegas",
+                "park_name": attrs.get("NAME"),
+                "address": attrs.get("ADDRESS"),
+                "acres": attrs.get("ACRES"),
+                "has_water": clv_has_water(geom),
+                "latitude": lat,
+                "longitude": lon,
+            }
+        )
+
+    log.info("Fetching Henderson parks ...")
+    for attrs, geom in fetch_features(
+        f"{HENDERSON}/public/OpenDataRecreation/MapServer/6",
+        out_fields="NAME,ADDRESS,ACRES,SWIMMING,WATERPLAY",
+    ):
+        lon, lat = _centroid(geom)
+        wet = "yes" in (
+            f"{attrs.get('SWIMMING')}{attrs.get('WATERPLAY')}".lower()
+        )
+        rows.append(
+            {
+                "jurisdiction": "Henderson",
+                "park_name": attrs.get("NAME"),
+                "address": attrs.get("ADDRESS"),
+                "acres": attrs.get("ACRES"),
+                "has_water": wet,
+                "latitude": lat,
+                "longitude": lon,
+            }
+        )
+
+    for label, url in [
+        ("Clark County", f"{CLARK}/OpenData/Recreation/MapServer/6"),
+        ("North Las Vegas", f"{CLARK}/OpenData/Recreation/MapServer/10"),
+    ]:
+        log.info("Fetching %s parks ...", label)
+        for attrs, geom in fetch_features(
+            url, out_fields="PKNAME,ADDRESS", ssl_verify=False
+        ):
+            lon, lat = _centroid(geom)
+            rows.append(
+                {
+                    "jurisdiction": label,
+                    "park_name": attrs.get("PKNAME"),
+                    "address": attrs.get("ADDRESS"),
+                    "acres": None,
+                    "has_water": None,  # no water attribute published
+                    "latitude": lat,
+                    "longitude": lon,
+                }
+            )
+
+    return pd.DataFrame(rows)
 
 
 # --------------------------------------------------------------------------- #
@@ -507,12 +710,8 @@ def main() -> None:
             fetch_layer("CLV_Short_Term_Rental", layer=1, geometry=True),
         )
 
-        log.info("Fetching parks (ArcGIS) ...")
-        load_raw(
-            con,
-            "parks",
-            fetch_layer("CLV_Parks", layer=113, centroid=True),
-        )
+        log.info("Fetching parks (metro-wide, ArcGIS) ...")
+        load_raw(con, "parks", fetch_parks_metro())
 
         log.info("Fetching marriage licenses (Clark County) ...")
         load_raw(con, "marriage_licenses", fetch_marriage())

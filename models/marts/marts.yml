@@ -188,9 +188,12 @@ models:
           - not_null
 
   - name: mart_parks
-    description: "City of Las Vegas parks with centroid coordinates, acreage, and amenities."
+    description: "Metro-wide parks with jurisdiction, centroid coordinates, acreage, and a has_water flag (true/false where published, else null)."
     columns:
       - name: park_name
+        tests:
+          - not_null
+      - name: jurisdiction
         tests:
           - not_null
 
