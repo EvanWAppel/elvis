@@ -31,6 +31,8 @@ sources:
         description: "City of Henderson business licenses: name, license type, status, issue date, address."
       - name: parks
         description: "Metro-wide parks (Las Vegas, Henderson, unincorporated Clark County, North Las Vegas) with jurisdiction, acreage, WGS84 centroid, and a has_water flag."
+      - name: road_construction
+        description: "Metro road construction lines: City of Las Vegas Capital Improvement Program projects (MasterWorks) plus optional Nevada 511 (NDOT) state-route roadwork/closures. Harmonized schema with status/phase, schedule, road extent, a JSON polyline path, and WGS84 centroid. 511 rows only present when NVROADS_API_KEY is set at build time."
       - name: marriage_licenses
         description: "Clark County marriage licenses, one row per license (2007-2024), with issue date, mailing origin, and party genders."
       - name: lake_mead

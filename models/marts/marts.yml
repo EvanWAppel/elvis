@@ -1,6 +1,26 @@
 version: 2
 
 models:
+  - name: mart_road_construction
+    description: "Metro road construction, one row per project/event: City of Las Vegas CIP lines plus optional Nevada 511 NDOT state-route roadwork. Carries status/phase, schedule, road extent, a JSON polyline path for the map, and a WGS84 centroid."
+    columns:
+      - name: data_source
+        description: "Originating feed: 'City of Las Vegas (CIP)' or 'NDOT 511 (state routes)'."
+        tests:
+          - not_null
+      - name: path_json
+        description: "Project geometry as a JSON array of [lon, lat] vertices, for the deck.gl PathLayer."
+        tests:
+          - not_null
+      - name: latitude
+        description: "WGS84 centroid latitude of the project line."
+        tests:
+          - not_null
+      - name: longitude
+        description: "WGS84 centroid longitude of the project line."
+        tests:
+          - not_null
+
   - name: mart_restaurants
     description: "One row per restaurant (permit), joining SNHD establishment detail (name, address, geo, current grade) to aggregated inspection history. Establishments with no inspections keep zeroed counts."
     columns:

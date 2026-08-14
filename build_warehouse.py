@@ -35,6 +35,7 @@ import datetime
 import io
 import json
 import logging
+import os
 import re
 import socket
 import ssl
@@ -82,6 +83,23 @@ DB_PATH = Path(__file__).parent / "vegas.duckdb"
 SNHD_ZIP_URL = (
     "https://www.southernnevadahealthdistrict.org/restaurants/download/restaurants.zip"
 )
+
+# City of Las Vegas Capital Improvement Program lines (MasterWorks), on the same
+# org as the rest of the CLV data. Polyline geometry — active + planned street /
+# utility construction projects. Keyless.
+CLV_CIP_LAYER = f"{ORG}/MASTERWORKS_CIP_LINES_prd_view/FeatureServer/0"
+
+# Nevada 511 (NDOT) live traffic events — the state-route roadwork/closure feed.
+# Needs a free developer key; when NVROADS_API_KEY is unset the source is skipped,
+# so the default build stays secret-free. Register at nvroads.com/developers/doc.
+NVROADS_EVENTS_URL = "https://www.nvroads.com/api/v2/get/event"
+NVROADS_API_KEY = os.environ.get("NVROADS_API_KEY")
+# Only construction-relevant event types (drop bare accidents/incidents).
+NVROADS_EVENT_TYPES = {"roadwork", "closures"}
+# The 511 feed uses these placeholder tokens for missing text; treat them as null.
+NVROADS_PLACEHOLDERS = {"", "unknown", "no data", "none", "n/a"}
+# Las Vegas Valley bounding box — the same clip used by the crime map sample.
+METRO_BBOX = {"min_lat": 35.8, "max_lat": 36.4, "min_lon": -115.5, "max_lon": -114.9}
 
 # Some hosts 403 a bare urllib agent; send a browser-ish UA where needed.
 USER_AGENT = {"User-Agent": "Mozilla/5.0 (compatible; elvis-data/1.0)"}
@@ -284,6 +302,24 @@ def _centroid(geom: dict | None) -> tuple[float | None, float | None]:
     return (None, None)
 
 
+def _line_path(geom: dict | None) -> list[list[float]]:
+    """[[lon, lat], ...] for an ArcGIS polyline, flattening multi-part paths.
+
+    Returns an empty list for missing/degenerate geometry so callers can filter.
+    """
+    paths = (geom or {}).get("paths")
+    if not paths:
+        return []
+    return [[pt[0], pt[1]] for part in paths for pt in part if len(pt) >= 2]
+
+
+def _path_centroid(path: list[list[float]]) -> tuple[float | None, float | None]:
+    """(lon, lat) vertex-average of a polyline path, for map anchoring/tooltips."""
+    if not path:
+        return (None, None)
+    return (sum(p[0] for p in path) / len(path), sum(p[1] for p in path) / len(path))
+
+
 def _point_in_ring(lon: float, lat: float, ring: list) -> bool:
     """Ray-casting test: is (lon, lat) inside the polygon exterior ``ring``?"""
     inside = False
@@ -306,6 +342,59 @@ def _epoch_to_date(ms) -> str | None:
     if pd.isna(dt) or dt.year < 1990:
         return None
     return dt.strftime("%Y-%m-%d")
+
+
+def _iso_date(value) -> str | None:
+    """Best-effort parse of any date string / epoch to an ISO ``YYYY-MM-DD``.
+
+    The CLV CIP layer stores dates as free-form strings (``MM/DD/YYYY``) and the
+    Nevada 511 feed uses ISO 8601; both flow through here so staging can plain
+    ``try_cast`` the result. Missing or sentinel (pre-1990) dates become null.
+    """
+    if value is None or value == "" or (isinstance(value, float) and pd.isna(value)):
+        return None
+    dt = pd.to_datetime(value, errors="coerce", utc=False)
+    if pd.isna(dt) or dt.year < 1990:
+        return None
+    return dt.strftime("%Y-%m-%d")
+
+
+def _nv_clean(value) -> str | None:
+    """Nevada 511 placeholder tokens ('Unknown', 'No Data', …) -> None."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    return None if text.lower() in NVROADS_PLACEHOLDERS else text
+
+
+def _decode_polyline(encoded: str) -> list[list[float]]:
+    """Decode a Google-encoded polyline (precision 5) to ``[[lon, lat], ...]``.
+
+    Nevada 511 returns event geometry as an encoded polyline; deck.gl's PathLayer
+    wants lon/lat pairs, so we decode here rather than add a dependency.
+    """
+    if not encoded:
+        return []
+    coords: list[list[float]] = []
+    lat = lon = index = 0
+    length = len(encoded)
+    while index < length:
+        for is_lon in (False, True):
+            shift = result = 0
+            while True:
+                byte = ord(encoded[index]) - 63
+                index += 1
+                result |= (byte & 0x1F) << shift
+                shift += 5
+                if byte < 0x20:
+                    break
+            delta = ~(result >> 1) if result & 1 else (result >> 1)
+            if is_lon:
+                lon += delta
+            else:
+                lat += delta
+        coords.append([lon / 1e5, lat / 1e5])
+    return coords
 
 
 # --------------------------------------------------------------------------- #
@@ -771,6 +860,143 @@ def fetch_air_quality() -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# Road construction — CLV Capital Improvement lines + Nevada 511 roadwork       #
+# --------------------------------------------------------------------------- #
+# Harmonized schema both sources fill; keeps the mart/view source-agnostic.
+ROAD_CONSTRUCTION_COLUMNS = [
+    "source",
+    "project_name",
+    "description",
+    "status",
+    "category",
+    "road_name",
+    "extent",
+    "start_date",
+    "end_date",
+    "contractor",
+    "is_full_closure",
+    "url",
+    "path_json",
+    "latitude",
+    "longitude",
+]
+
+
+def fetch_clv_cip() -> pd.DataFrame:
+    """City of Las Vegas Capital Improvement Program construction lines.
+
+    Streamed from the City's MasterWorks system: street, sewer, and safety
+    projects with schedule, status/phase, and polyline extents. Keyless.
+    """
+    rows: list[dict] = []
+    for attrs, geom in fetch_features(
+        CLV_CIP_LAYER,
+        out_fields=(
+            "NAME,DESCRIPTION,STATUS,PHASE,CATEGORY,ProjType,StreetName,"
+            "FromStreet,ToStreet,LOCATION,CONTRACTOR,WEBSITE,WARD,"
+            "STARTDATE,ENDDATE,ConstStart,ConstEnd"
+        ),
+    ):
+        path = _line_path(geom)
+        lon, lat = _path_centroid(path)
+        from_st, to_st = attrs.get("FromStreet"), attrs.get("ToStreet")
+        extent = f"{from_st} → {to_st}" if from_st and to_st else attrs.get("LOCATION")
+        rows.append(
+            {
+                "source": "City of Las Vegas (CIP)",
+                "project_name": attrs.get("NAME"),
+                "description": attrs.get("DESCRIPTION"),
+                # Prefer the fine-grained PHASE (Design/Bidding/Construction/…),
+                # falling back to the coarser STATUS when phase is blank.
+                "status": attrs.get("PHASE") or attrs.get("STATUS"),
+                "category": attrs.get("CATEGORY") or attrs.get("ProjType"),
+                "road_name": attrs.get("StreetName"),
+                "extent": extent,
+                # Construction dates when populated, else the overall project span.
+                "start_date": _iso_date(attrs.get("ConstStart") or attrs.get("STARTDATE")),
+                "end_date": _iso_date(attrs.get("ConstEnd") or attrs.get("ENDDATE")),
+                "contractor": attrs.get("CONTRACTOR"),
+                "is_full_closure": None,
+                "url": attrs.get("WEBSITE"),
+                "path_json": json.dumps(path),
+                "latitude": lat,
+                "longitude": lon,
+            }
+        )
+    return pd.DataFrame(rows, columns=ROAD_CONSTRUCTION_COLUMNS)
+
+
+def fetch_nvroads_roadwork() -> pd.DataFrame:
+    """Nevada 511 (NDOT) roadwork + closure events, clipped to the LV Valley.
+
+    Covers state-maintained routes (I-15, US-95, I-215, etc.). Requires a free
+    developer key in ``NVROADS_API_KEY``; returns empty (and logs) when unset so
+    the default build needs no secret.
+    """
+    if not NVROADS_API_KEY:
+        log.warning(
+            "NVROADS_API_KEY not set — skipping Nevada 511 roadwork "
+            "(state-route construction). Register at nvroads.com/developers/doc."
+        )
+        return pd.DataFrame(columns=ROAD_CONSTRUCTION_COLUMNS)
+
+    params = urllib.parse.urlencode({"key": NVROADS_API_KEY, "format": "json"})
+    req = urllib.request.Request(f"{NVROADS_EVENTS_URL}?{params}", headers=USER_AGENT)
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        payload = json.load(resp)
+    events = payload if isinstance(payload, list) else payload.get("data", [])
+
+    rows: list[dict] = []
+    for ev in events:
+        if str(ev.get("EventType", "")).lower() not in NVROADS_EVENT_TYPES:
+            continue
+        lat, lon = ev.get("Latitude"), ev.get("Longitude")
+        if lat is None or lon is None:
+            continue
+        if not (METRO_BBOX["min_lat"] <= lat <= METRO_BBOX["max_lat"]):
+            continue
+        if not (METRO_BBOX["min_lon"] <= lon <= METRO_BBOX["max_lon"]):
+            continue
+        path = _decode_polyline(ev.get("EncodedPolyline") or "")
+        if not path:
+            path = [[lon, lat]]
+        subtype = _nv_clean(ev.get("EventSubType"))
+        roadway = _nv_clean(ev.get("RoadwayName"))
+        direction = _nv_clean(ev.get("DirectionOfTravel"))
+        lanes = _nv_clean(ev.get("LanesAffected"))
+        rows.append(
+            {
+                "source": "NDOT 511 (state routes)",
+                "project_name": subtype or ev.get("EventType"),
+                "description": _nv_clean(ev.get("Description")),
+                "status": ev.get("EventType"),
+                "category": subtype,
+                "road_name": roadway,
+                "extent": " · ".join(filter(None, [direction, lanes])) or None,
+                "start_date": _iso_date(ev.get("StartDate")),
+                "end_date": _iso_date(ev.get("PlannedEndDate")),
+                "contractor": _nv_clean(ev.get("Organization")),
+                "is_full_closure": bool(ev.get("IsFullClosure")),
+                "url": None,
+                "path_json": json.dumps(path),
+                "latitude": lat,
+                "longitude": lon,
+            }
+        )
+    log.info("  nvroads: %d roadwork/closure events in the valley", len(rows))
+    return pd.DataFrame(rows, columns=ROAD_CONSTRUCTION_COLUMNS)
+
+
+def fetch_road_construction() -> pd.DataFrame:
+    """Metro road construction: CLV capital projects + NDOT 511 state-route work."""
+    log.info("Fetching City of Las Vegas CIP construction lines ...")
+    clv = fetch_clv_cip()
+    log.info("Fetching Nevada 511 roadwork events ...")
+    nvroads = fetch_nvroads_roadwork()
+    return pd.concat([clv, nvroads], ignore_index=True)
+
+
 def load_raw(con: duckdb.DuckDBPyConnection, table: str, df: pd.DataFrame) -> None:
     con.execute("CREATE SCHEMA IF NOT EXISTS raw")
     con.register("_df", df)
@@ -823,6 +1049,9 @@ def main() -> None:
 
         log.info("Fetching parks (metro-wide, ArcGIS) ...")
         load_raw(con, "parks", fetch_parks_metro())
+
+        log.info("Fetching road construction (CLV CIP + Nevada 511) ...")
+        load_raw(con, "road_construction", fetch_road_construction())
 
         log.info("Fetching marriage licenses (Clark County) ...")
         load_raw(con, "marriage_licenses", fetch_marriage())
