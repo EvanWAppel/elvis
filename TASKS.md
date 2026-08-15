@@ -33,8 +33,13 @@
 - [ ] Security: the inline build `RUN` prints the key into Railway build logs.
       Low risk (free, rate-limited, rotatable key) but consider a BuildKit
       `--mount=type=secret` to keep it out of logs; rotate the key if it matters.
-- [ ] Confirm the PathLayer renders as expected in the running app
+- [x] Confirm the PathLayer renders as expected in the running app
       (`uv run streamlit run streamlit_app.py`) and tune width/zoom.
+      Verified 2026-08-13: 382 projects / 71 active / 127 corridors, PathLayer +
+      centroid dots + hover tooltip all render on the Positron basemap; width
+      (get_width=5, width_scale=20, min 3px) and zoom 10.5 read well — no tuning
+      needed. Long diagonal lines are legit multi-corridor CLV programs (High
+      Injury Network, Rancho Drive), not bad geometry.
 - [ ] Consider a "current only" filter (drop `Closed`/past-`end_date` projects)
       so the map defaults to what's actually active.
 - [ ] Phase 2 (optional): local surface-street construction for Henderson /
