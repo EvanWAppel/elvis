@@ -2,6 +2,7 @@
 
 import json
 
+import pandas as pd
 import pydeck as pdk
 import streamlit as st
 
@@ -39,9 +40,20 @@ sources = sorted(df["data_source"].unique())
 sel_sources = st.sidebar.multiselect("Source", sources, default=sources)
 statuses = sorted(df["status"].unique())
 sel_status = st.sidebar.multiselect("Status / phase", statuses, default=statuses)
+current_only = st.sidebar.checkbox(
+    "Current only (hide closed & past projects)", value=True
+)
 active_only = st.sidebar.checkbox("Only active construction", value=False)
 
 filtered = df[df["data_source"].isin(sel_sources) & df["status"].isin(sel_status)]
+# "Current" = not in a Closed phase and not already past its end date.
+if current_only:
+    end_dt = pd.to_datetime(filtered["end_date"], errors="coerce")
+    today = pd.Timestamp.now().normalize()
+    is_stale = filtered["status"].str.contains("closed", case=False, na=False) | (
+        end_dt.notna() & (end_dt < today)
+    )
+    filtered = filtered[~is_stale]
 # "Active" = CLV projects in the Construction phase, or any live 511 roadwork event.
 active_mask = filtered["status"].str.contains("construction", case=False, na=False) | (
     filtered["data_source"].str.startswith("NDOT")

@@ -40,8 +40,12 @@
       (get_width=5, width_scale=20, min 3px) and zoom 10.5 read well — no tuning
       needed. Long diagonal lines are legit multi-corridor CLV programs (High
       Injury Network, Rancho Drive), not bad geometry.
-- [ ] Consider a "current only" filter (drop `Closed`/past-`end_date` projects)
-      so the map defaults to what's actually active.
+- [x] "Current only" filter (drop `Closed`/past-`end_date` projects), defaulted
+      on so the map opens on what's actually active. Sidebar checkbox in
+      `views/road_construction.py`; parses `end_date`, hides `Closed`-phase and
+      past-end projects. Snapshot counts: 382 → 160 current (222 hidden = 135
+      Closed + 87 past end date, incl. 29 lapsed `Construction`-phase). ruff + ty
+      clean.
 - [ ] Phase 2 (optional): local surface-street construction for Henderson /
       North Las Vegas / unincorporated Clark County via their ROW-permit feeds.
 - [ ] Add the Road Construction dataset to the README dataset list.
