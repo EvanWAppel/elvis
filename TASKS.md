@@ -48,4 +48,6 @@
       clean.
 - [ ] Phase 2 (optional): local surface-street construction for Henderson /
       North Las Vegas / unincorporated Clark County via their ROW-permit feeds.
-- [ ] Add the Road Construction dataset to the README dataset list.
+- [x] Add the Road Construction dataset to the README dataset list. (Already
+      done in fb0ca12 — the Datasets paragraph lists CLV CIP + Nevada 511/NDOT
+      with the keyless/`NVROADS_API_KEY` note. Item was stale.)
