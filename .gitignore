@@ -1,4 +1,7 @@
 *.csv
+# ...but the CI seed fixtures must be tracked (they stand in for raw.* in CI).
+!seeds/
+!seeds/*.csv
 .venv
 .dbt
 .env

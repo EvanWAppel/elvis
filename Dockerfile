@@ -18,8 +18,11 @@ COPY . .
 # default but NOT a Dockerfile RUN step, so declare it as a build arg and pass
 # it inline (kept out of the final image's ENV). Without it, build_warehouse
 # skips the Nevada 511 roadwork source and only the keyless CLV CIP layer ships.
+# `--exclude-resource-type seed` keeps the CI fixture CSVs in seeds/ from ever
+# running here — they exist only to let CI build the marts offline, and must not
+# overwrite the full-size raw.* tables that build_warehouse.py just loaded.
 ARG NVROADS_API_KEY
-RUN NVROADS_API_KEY=${NVROADS_API_KEY} python build_warehouse.py && dbt build --profiles-dir .
+RUN NVROADS_API_KEY=${NVROADS_API_KEY} python build_warehouse.py && dbt build --profiles-dir . --exclude-resource-type seed
 
 # Railway injects $PORT at runtime; default to 8501 for local runs.
 EXPOSE 8501

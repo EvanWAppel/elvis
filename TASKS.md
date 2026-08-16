@@ -33,6 +33,33 @@ P5 generate+host dbt docs → P3 Snowflake dual-target + `SNOWFLAKE.md` → P8
 teaching README + elvis-vs-robbins note. Second weekend: P4 intermediate layer,
 P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
 
+### P1 — CI (`dbt build` + `ruff` on every PR)
+- [x] Hermetic CI design chosen (seeds over live-network build): committed
+      fixtures in `seeds/` stand in for the `raw.*` tables so `dbt build` runs
+      offline, deterministic, never flaky on an upstream outage.
+- [x] `macros/generate_schema_name.sql` so `+schema: raw` lands seeds in
+      `vegas.raw.*` verbatim (matching `source('raw', ...)`); models with no
+      custom schema stay in `main`.
+- [x] `seeds/road_construction.csv` (6 rows) + `seeds/art_work_points.csv`
+      (5 rows) matching the real raw schemas; `dbt_project.yml` seed config with
+      `+schema: raw` + explicit `+column_types`. `!seeds/` added to `.gitignore`
+      (repo-wide `*.csv` ignore would have dropped them).
+- [x] Prod/local safety: `Dockerfile` + README build now use
+      `dbt build --exclude-resource-type seed` so fixtures NEVER overwrite the
+      full-size tables. Verified: `raw.road_construction` stays 382 rows, 105
+      nodes build, zero seed activity.
+- [x] `.github/workflows/ci.yml`: `ruff` job + hermetic `dbt` job (uv sync →
+      `dbt seed` → `dbt build --select stg_road_construction+ stg_art_work_points+`).
+      Triggers on PR + push to main; badge in README.
+- [x] Verified locally end-to-end: 17 nodes PASS (2 views, 2 marts, 13 tests) in
+      <1.5s; negative test (null latitude fixture) turns it red as required;
+      `ruff check .` clean repo-wide (fixed a stray unused import; excluded the
+      scratch notebook via `ruff.toml`).
+- [ ] Push branch + open PR so the checks actually run on GitHub (needs Evan —
+      not pushing without the ask).
+- [ ] Expand seed coverage beyond the 2 starter domains (restaurants, crime,
+      permits…) as P2 adds tests — CI currently gates only the seeded lineages.
+
 ## Road Construction (🚧)
 
 ### Done

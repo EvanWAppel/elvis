@@ -1,5 +1,7 @@
 # Elvis — Las Vegas Open-Data Explorer
 
+[![CI](https://github.com/EvanWAppel/elvis/actions/workflows/ci.yml/badge.svg)](https://github.com/EvanWAppel/elvis/actions/workflows/ci.yml)
+
 Named after the most recognizable figure in Las Vegas, **Elvis** is an
 interactive, multi-page [Streamlit](https://streamlit.io) app that explores free
 public datasets about the Las Vegas Valley (Clark County metro: Las Vegas,
@@ -49,9 +51,20 @@ when it's unset that one source is skipped and everything else still builds.
 ```bash
 uv sync
 uv run python build_warehouse.py            # fetch sources into vegas.duckdb
-uv run dbt build --profiles-dir .           # build staging + marts
+uv run dbt build --profiles-dir . --exclude-resource-type seed   # staging + marts
 uv run streamlit run streamlit_app.py       # http://localhost:8501
 ```
+
+`--exclude-resource-type seed` skips the CI fixtures in `seeds/` so they never
+overwrite the full-size `raw.*` tables you just built from the live feeds.
+
+## CI
+
+`.github/workflows/ci.yml` runs on every pull request (and push to `main`): a
+**ruff** lint job and a **dbt** job. The dbt job is hermetic — it seeds the small
+fixture CSVs in `seeds/` into `raw.*`, then `dbt build`s the modeled lineages
+with all data tests, offline and deterministically, with no network sources. A
+failing test turns the check red and gates the merge.
 
 ## Deploy
 
