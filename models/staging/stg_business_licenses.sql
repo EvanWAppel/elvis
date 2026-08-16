@@ -1,4 +1,8 @@
 -- City of Las Vegas business licenses (non-spatial registry; no coordinates).
+-- TEMPORARILY DISABLED: the upstream Business_Licenses_OpenData feed is down and
+-- raw.business_licenses is not loaded (see build_warehouse.py). Re-enable by
+-- removing the config() below and uncommenting the loader.
+{{ config(enabled=false) }}
 
 with source as (
     select * from {{ source('raw', 'business_licenses') }}

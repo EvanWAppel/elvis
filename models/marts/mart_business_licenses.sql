@@ -1,4 +1,6 @@
-{{ config(materialized='table') }}
+-- TEMPORARILY DISABLED with its source (see stg_business_licenses); re-enable by
+-- restoring enabled=true when the CLV Business Licenses feed recovers.
+{{ config(materialized='table', enabled=false) }}
 
 -- One row per license, lightly cleaned, for the searchable table + status/geo
 -- breakdowns on the page.

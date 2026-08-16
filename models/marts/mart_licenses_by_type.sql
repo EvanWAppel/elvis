@@ -1,4 +1,6 @@
-{{ config(materialized='table') }}
+-- TEMPORARILY DISABLED with its source (see stg_business_licenses); re-enable by
+-- restoring enabled=true when the CLV Business Licenses feed recovers.
+{{ config(materialized='table', enabled=false) }}
 
 with licenses as (
     select * from {{ ref('stg_business_licenses') }}

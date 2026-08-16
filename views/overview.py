@@ -20,7 +20,9 @@ rest_n = int(query("select count(*) as n from main.mart_restaurants")["n"][0])
 fire_n = int(query("select count(*) as n from main.mart_fire_prevention_inspections")["n"][0])
 crime_n = int(query("select sum(incident_count) as n from main.mart_crime_monthly")["n"][0])
 permit_n = int(query("select sum(permit_count) as n from main.mart_permits_monthly")["n"][0])
-lic_n = int(query("select count(*) as n from main.mart_business_licenses")["n"][0])
+# CLV business licenses are temporarily offline (upstream feed outage); show the
+# still-live City of Henderson count instead so the landing page stays whole.
+lic_n = int(query("select sum(license_count) as n from main.mart_henderson_licenses_by_type")["n"][0])
 marriage_n = int(query("select sum(license_count) as n from main.mart_marriage_monthly")["n"][0])
 lake_ft = float(
     query(
@@ -45,7 +47,7 @@ c3.metric("Fire-inspected properties", f"{fire_n:,}", help="City of Las Vegas")
 c4, c5, c6 = st.columns(3)
 c4.metric("Metro calls for service", f"{crime_n:,}", help="LVMPD, two most recent years")
 c5.metric("Building permits", f"{permit_n:,}", help="City of Las Vegas, 2004–2017")
-c6.metric("Business licenses", f"{lic_n:,}", help="City of Las Vegas")
+c6.metric("Business licenses", f"{lic_n:,}", help="City of Henderson (Las Vegas feed temporarily offline)")
 
 c7, c8, c9 = st.columns(3)
 c7.metric("Marriage licenses", f"{marriage_n:,}", help="Clark County, 2007–2024")

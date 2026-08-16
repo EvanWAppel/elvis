@@ -184,18 +184,21 @@ models:
         tests:
           - not_null
 
-  - name: mart_business_licenses
-    description: "One row per City of Las Vegas business license for the searchable roster."
-    columns:
-      - name: license_no
-        description: "Business license number (may repeat across renewals)."
-
-  - name: mart_licenses_by_type
-    description: "Business license counts (and active counts) by type of business."
-    columns:
-      - name: type_of_business
-        tests:
-          - not_null
+  # TEMPORARILY DISABLED with the CLV Business Licenses feed (see the models'
+  # enabled=false config + build_warehouse.py). Re-enable these blocks alongside
+  # the models when the upstream layer recovers.
+  # - name: mart_business_licenses
+  #   description: "One row per City of Las Vegas business license for the searchable roster."
+  #   columns:
+  #     - name: license_no
+  #       description: "Business license number (may repeat across renewals)."
+  #
+  # - name: mart_licenses_by_type
+  #   description: "Business license counts (and active counts) by type of business."
+  #   columns:
+  #     - name: type_of_business
+  #       tests:
+  #         - not_null
 
   - name: mart_short_term_rentals
     description: "Metro-wide short-term rentals (Las Vegas, North Las Vegas, Henderson) with jurisdiction and WGS84 coordinates for mapping."
