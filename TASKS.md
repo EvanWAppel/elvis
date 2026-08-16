@@ -1,5 +1,38 @@
 # Tasks
 
+## Deploy — PAUSED (upstream outage, 2026-08-15)
+
+The "current only" filter is committed but NOT yet live. A `railway up` on
+2026-08-15 **failed the build** — not from our change, but from an unrelated
+upstream source going empty:
+
+- `build_warehouse.py` fetching `Business_Licenses_OpenData` (CLV ArcGIS org
+  `F1v0ufATbBQScMtY`) got **zero features**. `fetch_layer` returned a 0-column
+  DataFrame → `load_raw` → `_duckdb.InvalidInputException: Need a DataFrame with
+  at least one column`. Whole build exits 1, so the deploy never shipped.
+- Confirmed upstream, not a network flake: the endpoint responds 200 with intact
+  schema but `{"count":0}`. It had data in the Aug 13 build. Sibling sources on
+  the same org are healthy (e.g. Art Work = 63 rows), so the org is up; this one
+  layer is empty.
+- The Aug 13 build is still live and unaffected — no regression.
+
+Retrying as-is will fail identically until the City repopulates the layer.
+Decision on how to handle deferred (per Evan): options were (a) wait & retry,
+(b) make the build resilient to a transiently-empty source (build an empty typed
+table from the layer's field metadata + a loud WARNING so one empty feed can't
+block the other ~14 datasets — must keep dbt happy on a 0-row raw table), or
+(c) retry now (will fail). **Not decided yet.**
+
+## Roadmap shift — see `RECRUITER-PRIMER.md`
+
+New brief reframes Elvis as the portfolio's **dbt-depth analytics-engineering
+flagship** (vs. `robbins` = PNW/Seattle geo flagship). One-weekend plan, in
+order: P1 CI (`dbt build` + `ruff` on every PR) → P2 data-quality test suite
+(`dbt_utils`/`dbt_expectations`, `accepted_values`/`relationships`/singular) →
+P5 generate+host dbt docs → P3 Snowflake dual-target + `SNOWFLAKE.md` → P8
+teaching README + elvis-vs-robbins note. Second weekend: P4 intermediate layer,
+P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
+
 ## Road Construction (🚧)
 
 ### Done
