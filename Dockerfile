@@ -24,6 +24,10 @@ COPY . .
 ARG NVROADS_API_KEY
 RUN NVROADS_API_KEY=${NVROADS_API_KEY} python build_warehouse.py && dbt build --profiles-dir . --exclude-resource-type seed
 
+# Generate catalog.json (column types) so Tiresias's catalog loader has the
+# dbt-native schema artifact at runtime. manifest.json is already produced above.
+RUN dbt docs generate --profiles-dir .
+
 # Railway injects $PORT at runtime; default to 8501 for local runs.
 EXPOSE 8501
 CMD streamlit run streamlit_app.py --server.port ${PORT:-8501} --server.address 0.0.0.0
