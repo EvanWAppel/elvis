@@ -1,4 +1,7 @@
 *.csv
+# ...but the CI seed fixtures must be tracked (they stand in for raw.* in CI).
+!seeds/
+!seeds/*.csv
 .venv
 .dbt
 .env
@@ -11,3 +14,6 @@ logs/
 # Generated warehouse — rebuild with `uv run python build_warehouse.py && uv run dbt build`
 *.duckdb
 *.duckdb.wal
+
+# Local strategy/handoff brief — keep untracked.
+RECRUITER-PRIMER.md

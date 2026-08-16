@@ -3,3 +3,4 @@ pydeck>=0.9
 pandas>=2.0
 duckdb>=1.5
 dbt-duckdb>=1.11
+openpyxl>=3.1

@@ -17,3 +17,29 @@ sources:
         description: "City of Las Vegas fire prevention inspection records for multi-unit residential properties"
       - name: art_work_points
         description: "City of Las Vegas public art collection with coordinates parsed from source fields"
+      - name: crime_calls
+        description: "LVMPD calls-for-service for the two most recent years, with incident type, time-of-day fields, zip, and WGS84 coordinates."
+      - name: building_permits
+        description: "City of Las Vegas archived building permits with valuation and issue date (non-spatial)."
+      - name: business_licenses
+        description: "City of Las Vegas business license registry: name, type, status, zip, city-limits flag (non-spatial)."
+      - name: short_term_rentals
+        description: "Metro-wide short-term rentals (Las Vegas, North Las Vegas, Henderson) with jurisdiction, status, category, issue date, and WGS84 coordinates."
+      - name: henderson_permits
+        description: "City of Henderson building permits: case type, status, issue date, description, address (no valuation)."
+      - name: henderson_licenses
+        description: "City of Henderson business licenses: name, license type, status, issue date, address."
+      - name: parks
+        description: "Metro-wide parks (Las Vegas, Henderson, unincorporated Clark County, North Las Vegas) with jurisdiction, acreage, WGS84 centroid, and a has_water flag."
+      - name: road_construction
+        description: "Metro road construction lines: City of Las Vegas Capital Improvement Program projects (MasterWorks) plus optional Nevada 511 (NDOT) state-route roadwork/closures. Harmonized schema with status/phase, schedule, road extent, a JSON polyline path, and WGS84 centroid. 511 rows only present when NVROADS_API_KEY is set at build time."
+      - name: marriage_licenses
+        description: "Clark County marriage licenses, one row per license (2007-2024), with issue date, mailing origin, and party genders."
+      - name: lake_mead
+        description: "Daily Lake Mead reservoir elevation (feet) from USBR RISE catalog item 6123, 1935-present."
+      - name: weather
+        description: "NOAA GHCN-Daily observations for the Las Vegas airport station (temps in tenths degC, precip in tenths mm)."
+      - name: lvcva_indicators
+        description: "LVCVA monthly Southern Nevada tourism indicators in long form (metric, month, value): visitor volume, occupancy, ADR, airport passengers, gaming revenue by area."
+      - name: air_quality
+        description: "EPA AQS daily PM2.5 / ozone summaries for Clark County (per site, per day) from the keyless pre-generated bulk files, 2015-present."

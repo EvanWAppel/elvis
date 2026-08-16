@@ -18,6 +18,17 @@ pages = [
     st.Page("views/public_art.py", title="Public Art", icon="🗺️"),
     st.Page("views/restaurants.py", title="Restaurant Inspections", icon="🍽️"),
     st.Page("views/fire.py", title="Fire Inspections", icon="🔥"),
+    st.Page("views/crime.py", title="Metro Calls", icon="🚨"),
+    st.Page("views/building_permits.py", title="Building Permits", icon="🏗️"),
+    st.Page("views/business_licenses.py", title="Business Licenses", icon="📋"),
+    st.Page("views/short_term_rentals.py", title="Short-Term Rentals", icon="🏠"),
+    st.Page("views/parks.py", title="Parks", icon="🌳"),
+    st.Page("views/road_construction.py", title="Road Construction", icon="🚧"),
+    st.Page("views/marriage.py", title="Marriage Licenses", icon="💍"),
+    st.Page("views/tourism.py", title="Tourism & Gaming", icon="🎢"),
+    st.Page("views/lake_mead.py", title="Lake Mead", icon="🏜️"),
+    st.Page("views/weather.py", title="Desert Heat", icon="🌡️"),
+    st.Page("views/air_quality.py", title="Air Quality", icon="💨"),
 ]
 
 st.navigation(pages).run()

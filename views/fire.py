@@ -1,6 +1,7 @@
 """Fire-prevention inspections — City of Las Vegas multi-unit residential."""
 
 import altair as alt
+import pydeck as pdk
 import streamlit as st
 
 from app_db import query
@@ -28,12 +29,67 @@ c3.metric("Avg % dwellings w/ violations", f"{kpi['avg_pct'][0]:.1f}%")
 
 st.divider()
 
+# --- Map of inspected properties ---
+st.subheader("Inspected properties")
+st.caption("Each dot is a property; size reflects unit count and color the violations written.")
+mapped = query(
+    """
+    select
+        property_name,
+        "Address" as address,
+        "City"    as city,
+        unit_count,
+        total_violations,
+        latitude,
+        longitude
+    from main.mart_fire_prevention_inspections
+    where latitude is not null and longitude is not null
+    """
+)
+mapped = mapped.copy()
+mapped["radius"] = (mapped["unit_count"].clip(lower=1) ** 0.5) * 12
+# Red intensity scaled to each property's share of the worst violation count.
+vmax = max(int(mapped["total_violations"].max()), 1)
+mapped["fill"] = mapped["total_violations"].apply(
+    lambda v: [230, max(30, int(200 - 200 * (v / vmax))), 30, 170]
+)
+layer = pdk.Layer(
+    "ScatterplotLayer",
+    data=mapped,
+    get_position=["longitude", "latitude"],
+    get_radius="radius",
+    get_fill_color="fill",
+    pickable=True,
+)
+view_state = pdk.ViewState(
+    latitude=mapped["latitude"].mean(),
+    longitude=mapped["longitude"].mean(),
+    zoom=10.5,
+    pitch=0,
+)
+tooltip = {
+    "html": "<b>{property_name}</b><br/>{address}, {city}<br/>"
+    "{unit_count} units · {total_violations} violations",
+    "style": {"backgroundColor": "#b22222", "color": "white", "fontSize": "13px"},
+}
+st.pydeck_chart(
+    pdk.Deck(
+        layers=[layer],
+        initial_view_state=view_state,
+        map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        tooltip=tooltip,
+    )
+)
+
+st.divider()
+
+# --- Worst offenders ---
 worst = query(
     """
     select
         property_name,
-        "Address"  as address,
-        "City"     as city,
+        "Address" as address,
+        "City"    as city,
         unit_count,
         total_violations,
         avg_pct_dwellings_with_violations as avg_pct_dwellings

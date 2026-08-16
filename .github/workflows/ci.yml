@@ -1,0 +1,52 @@
+name: CI
+
+# The same PR-gated `dbt build` discipline I run on the analyst side: every pull
+# request (and every push to main) must lint clean and build the dbt project with
+# all data tests green before it can merge.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel superseded runs on the same ref so a fresh push doesn't queue behind a
+# stale one.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: ruff (lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv + Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync
+      - name: ruff check
+        run: uv run ruff check .
+
+  dbt:
+    name: dbt build (hermetic seeds)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv + Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync
+      # No warehouse exists on a fresh checkout (vegas.duckdb is gitignored and
+      # built from live civic feeds at deploy time). Seed the committed fixture
+      # CSVs into raw.* so the marts can build offline and deterministically,
+      # then build only the seeded lineages plus their data tests.
+      - name: dbt seed (load raw.* fixtures)
+        run: uv run dbt seed --profiles-dir .
+      - name: dbt build (models + tests)
+        run: uv run dbt build --profiles-dir . --select stg_road_construction+ stg_art_work_points+

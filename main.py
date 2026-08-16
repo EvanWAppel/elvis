@@ -1,9 +1,9 @@
 from typing import Any
-import os
 
 import polars as pl
 
 import __init__ as variables
+
 
 def SNHD_INSPECTIONS(
 
