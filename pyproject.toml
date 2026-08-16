@@ -1,17 +1,38 @@
 [project]
 name = "elvis"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
+    "anthropic>=0.122.0",
     "duckdb>=1.5.5",
+    "fastembed>=0.8.0",
+    "langgraph>=1.2.11",
+    "mcp>=2.0.0",
+    "onnxruntime<1.24",
     "openpyxl>=3.1.5",
     "pandas>=3.0.5",
+    "pydantic>=2.13.4",
     "pydeck>=0.9.3",
+    "pyyaml>=6.0.3",
+    "sqlglot>=30.15.0",
     "streamlit>=1.61.1",
+]
+
+[tool.pytest.ini_options]
+# Put the repo root on sys.path so `import tiresias` resolves without installing.
+pythonpath = ["."]
+testpaths = ["tiresias"]
+asyncio_mode = "auto"
+markers = [
+    "slow: exercises a real model/network path (deselect with -m 'not slow')",
+    "eval: live agent eval against the gold set (needs ANTHROPIC_API_KEY)",
 ]
 
 [dependency-groups]
 dev = [
     "dbt-duckdb>=1.11.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
     "ruff>=0.16.2",
+    "ty>=0.0.72",
 ]

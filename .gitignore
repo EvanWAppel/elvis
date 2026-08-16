@@ -15,5 +15,6 @@ logs/
 *.duckdb
 *.duckdb.wal
 
-# Local strategy/handoff brief — keep untracked.
+# Local strategy/handoff briefs — keep untracked.
 RECRUITER-PRIMER.md
+TIRESIAS-PRD.md

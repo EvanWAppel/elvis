@@ -4,3 +4,13 @@ pandas>=2.0
 duckdb>=1.5
 dbt-duckdb>=1.11
 openpyxl>=3.1
+
+# Tiresias agent layer (kept in sync with pyproject.toml; Railway installs via pip).
+anthropic>=0.122.0
+langgraph>=1.2.11
+mcp>=2.0.0
+fastembed>=0.8.0
+onnxruntime<1.24
+sqlglot>=30.15.0
+pydantic>=2.13.4
+pyyaml>=6.0.3

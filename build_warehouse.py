@@ -1035,8 +1035,13 @@ def main() -> None:
         log.info("Fetching building_permits (ArcGIS) ...")
         load_raw(con, "building_permits", fetch_layer("Archived_Building_Permits"))
 
-        log.info("Fetching business_licenses (ArcGIS) ...")
-        load_raw(con, "business_licenses", fetch_layer("Business_Licenses_OpenData"))
+        # Temporarily disabled — the CLV Business_Licenses_OpenData layer is
+        # returning 0 features (upstream outage), which crashes the whole build.
+        # Re-enable when the feed recovers; the dbt models and page section that
+        # depend on raw.business_licenses are disabled in tandem (see stg_business_
+        # licenses / mart_business_licenses / mart_licenses_by_type + views).
+        # log.info("Fetching business_licenses (ArcGIS) ...")
+        # load_raw(con, "business_licenses", fetch_layer("Business_Licenses_OpenData"))
 
         log.info("Fetching short_term_rentals (metro-wide, ArcGIS) ...")
         load_raw(con, "short_term_rentals", fetch_str_metro())

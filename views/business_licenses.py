@@ -6,72 +6,18 @@ import streamlit as st
 from app_db import query
 
 st.title("📋 Business Licenses")
-st.caption("The City of Las Vegas business-license registry — searchable and broken down by type.")
+st.caption("Business-license registries for the Las Vegas Valley.")
 
-# --- KPIs ---
-kpi = query(
-    """
-    select
-        count(*)                                          as licenses,
-        sum(case when lower(status) = 'active' then 1 else 0 end) as active,
-        count(distinct type_of_business)                  as types
-    from main.mart_business_licenses
-    """
+# --- City of Las Vegas: temporarily offline ---
+# The CLV Business_Licenses_OpenData feed is down upstream, so raw.business_licenses
+# and its marts are disabled (see build_warehouse.py + the stg/mart models). Re-enable
+# them to restore the searchable CLV roster and type breakdown below the Henderson section.
+st.header("🎰 City of Las Vegas business licenses")
+st.info(
+    "The City of Las Vegas business-license feed is temporarily unavailable "
+    "upstream, so this section is offline. The City of Henderson data below is "
+    "unaffected."
 )
-c1, c2, c3 = st.columns(3)
-c1.metric("Licenses on file", f"{int(kpi['licenses'][0]):,}")
-c2.metric("Active", f"{int(kpi['active'][0]):,}")
-c3.metric("Business types", f"{int(kpi['types'][0]):,}")
-
-st.divider()
-
-# --- Top business types ---
-by_type = query(
-    """
-    select type_of_business, license_count, active_count
-    from main.mart_licenses_by_type
-    order by license_count desc
-    limit 20
-    """
-)
-st.subheader("Most common business types")
-type_chart = (
-    alt.Chart(by_type)
-    .mark_bar(color="#6a4c93")
-    .encode(
-        x=alt.X("license_count:Q", title="Licenses"),
-        y=alt.Y("type_of_business:N", sort="-x", title=None),
-        tooltip=[
-            "type_of_business",
-            alt.Tooltip("license_count:Q", title="Licenses", format=","),
-            alt.Tooltip("active_count:Q", title="Active", format=","),
-        ],
-    )
-)
-st.altair_chart(type_chart, width="stretch")
-
-st.divider()
-
-# --- Searchable table ---
-st.subheader("Search licenses")
-search = st.text_input("Filter by business name or type", "")
-where = ""
-if search:
-    safe = search.replace("'", "''")
-    where = (
-        f"where business_name ilike '%{safe}%' or type_of_business ilike '%{safe}%'"
-    )
-rows = query(
-    f"""
-    select business_name, type_of_business, status, zip_code, within_city_limits
-    from main.mart_business_licenses
-    {where}
-    order by business_name
-    limit 500
-    """
-)
-st.caption(f"Showing up to 500 rows ({len(rows)} shown).")
-st.dataframe(rows, width="stretch", hide_index=True)
 
 st.divider()
 
