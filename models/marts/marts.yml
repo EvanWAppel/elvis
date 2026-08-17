@@ -23,47 +23,121 @@ models:
 
   - name: mart_restaurants
     description: "One row per restaurant (permit), joining SNHD establishment detail (name, address, geo, current grade) to aggregated inspection history. Establishments with no inspections keep zeroed counts."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: permit_number
-        description: "Unique restaurant permit number"
+        data_type: varchar
+        description: "Unique SNHD permit number for the establishment (the grain of this table)."
         tests:
           - not_null
           - unique
-
       - name: restaurant_name
-        description: "Establishment name from the SNHD developer bundle"
-
+        data_type: varchar
+        description: "Establishment name from the SNHD developer bundle."
+      - name: address
+        data_type: varchar
+        description: "Street address of the establishment."
+      - name: city_name
+        data_type: varchar
+        description: "City the establishment is in (Clark County-wide)."
+      - name: zip_code
+        data_type: varchar
+        description: "ZIP code of the establishment."
+      - name: latitude
+        data_type: double
+        description: "WGS84 latitude (lat/lon are un-swapped from the source in staging)."
+      - name: longitude
+        data_type: double
+        description: "WGS84 longitude."
+      - name: status
+        data_type: varchar
+        description: "Establishment status decoded from the source (e.g. Active)."
       - name: current_grade
-        description: "Most recent grade on file for the establishment"
-
-      - name: compliance_rate_pct
-        description: "Percentage of passing inspections (an \"A\" grade / Compliant)"
-
+        data_type: varchar
+        description: "Most recent letter grade on file (A/B/C/...)."
+      - name: current_demerits
+        data_type: integer
+        description: "Demerits recorded on the most recent inspection."
+      - name: date_current
+        data_type: date
+        description: "Date the current grade/demerits were recorded."
       - name: total_inspections
-        description: "Number of inspections on record (0 if none)"
+        data_type: bigint
+        description: "Count of inspections on record (0 if none)."
         tests:
           - not_null
-
+      - name: avg_demerits
+        data_type: double
+        description: "Mean demerits across the establishment's inspections (null if none)."
+      - name: worst_demerits
+        data_type: integer
+        description: "Maximum demerits on any single inspection."
+      - name: first_inspection
+        data_type: date
+        description: "Earliest inspection date on record."
+      - name: last_inspection
+        data_type: date
+        description: "Most recent inspection date on record."
+      - name: compliant_count
+        data_type: hugeint
+        description: "Number of inspections marked compliant."
+      - name: non_compliant_count
+        data_type: hugeint
+        description: "Number of inspections marked non-compliant."
+      - name: downgrades
+        data_type: hugeint
+        description: "Number of inspections that were a B/C downgrade."
+      - name: closures
+        data_type: hugeint
+        description: "Number of inspections that resulted in a closure."
       - name: failed_inspections
-        description: "Inspections that were a B/C downgrade or a closure"
+        data_type: hugeint
+        description: "Inspections that were a downgrade or a closure (downgrades + closures)."
         tests:
           - not_null
-
+      - name: total_violations
+        data_type: hugeint
+        description: "Total violations cited across all inspections."
+      - name: compliance_rate_pct
+        data_type: double
+        description: "compliant_count / total_inspections as a percentage (null when no inspections)."
       - name: failure_rate_pct
-        description: "failed_inspections as a percentage of total_inspections"
+        data_type: double
+        description: "failed_inspections / total_inspections as a percentage — the governed restaurant_failure_rate metric (null when no inspections)."
 
   - name: mart_inspections_over_time
-    description: "Monthly inspection counts and compliance rates by inspection type"
+    description: "Monthly inspection counts and compliance rates by inspection type."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: inspection_month
-        description: "Month the inspections occurred (truncated to first of month)"
+        data_type: timestamp
+        description: "Month the inspections occurred (truncated to the first of the month)."
         tests:
           - not_null
-
+      - name: inspection_type
+        data_type: varchar
+        description: "SNHD inspection type (routine, re-inspection, etc.)."
       - name: inspection_count
-        description: "Number of inspections that month"
+        data_type: bigint
+        description: "Number of inspections of this type that month."
         tests:
           - not_null
+      - name: avg_demerits
+        data_type: double
+        description: "Mean demerits across those inspections."
+      - name: compliant_count
+        data_type: hugeint
+        description: "Number of those inspections marked compliant."
+      - name: non_compliant_count
+        data_type: hugeint
+        description: "Number of those inspections marked non-compliant."
+      - name: compliance_rate_pct
+        data_type: double
+        description: "compliant_count / inspection_count as a percentage."
 
   - name: mart_inspection_history
     description: "One row per inspection, keyed on permit_number for per-restaurant drill-down (date, type, grade, result, demerits, violation count)."
@@ -79,26 +153,59 @@ models:
 
   - name: mart_inspection_violations
     description: "One row per (inspection, violation), decoding violation codes to descriptions and demerit weights. Keyed on serial_number and permit_number."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: serial_number
-        description: "Inspection identifier the violation was cited on"
+        data_type: varchar
+        description: "Inspection identifier the violation was cited on."
         tests:
           - not_null
+      - name: permit_number
+        data_type: varchar
+        description: "Restaurant permit the inspection belongs to (joins to mart_restaurants)."
+      - name: inspection_date
+        data_type: date
+        description: "Date of the inspection the violation was cited on."
       - name: violation_code
-        description: "Cited violation code"
+        data_type: varchar
+        description: "Cited violation code."
         tests:
           - not_null
+      - name: violation_description
+        data_type: varchar
+        description: "Human-readable description decoded from the violation code."
+      - name: violation_demerits
+        data_type: integer
+        description: "Demerit weight assigned to this violation code."
 
   - name: mart_top_violations
-    description: "Violation code frequency by category and inspection type"
+    description: "Violation-code frequency by category and inspection type."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: violation_code
-        description: "Individual violation code"
+        data_type: varchar
+        description: "Individual violation code."
         tests:
           - not_null
-
+      - name: violation_description
+        data_type: varchar
+        description: "Human-readable description decoded from the violation code."
+      - name: violation_demerits
+        data_type: integer
+        description: "Demerit weight assigned to this violation code."
+      - name: inspection_type
+        data_type: varchar
+        description: "Inspection type the citations were grouped under."
+      - name: inspection_grade
+        data_type: varchar
+        description: "Inspection grade the citations were grouped under."
       - name: occurrence_count
-        description: "Number of times this violation was cited"
+        data_type: bigint
+        description: "Number of times this violation was cited in the group."
         tests:
           - not_null
 
