@@ -3,20 +3,49 @@ version: 2
 models:
   - name: mart_road_construction
     description: "Metro road construction, one row per project/event: City of Las Vegas CIP lines plus optional Nevada 511 NDOT state-route roadwork. Carries status/phase, schedule, road extent, a JSON polyline path for the map, and a WGS84 centroid."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: data_source
+        data_type: varchar
         description: "Originating feed: 'City of Las Vegas (CIP)' or 'NDOT 511 (state routes)'."
         tests:
           - not_null
+      - name: project_name
+        data_type: varchar
+      - name: description
+        data_type: varchar
+      - name: status
+        data_type: varchar
+      - name: category
+        data_type: varchar
+      - name: road_name
+        data_type: varchar
+      - name: extent
+        data_type: varchar
+      - name: start_date
+        data_type: date
+      - name: end_date
+        data_type: date
+      - name: contractor
+        data_type: varchar
+      - name: is_full_closure
+        data_type: boolean
+      - name: url
+        data_type: integer
       - name: path_json
+        data_type: varchar
         description: "Project geometry as a JSON array of [lon, lat] vertices, for the deck.gl PathLayer."
         tests:
           - not_null
       - name: latitude
+        data_type: double
         description: "WGS84 centroid latitude of the project line."
         tests:
           - not_null
       - name: longitude
+        data_type: double
         description: "WGS84 centroid longitude of the project line."
         tests:
           - not_null
@@ -141,15 +170,32 @@ models:
 
   - name: mart_inspection_history
     description: "One row per inspection, keyed on permit_number for per-restaurant drill-down (date, type, grade, result, demerits, violation count)."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: permit_number
+        data_type: varchar
         description: "Restaurant permit number"
         tests:
           - not_null
       - name: serial_number
+        data_type: varchar
         description: "Unique inspection identifier"
         tests:
           - not_null
+      - name: inspection_date
+        data_type: date
+      - name: inspection_type
+        data_type: varchar
+      - name: inspection_grade
+        data_type: varchar
+      - name: inspection_result
+        data_type: varchar
+      - name: inspection_demerits
+        data_type: integer
+      - name: violation_count
+        data_type: bigint
 
   - name: mart_inspection_violations
     description: "One row per (inspection, violation), decoding violation codes to descriptions and demerit weights. Keyed on serial_number and permit_number."
@@ -211,85 +257,183 @@ models:
 
   - name: mart_fire_prevention_inspections
     description: "One row per property summarizing fire prevention inspection history and violation totals"
+    config:
+      contract:
+        enforced: true
     columns:
       - name: property_name
+        data_type: varchar
         description: "Name of the inspected residential property"
-
-      - name: total_violations
-        description: "Total violations written across all inspection periods"
-        tests:
-          - not_null
-
+      - name: Address
+        data_type: varchar
+      - name: City
+        data_type: varchar
+      - name: Zip
+        data_type: double
+      - name: unit_count
+        data_type: integer
+      - name: latitude
+        data_type: double
+      - name: longitude
+        data_type: double
       - name: inspection_count
+        data_type: bigint
         description: "Number of inspection periods on record for this property"
         tests:
           - not_null
-
+      - name: most_recent_inspection
+        data_type: date
+      - name: total_violations
+        data_type: double
+        description: "Total violations written across all inspection periods"
+        tests:
+          - not_null
+      - name: avg_violations_per_period
+        data_type: double
       - name: avg_pct_dwellings_with_violations
+        data_type: double
         description: "Average percentage of dwellings with violations across all inspections"
+      - name: first_fiscal_year
+        data_type: integer
+      - name: last_fiscal_year
+        data_type: integer
 
   - name: mart_art_work_points
     description: "City of Las Vegas public art collection with coordinates and parsed metadata, ready for mapping"
+    config:
+      contract:
+        enforced: true
     columns:
-      - name: objectid
-        description: "Unique artwork identifier"
-        tests:
-          - not_null
-          - unique
-
+      - name: ObjectId
+        data_type: bigint
       - name: artwork_name
+        data_type: varchar
         description: "Title and year of the artwork"
-
       - name: artist
+        data_type: varchar
         description: "Artist name"
-
+      - name: medium
+        data_type: varchar
+      - name: location_detail
+        data_type: varchar
+      - name: address
+        data_type: varchar
+      - name: ward
+        data_type: varchar
       - name: latitude
+        data_type: double
         description: "Latitude coordinate for map placement"
         tests:
           - not_null
-
       - name: longitude
+        data_type: double
         description: "Longitude coordinate for map placement"
         tests:
           - not_null
+      - name: PIC_URL
+        data_type: varchar
+      - name: THUMB_URL
+        data_type: varchar
 
   - name: mart_crime_by_type
     description: "LVMPD call counts by classification and incident type."
+    config:
+      contract:
+        enforced: true
     columns:
+      - name: classification
+        data_type: varchar
+      - name: incident_type
+        data_type: varchar
       - name: incident_count
+        data_type: bigint
         tests:
           - not_null
 
   - name: mart_crime_by_hour_weekday
     description: "LVMPD call counts by hour of day and day of week, for a heatmap."
+    config:
+      contract:
+        enforced: true
     columns:
+      - name: weekday
+        data_type: varchar
+      - name: hour_of_day
+        data_type: integer
       - name: incident_count
+        data_type: bigint
         tests:
           - not_null
 
   - name: mart_crime_monthly
     description: "LVMPD calls per month across the loaded years."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: incident_month
+        data_type: timestamp
         tests:
           - not_null
+      - name: incident_count
+        data_type: bigint
+      - name: distinct_types
+        data_type: bigint
 
   - name: mart_crime_map_sample
     description: "A ~12k-row random sample of geolocated calls (bounded to the valley) for mapping."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: incident_number
+        data_type: varchar
+      - name: incident_type
+        data_type: varchar
+      - name: classification
+        data_type: varchar
+      - name: incident_date
+        data_type: timestamp
+      - name: address
+        data_type: varchar
+      - name: latitude
+        data_type: double
+      - name: longitude
+        data_type: double
 
   - name: mart_permits_monthly
     description: "City of Las Vegas building permits per month with total and average valuation."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: issue_month
+        data_type: timestamp
         tests:
           - not_null
+      - name: permit_count
+        data_type: bigint
+      - name: total_valuation
+        data_type: double
+      - name: avg_valuation
+        data_type: double
 
   - name: mart_permits_by_type
     description: "Building permit counts and valuation by application type."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: application_type
+        data_type: varchar
         tests:
           - not_null
+      - name: permit_count
+        data_type: bigint
+      - name: total_valuation
+        data_type: double
+      - name: avg_valuation
+        data_type: double
 
   # TEMPORARILY DISABLED with the CLV Business Licenses feed (see the models'
   # enabled=false config + build_warehouse.py). Re-enable these blocks alongside
@@ -309,102 +453,243 @@ models:
 
   - name: mart_short_term_rentals
     description: "Metro-wide short-term rentals (Las Vegas, North Las Vegas, Henderson) with jurisdiction and WGS84 coordinates for mapping."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: jurisdiction
+        data_type: varchar
         tests:
           - not_null
+      - name: business_name
+        data_type: varchar
+      - name: status
+        data_type: varchar
+      - name: category
+        data_type: varchar
+      - name: address
+        data_type: varchar
+      - name: issued_date
+        data_type: date
       - name: latitude
+        data_type: double
         tests:
           - not_null
       - name: longitude
+        data_type: double
         tests:
           - not_null
 
   - name: mart_henderson_permits
     description: "City of Henderson building permits per month by case type."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: issue_month
+        data_type: timestamp
         tests:
           - not_null
+      - name: case_type
+        data_type: varchar
+      - name: permit_count
+        data_type: bigint
 
   - name: mart_henderson_licenses_by_type
     description: "City of Henderson business license counts (and active counts) by license type."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: license_type
+        data_type: varchar
         tests:
           - not_null
+      - name: license_count
+        data_type: bigint
+      - name: active_count
+        data_type: hugeint
 
   - name: mart_parks
     description: "Metro-wide parks with jurisdiction, centroid coordinates, acreage, and a has_water flag (true/false where published, else null)."
+    config:
+      contract:
+        enforced: true
     columns:
-      - name: park_name
-        tests:
-          - not_null
       - name: jurisdiction
+        data_type: varchar
         tests:
           - not_null
+      - name: park_name
+        data_type: varchar
+        tests:
+          - not_null
+      - name: address
+        data_type: varchar
+      - name: acres
+        data_type: double
+      - name: has_water
+        data_type: boolean
+      - name: latitude
+        data_type: double
+      - name: longitude
+        data_type: double
 
   - name: mart_marriage_monthly
     description: "Clark County marriage licenses per month."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: license_month
+        data_type: timestamp
         tests:
           - not_null
+      - name: license_count
+        data_type: bigint
 
   - name: mart_marriage_daily
     description: "Marriage licenses per calendar day, for spotting Valentine's / NYE / novelty-date spikes."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: license_date
+        data_type: date
         tests:
           - not_null
+      - name: month_of_year
+        data_type: bigint
+      - name: day_of_month
+        data_type: bigint
+      - name: license_count
+        data_type: bigint
 
   - name: mart_marriage_by_origin
     description: "Marriage licenses by mailing origin (US state, else country)."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: origin
+        data_type: varchar
         tests:
           - not_null
+      - name: license_count
+        data_type: bigint
 
   - name: mart_marriage_by_gender_year
     description: "Same-sex vs different-sex marriage licenses per year."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: license_year
+        data_type: bigint
         tests:
           - not_null
+      - name: couple_type
+        data_type: varchar
+      - name: license_count
+        data_type: bigint
 
   - name: mart_lake_mead_monthly
     description: "Monthly average / min / max Lake Mead elevation (feet)."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: reading_month
+        data_type: timestamp
         tests:
           - not_null
+      - name: avg_elevation_ft
+        data_type: double
+      - name: min_elevation_ft
+        data_type: double
+      - name: max_elevation_ft
+        data_type: double
 
   - name: mart_weather_monthly
     description: "Monthly average high/low and record high/low at the Las Vegas airport station."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: observed_month
+        data_type: timestamp
         tests:
           - not_null
+      - name: avg_high_f
+        data_type: double
+      - name: avg_low_f
+        data_type: double
+      - name: record_high_f
+        data_type: double
+      - name: record_low_f
+        data_type: double
 
   - name: mart_weather_extreme_days
     description: "Count of 100F+ and 110F+ days per year, plus average daily high."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: observed_year
+        data_type: bigint
         tests:
           - not_null
+      - name: days_100f_plus
+        data_type: hugeint
+      - name: days_110f_plus
+        data_type: hugeint
+      - name: avg_high_f
+        data_type: double
 
   - name: mart_lvcva_indicators
     description: "Long-form monthly LVCVA indicators (metric, month, value): visitor volume, occupancy, ADR, airport passengers, gaming revenue by area."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: metric
+        data_type: varchar
         tests:
           - not_null
       - name: indicator_month
+        data_type: date
         tests:
           - not_null
+      - name: value
+        data_type: double
 
   - name: mart_air_quality_daily
     description: "Daily worst-site AQI and average concentration by pollutant (PM2.5 / ozone) across the Las Vegas metro (Clark County)."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: observed_date
+        data_type: date
+      - name: parameter
+        data_type: varchar
+      - name: max_aqi
+        data_type: integer
+      - name: avg_concentration
+        data_type: double
 
   - name: mart_air_quality_monthly
     description: "Monthly average and peak AQI by pollutant for Clark County."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: observed_month
+        data_type: timestamp
+      - name: parameter
+        data_type: varchar
+      - name: avg_aqi
+        data_type: double
+      - name: peak_aqi
+        data_type: integer
+
