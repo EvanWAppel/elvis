@@ -10,6 +10,7 @@ anthropic>=0.122.0
 langgraph>=1.2.11
 mcp>=2.0.0
 fastembed>=0.8.0
+rank-bm25>=0.2.2
 onnxruntime<1.24
 sqlglot>=30.15.0
 pydantic>=2.13.4
