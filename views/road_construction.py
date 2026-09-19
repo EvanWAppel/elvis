@@ -8,7 +8,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🚧 Road Construction")
+st.title("Road Construction")
 st.caption(
     "Where the metro is under construction: City of Las Vegas Capital Improvement "
     "Program projects (streets, sewer, safety) and — when a Nevada 511 key is "

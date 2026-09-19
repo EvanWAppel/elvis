@@ -5,7 +5,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🌡️ Desert Heat")
+st.title("Desert Heat")
 st.caption(
     "Daily temperatures at Harry Reid International Airport (NOAA GHCN-Daily, "
     "1948–present). The valley's signature is extreme summer heat."

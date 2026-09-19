@@ -5,7 +5,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🏠 Short-Term Rentals")
+st.title("Short-Term Rentals")
 st.caption(
     "Licensed / registered short-term rentals (Airbnb-style) across the metro: "
     "City of Las Vegas, North Las Vegas, and Henderson."

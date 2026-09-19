@@ -7,29 +7,41 @@ page lives in ``views/`` and queries the dbt marts via ``app_db.query``.
 
 import streamlit as st
 
+from ui import apply_theme
+
 st.set_page_config(
-    page_title="Las Vegas Open-Data Explorer",
-    page_icon="🎰",
+    page_title="Elvis — Las Vegas, in data",
+    page_icon="✳",
     layout="wide",
 )
 
-pages = [
-    st.Page("views/overview.py", title="Overview", icon="🏠", default=True),
-    st.Page("views/tiresias.py", title="Ask Tiresias", icon="🔮"),
-    st.Page("views/public_art.py", title="Public Art", icon="🗺️"),
-    st.Page("views/restaurants.py", title="Restaurant Inspections", icon="🍽️"),
-    st.Page("views/fire.py", title="Fire Inspections", icon="🔥"),
-    st.Page("views/crime.py", title="Metro Calls", icon="🚨"),
-    st.Page("views/building_permits.py", title="Building Permits", icon="🏗️"),
-    st.Page("views/business_licenses.py", title="Business Licenses", icon="📋"),
-    st.Page("views/short_term_rentals.py", title="Short-Term Rentals", icon="🏠"),
-    st.Page("views/parks.py", title="Parks", icon="🌳"),
-    st.Page("views/road_construction.py", title="Road Construction", icon="🚧"),
-    st.Page("views/marriage.py", title="Marriage Licenses", icon="💍"),
-    st.Page("views/tourism.py", title="Tourism & Gaming", icon="🎢"),
-    st.Page("views/lake_mead.py", title="Lake Mead", icon="🏜️"),
-    st.Page("views/weather.py", title="Desert Heat", icon="🌡️"),
-    st.Page("views/air_quality.py", title="Air Quality", icon="💨"),
-]
+apply_theme()
+
+pages = {
+    "The atlas": [
+        st.Page("views/overview.py", title="Overview", default=True),
+        st.Page("views/tiresias.py", title="Ask Tiresias"),
+    ],
+    "01 / Culture & place": [
+        st.Page("views/public_art.py", title="Public Art"),
+        st.Page("views/parks.py", title="Parks"),
+        st.Page("views/marriage.py", title="Marriage Licenses"),
+        st.Page("views/tourism.py", title="Tourism & Gaming"),
+    ],
+    "02 / Civic life": [
+        st.Page("views/restaurants.py", title="Restaurant Inspections"),
+        st.Page("views/fire.py", title="Fire Inspections"),
+        st.Page("views/crime.py", title="Metro Calls"),
+        st.Page("views/building_permits.py", title="Building Permits"),
+        st.Page("views/business_licenses.py", title="Business Licenses"),
+        st.Page("views/short_term_rentals.py", title="Short-Term Rentals"),
+        st.Page("views/road_construction.py", title="Road Construction"),
+    ],
+    "03 / The desert": [
+        st.Page("views/lake_mead.py", title="Lake Mead"),
+        st.Page("views/weather.py", title="Desert Heat"),
+        st.Page("views/air_quality.py", title="Air Quality"),
+    ],
+}
 
 st.navigation(pages).run()

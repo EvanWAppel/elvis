@@ -6,7 +6,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🗺️ City of Las Vegas Public Art")
+st.title("City of Las Vegas Public Art")
 st.caption("The City's public art collection — geocoded and filterable by council ward.")
 
 df = query(

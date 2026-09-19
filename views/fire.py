@@ -6,7 +6,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🔥 Fire-Prevention Inspections")
+st.title("Fire-Prevention Inspections")
 st.caption(
     "City of Las Vegas fire-prevention inspections of multi-unit residential "
     "properties. Note: the source dataset is no longer updated."

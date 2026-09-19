@@ -5,7 +5,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🏗️ Building Permits")
+st.title("Building Permits")
 st.caption(
     "City of Las Vegas archived building-permit history, with construction "
     "valuations. Great for spotting the valley's building cycles."

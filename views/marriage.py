@@ -5,7 +5,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("💍 Marriage Licenses")
+st.title("Marriage Licenses")
 st.caption(
     "Clark County marriage licenses (2007–2024). Las Vegas is the wedding "
     "capital of the world — the spikes and seasonality show why."

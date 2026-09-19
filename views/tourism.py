@@ -5,7 +5,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🎢 Tourism, Gaming & Air Travel")
+st.title("Tourism, Gaming & Air Travel")
 st.caption(
     "Monthly Southern Nevada indicators from the LVCVA Research Center: visitor "
     "volume, hotel occupancy and rates, airport passengers, and gaming revenue "
