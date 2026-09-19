@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+:root{--elvis-paper:#eeece4;--elvis-ink:#232820;--elvis-red:#bd3c24;--elvis-line:#c8c9bc}
+.stApp{background:var(--elvis-paper);color:var(--elvis-ink)}
+html,body,[data-testid="stAppViewContainer"],.stMarkdown,p,button,input,select,textarea{font-family:'DM Sans',Arial,sans-serif}
+h1,h2,h3{font-family:'DM Sans',Arial,sans-serif!important;color:var(--elvis-ink);letter-spacing:-.045em;font-weight:500!important}
+h1{font-size:clamp(2.3rem,4.6vw,4.5rem)!important;line-height:1.05!important}
+h2{font-size:1.9rem!important}h3{font-size:1.3rem!important}
+[data-testid="stMainBlockContainer"]{max-width:1480px;padding-top:3.5rem;padding-bottom:4rem}
+[data-testid="stSidebar"]{background:#e2e3d6;border-right:1px solid var(--elvis-line)}
+[data-testid="stSidebarNav"]{padding-top:1rem}
+[data-testid="stSidebarNav"] a{border-radius:0;font-size:13px}
+[data-testid="stSidebarNav"] a[aria-current="page"]{background:#d4d7bf;border-left:3px solid var(--elvis-red)}
+[data-testid="stSidebarNav"] a:hover{background:#d4d7bf}
+[data-testid="stHeader"]{background:var(--elvis-paper)}
+.elvis-brand{font-family:'DM Sans',Arial,sans-serif;font-size:64px;font-weight:700;letter-spacing:-5px;line-height:1.1;margin:12px 0}
+.elvis-brand span{color:var(--elvis-red);font-size:43px;vertical-align:top;display:inline-block;margin-left:7px;letter-spacing:0}
+.elvis-caption,.elvis-eyebrow,.elvis-section-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.07em;line-height:1.8;color:#565e4c}
+.elvis-caption{margin-bottom:22px}.elvis-eyebrow{border-bottom:1px solid var(--elvis-ink);padding-bottom:15px;margin-bottom:30px;display:flex;justify-content:space-between;gap:20px}
+.elvis-cover{position:relative;padding:0 0 25px;border-bottom:1px solid var(--elvis-line);margin-bottom:15px}
+.elvis-cover h1{font-size:clamp(3.5rem,7.5vw,7.5rem)!important;line-height:.95!important;letter-spacing:-.065em;max-width:85%;margin-bottom:22px}
+.elvis-cover h1 em{font-family:Georgia,serif;color:var(--elvis-red);font-weight:400}
+.elvis-cover p{color:#64665b;font-size:15px;line-height:1.7;max-width:550px}
+.elvis-star{position:absolute;right:0;top:5px;font-size:clamp(75px,11vw,155px);line-height:1;color:var(--elvis-red)}
+.elvis-section-label{margin:20px 0 14px;color:var(--elvis-red)}
+[data-testid="stMetric"]{padding:22px 18px;border-top:1px solid var(--elvis-ink);border-bottom:1px solid var(--elvis-line);background:transparent;min-height:125px}
+[data-testid="stMetricLabel"] p{font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.03em}
+[data-testid="stMetricValue"]{font-family:'DM Sans',sans-serif;font-size:clamp(1.8rem,3.2vw,3rem);letter-spacing:-.06em;font-weight:500}
+[data-testid="stCaptionContainer"]{color:#64665b}
+.stButton button,.stLinkButton a,[data-testid="stBaseButton-secondary"]{border-radius:0!important;border-color:#8c927e!important}
+.stButton button:hover,.stLinkButton a:hover{color:var(--elvis-red)!important;border-color:var(--elvis-red)!important;background:#e8e5d9!important}
+[data-testid="stBaseButton-primary"]{background:var(--elvis-ink)!important;color:var(--elvis-paper)!important}
+[data-testid="stDataFrame"], [data-testid="stVegaLiteChart"], [data-testid="stDeckGlJsonChart"]{border:1px solid var(--elvis-line)}
+[data-baseweb="tab-list"]{gap:22px;border-bottom:1px solid var(--elvis-line)}
+[data-baseweb="tab"]{font-size:12px}hr{border-color:var(--elvis-line)!important}
+.elvis-collection{padding:23px;min-height:192px;margin-bottom:8px;background:#d4d7b8;border-top:2px solid #46583d}
+.elvis-collection.culture{background:#e5c4ae;border-color:var(--elvis-red)}
+.elvis-collection.desert{background:#dccdae;border-color:#75613c}
+.elvis-collection .elvis-section-label{margin:0 0 18px;font-size:9px;color:var(--elvis-ink)}
+.elvis-collection h3{font-size:25px!important;margin:0 0 12px;line-height:1.1}
+.elvis-collection p{font-size:12px;line-height:1.7;margin:0;color:#444c3e}
+[data-testid="stPageLink"] a{border-radius:0;border-bottom:1px solid var(--elvis-line);padding:10px 0}
+.elvis-footer{margin-top:24px;padding-top:16px;border-top:1px solid var(--elvis-ink);font-family:'Space Mono',monospace;font-size:9px;color:#64665b;line-height:1.8}
+@media(max-width:700px){[data-testid="stMainBlockContainer"]{padding:2rem 1.2rem}.elvis-eyebrow{font-size:8px}.elvis-eyebrow span:last-child{display:none}.elvis-cover h1{font-size:3.7rem!important}.elvis-star{font-size:73px;top:20px}.elvis-cover p{font-size:13px;max-width:90%}[data-testid="stMetric"]{min-height:105px;padding:15px}.elvis-collection{min-height:0}.elvis-caption{font-size:9px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}

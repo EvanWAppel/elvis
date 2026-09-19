@@ -7,7 +7,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🚨 Metro Calls for Service")
+st.title("Metro Calls for Service")
 st.caption(
     "Las Vegas Metropolitan Police Department calls for service (two most recent "
     "years). Points on the map are a random sample; charts use the full dataset."

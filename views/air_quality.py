@@ -5,7 +5,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("💨 Air Quality")
+st.title("Air Quality")
 st.caption(
     "EPA Air Quality System daily AQI across the Las Vegas metro (Clark County) — "
     "PM2.5 (fine particulates) and ozone. Lower AQI is cleaner air; 50+ is "

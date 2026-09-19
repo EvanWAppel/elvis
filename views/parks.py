@@ -5,7 +5,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🌳 Metro Parks")
+st.title("Metro Parks")
 st.caption(
     "Parks across the Las Vegas metro — City of Las Vegas, Henderson, "
     "unincorporated Clark County, and North Las Vegas — flagged by whether they "

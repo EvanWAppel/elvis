@@ -12,7 +12,7 @@ def _sql_literal(value: str) -> str:
     return str(value).replace("'", "''")
 
 
-st.title("🍽️ Restaurant Inspections")
+st.title("Restaurant Inspections")
 st.caption(
     "Southern Nevada Health District inspections covering **all of Clark "
     "County**, sourced nightly from SNHD's developer data feed. Includes "

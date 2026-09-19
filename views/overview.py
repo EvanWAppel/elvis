@@ -4,11 +4,14 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🎰 Las Vegas Open-Data Explorer")
-st.markdown(
-    "Raw open data from the Las Vegas Valley — loaded into **DuckDB**, modeled "
-    "with **dbt**, and served live through this app. Pick a dataset from the "
-    "sidebar to explore."
+st.html(
+    '<div class="elvis-eyebrow"><span>THE VALLEY, OBSERVED / ELVIS OPEN DATA</span>'
+    '<span>36.1699° N &nbsp; 115.1398° W</span></div>'
+    '<div class="elvis-cover"><h1>Beyond<br>the <em>Strip.</em></h1>'
+    '<span class="elvis-star" aria-hidden="true">✳</span>'
+    '<p>There’s a whole city behind the spectacle. Follow the data into '
+    'the Las Vegas that lives, works, and grows.</p></div>'
+    '<div class="elvis-section-label">01 / A SNAPSHOT OF THE VALLEY</div>'
 )
 
 # --- Headline numbers, straight from the dbt marts ---
@@ -52,50 +55,48 @@ c6.metric("Business licenses", f"{lic_n:,}", help="City of Henderson (Las Vegas 
 c7, c8, c9 = st.columns(3)
 c7.metric("Marriage licenses", f"{marriage_n:,}", help="Clark County, 2007–2024")
 c8.metric("Lake Mead elevation", f"{lake_ft:,.0f} ft", help="latest monthly average")
-c9.metric("110°F+ days last year", f"{hot_days}", help="Las Vegas airport station")
+c9.metric("110°F+ days (prior recorded year)", f"{hot_days}", help="Las Vegas airport station")
+
+st.html('<div class="elvis-section-label">02 / FOLLOW YOUR CURIOSITY</div>')
+
+collections = [
+    ("culture", "01 / CULTURE & PLACE", "The city as a canvas.",
+     "Art, parks, and the places that give the valley its character.",
+     [("views/public_art.py", "Discover public art"), ("views/parks.py", "Find a park"),
+      ("views/marriage.py", "Explore marriage licenses"), ("views/tourism.py", "Tourism & gaming")]),
+    ("civic", "02 / CIVIC LIFE", "Behind the everyday.",
+     "How the valley builds, operates, and keeps its communities safe.",
+     [("views/restaurants.py", "Restaurant inspections"), ("views/fire.py", "Fire inspections"),
+      ("views/crime.py", "Metro calls for service"), ("views/building_permits.py", "Building permits"),
+      ("views/business_licenses.py", "Business licenses"), ("views/short_term_rentals.py", "Short-term rentals"),
+      ("views/road_construction.py", "Road construction")]),
+    ("desert", "03 / THE DESERT", "At the desert’s edge.",
+     "Water, heat, and air reveal a landscape living at the extremes.",
+     [("views/lake_mead.py", "Follow Lake Mead’s water levels"), ("views/weather.py", "Explore desert heat"),
+      ("views/air_quality.py", "Track air quality")]),
+]
+for column, (theme, label, title, description, links) in zip(st.columns(3), collections):
+    with column:
+        st.html(
+            f'<div class="elvis-collection {theme}"><div class="elvis-section-label">{label}</div>'
+            f'<h3>{title}</h3><p>{description}</p></div>'
+        )
+        for page, text in links:
+            st.page_link(page, label=text)
 
 st.divider()
+left, right = st.columns([2, 1])
+with left:
+    st.subheader("A question is a good place to start.")
+    st.write("Ask Tiresias to investigate the warehouse, or choose a collection to explore its maps and charts.")
+    st.page_link("views/tiresias.py", label="Ask Tiresias →")
+with right:
+    st.markdown("**Open sources. Clear perspective.**")
+    st.caption("Public records → Python → DuckDB → dbt → this atlas. Every view starts with a modeled dataset.")
+    st.link_button("Explore the source ↗", "https://github.com/EvanWAppel/elvis")
 
-col_a, col_b = st.columns(2)
-with col_a:
-    st.subheader("What's inside")
-    st.markdown(
-        "- **🗺️ Public Art** — an interactive map of the City's public art "
-        "collection, filterable by council ward.\n"
-        "- **🍽️ Restaurant Inspections** — Southern Nevada Health District "
-        "inspections across **all of Clark County**: a searchable, sortable "
-        "restaurant list with names and addresses, grades, top violations, and "
-        "compliance trends since 2020.\n"
-        "- **🔥 Fire Inspections** — City of Las Vegas fire-prevention "
-        "inspections of multi-unit residential properties.\n"
-        "- **🚨 Metro Calls** — LVMPD calls for service: what, when, and where, "
-        "with a time-of-day heatmap and a hex-binned map.\n"
-        "- **🏗️ Building Permits** — construction volume and valuation over the "
-        "valley's boom years.\n"
-        "- **📋 Business Licenses** — a searchable registry of what businesses "
-        "operate in the city.\n"
-        "- **🏠 Short-Term Rentals** & **🌳 Parks** — mapped metro-wide (Las Vegas, "
-        "Henderson, Clark County, North Las Vegas); parks flagged for water features.\n"
-        "- **💍 Marriage Licenses** — the wedding capital's spikes, seasonality, "
-        "and where couples come from.\n"
-        "- **🎢 Tourism & Gaming** — LVCVA visitor volume, hotel rates, airport "
-        "passengers, and monthly gaming revenue by area.\n"
-        "- **🏜️ Lake Mead** & **🌡️ Desert Heat** — the Colorado River drought and "
-        "the valley's rising extreme-heat days."
-    )
-
-with col_b:
-    st.subheader("How it's built")
-    st.markdown(
-        "Every number on every page is a **dbt** model materialized in "
-        "**DuckDB** and queried live — the same extract → load → model → test → "
-        "serve workflow a data team runs in production.\n\n"
-        "**Source** (City / SNHD open data) → **Load** (Python) → "
-        "**Model + Test** (dbt) → **Serve** (Streamlit)."
-    )
-    st.link_button("Source on GitHub ↗", "https://github.com/EvanWAppel/elvis")
-
-st.caption(
-    "Data: City of Las Vegas, Clark County & LVMPD open data, SNHD, LVCVA, "
-    "USBR (Lake Mead), and NOAA."
+st.html(
+    '<div class="elvis-footer">AN INDEPENDENT ATLAS BY EVAN APPEL<br>'
+    'SOURCES / CITY OF LAS VEGAS · CLARK COUNTY · LVMPD · SNHD · LVCVA · USBR · NOAA · EPA<br>'
+    'Coverage and reporting periods vary by dataset. See individual collections for context.</div>'
 )

@@ -6,7 +6,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("🏜️ Lake Mead Water Levels")
+st.title("Lake Mead Water Levels")
 st.caption(
     "Daily reservoir elevation at Hoover Dam (USBR), averaged by month. Full "
     "pool is 1,229 ft; the intake known as 'dead pool' sits near 895 ft."

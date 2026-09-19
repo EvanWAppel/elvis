@@ -5,7 +5,7 @@ import streamlit as st
 
 from app_db import query
 
-st.title("📋 Business Licenses")
+st.title("Business Licenses")
 st.caption("Business-license registries for the Las Vegas Valley.")
 
 # --- City of Las Vegas: temporarily offline ---

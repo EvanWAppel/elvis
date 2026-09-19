@@ -2,3 +2,11 @@
 # Railway runs the app headless behind its own proxy; the port/address are
 # passed on the command line (see Procfile).
 headless = true
+
+[theme]
+base = "light"
+primaryColor = "#bd3c24"
+backgroundColor = "#eeece4"
+secondaryBackgroundColor = "#e2e3d6"
+textColor = "#232820"
+font = "sans serif"
