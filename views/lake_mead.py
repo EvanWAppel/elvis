@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Lake Mead Water Levels")
 st.caption(
@@ -52,7 +53,7 @@ rules = (
     .mark_rule(strokeDash=[6, 4], color="#868e96")
     .encode(y="level:Q")
 )
-st.altair_chart(
+atlas_chart(
     (line + rules).interactive(),
     width="stretch",
 )

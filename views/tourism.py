@@ -4,6 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Tourism, Gaming & Air Travel")
 st.caption(
@@ -43,7 +44,7 @@ st.subheader("Visitor volume")
 st.caption("The 2020 pandemic collapse and recovery are unmistakable.")
 vv = line_of("Visitor Volume", "Visitors", "#1098ad")
 if vv is not None:
-    st.altair_chart(vv, width="stretch")
+    atlas_chart(vv, width="stretch")
 
 # --- Gaming revenue by area ---
 st.subheader("Gaming revenue by area")
@@ -74,13 +75,13 @@ if not gaming.empty:
             ],
         )
     )
-    st.altair_chart(gaming_chart, width="stretch")
+    atlas_chart(gaming_chart, width="stretch")
 
 # --- Airport passengers ---
 st.subheader("Airport passengers (Harry Reid International)")
 ap = line_of("%En/Deplaned Passengers%", "Passengers", "#7048e8")
 if ap is not None:
-    st.altair_chart(ap, width="stretch")
+    atlas_chart(ap, width="stretch")
 
 st.divider()
 
@@ -110,4 +111,4 @@ detail_chart = (
         ],
     )
 )
-st.altair_chart(detail_chart, width="stretch")
+atlas_chart(detail_chart, width="stretch")

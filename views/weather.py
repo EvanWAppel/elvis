@@ -4,6 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Desert Heat")
 st.caption(
@@ -66,7 +67,7 @@ heat_chart = (
         tooltip=["observed_year", "threshold", "days"],
     )
 )
-st.altair_chart(heat_chart, width="stretch")
+atlas_chart(heat_chart, width="stretch")
 
 # --- Average annual high ---
 st.subheader("Average daily high, by year")
@@ -82,4 +83,4 @@ avg_chart = (
         ],
     )
 )
-st.altair_chart(avg_chart, width="stretch")
+atlas_chart(avg_chart, width="stretch")

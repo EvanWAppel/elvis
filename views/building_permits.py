@@ -4,6 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Building Permits")
 st.caption(
@@ -51,7 +52,7 @@ permits_line = (
         ],
     )
 )
-st.altair_chart(permits_line, width="stretch")
+atlas_chart(permits_line, width="stretch")
 
 st.subheader("Construction valuation per month")
 val_line = (
@@ -66,7 +67,7 @@ val_line = (
         ],
     )
 )
-st.altair_chart(val_line, width="stretch")
+atlas_chart(val_line, width="stretch")
 
 # --- By type ---
 by_type = query(
@@ -91,7 +92,7 @@ type_chart = (
         ],
     )
 )
-st.altair_chart(type_chart, width="stretch")
+atlas_chart(type_chart, width="stretch")
 st.dataframe(by_type, width="stretch", hide_index=True)
 
 st.divider()
@@ -123,7 +124,7 @@ hen_line = (
         ],
     )
 )
-st.altair_chart(hen_line, width="stretch")
+atlas_chart(hen_line, width="stretch")
 
 hen_types = query(
     """
@@ -143,4 +144,4 @@ hen_type_chart = (
         tooltip=["case_type", alt.Tooltip("permit_count:Q", title="Permits", format=",")],
     )
 )
-st.altair_chart(hen_type_chart, width="stretch")
+atlas_chart(hen_type_chart, width="stretch")
