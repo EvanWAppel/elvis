@@ -49,7 +49,11 @@ h2{font-size:1.9rem!important}h3{font-size:1.3rem!important}
 .elvis-collection .elvis-section-label{margin:0 0 18px;font-size:9px;color:var(--elvis-ink)}
 .elvis-collection h3{font-size:25px!important;margin:0 0 12px;line-height:1.1}
 .elvis-collection p{font-size:12px;line-height:1.7;margin:0;color:#444c3e}
-[data-testid="stPageLink"] a{border-radius:0;border-bottom:1px solid var(--elvis-line);padding:10px 0}
+[data-testid="stPageLink"] a{border-radius:0;border-bottom:1px solid var(--elvis-line);padding:10px 0;color:var(--elvis-ink)!important;background:transparent!important}
+[data-testid="stPageLink"] a [data-testid="stMarkdownContainer"],[data-testid="stPageLink"] a p,[data-testid="stPageLink"] a span{color:inherit!important}
+[data-testid="stPageLink"] a:hover,[data-testid="stPageLink"] a:focus-visible{color:#a3311d!important;background:#e2e3d6!important}
+[data-testid="stPageLink"] a:focus-visible{outline:2px solid var(--elvis-red);outline-offset:3px}
+[data-testid="stMain"] [data-testid="stMarkdown"] [data-testid="stMarkdownContainer"]{color:var(--elvis-ink)}
 .elvis-footer{margin-top:24px;padding-top:16px;border-top:1px solid var(--elvis-ink);font-family:'Space Mono',monospace;font-size:9px;color:#64665b;line-height:1.8}
 @media(max-width:700px){[data-testid="stMainBlockContainer"]{padding:2rem 1.2rem}.elvis-eyebrow{font-size:8px}.elvis-eyebrow span:last-child{display:none}.elvis-cover h1{font-size:3.7rem!important}.elvis-star{font-size:73px;top:20px}.elvis-cover p{font-size:13px;max-width:90%}[data-testid="stMetric"]{min-height:105px;padding:15px}.elvis-collection{min-height:0}.elvis-caption{font-size:9px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
