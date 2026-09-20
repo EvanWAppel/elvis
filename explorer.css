@@ -1,5 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 :root{--elvis-paper:#eeece4;--elvis-ink:#232820;--elvis-red:#bd3c24;--elvis-line:#c8c9bc}
+/* Keep text readable on the fixed paper palette, including in dark-mode sessions. */
+[data-testid="stSidebar"],.elvis-brand,
+[data-testid="stSidebarNav"] a,[data-testid="stSidebarNav"] a span,
+[data-testid="stSidebarNav"] [data-testid="stMarkdownContainer"],
+[data-testid="stSidebarNavViewButton"],
+[data-testid="stMetricValue"]{color:var(--elvis-ink)!important}
+[data-testid="stSidebarNav"] p,
+[data-testid="stMetricLabel"],[data-testid="stMetricLabel"] p,
+[data-testid="stMetric"] [data-testid="stTooltipIcon"],
+[data-testid="stCaptionContainer"],[data-testid="stCaptionContainer"] p{color:#565e4c!important}
+[data-testid="stCaptionContainer"]{opacity:1!important}
 .stApp{background:var(--elvis-paper);color:var(--elvis-ink)}
 html,body,[data-testid="stAppViewContainer"],.stMarkdown,p,button,input,select,textarea{font-family:'DM Sans',Arial,sans-serif}
 h1,h2,h3{font-family:'DM Sans',Arial,sans-serif!important;color:var(--elvis-ink);letter-spacing:-.045em;font-weight:500!important}
