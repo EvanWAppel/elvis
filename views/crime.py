@@ -6,6 +6,7 @@ import pydeck as pdk
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Metro Calls for Service")
 st.caption(
@@ -57,7 +58,7 @@ trend = (
         ],
     )
 )
-st.altair_chart(trend, width="stretch")
+atlas_chart(trend, width="stretch")
 
 # --- Top incident types ---
 types = query(
@@ -82,7 +83,7 @@ types_chart = (
         ],
     )
 )
-st.altair_chart(types_chart, width="stretch")
+atlas_chart(types_chart, width="stretch")
 
 # --- Hour x weekday heatmap ---
 heat = query(
@@ -113,7 +114,7 @@ heatmap = (
         ],
     )
 )
-st.altair_chart(heatmap, width="stretch")
+atlas_chart(heatmap, width="stretch")
 
 # --- Map (sampled) ---
 st.subheader("Where calls happen")

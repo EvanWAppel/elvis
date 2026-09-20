@@ -4,6 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Marriage Licenses")
 st.caption(
@@ -55,7 +56,7 @@ trend = (
         ],
     )
 )
-st.altair_chart(trend, width="stretch")
+atlas_chart(trend, width="stretch")
 
 # --- Biggest single days (novelty dates) ---
 big_days = query(
@@ -78,7 +79,7 @@ days_chart = (
         tooltip=["label", alt.Tooltip("license_count:Q", title="Licenses", format=",")],
     )
 )
-st.altair_chart(days_chart, width="stretch")
+atlas_chart(days_chart, width="stretch")
 
 col_a, col_b = st.columns(2)
 
@@ -103,7 +104,7 @@ with col_a:
             tooltip=["origin", alt.Tooltip("license_count:Q", title="Licenses", format=",")],
         )
     )
-    st.altair_chart(origin_chart, width="stretch")
+    atlas_chart(origin_chart, width="stretch")
 
 # --- Same-sex vs different-sex ---
 with col_b:
@@ -130,4 +131,4 @@ with col_b:
             ],
         )
     )
-    st.altair_chart(gender_chart, width="stretch")
+    atlas_chart(gender_chart, width="stretch")

@@ -5,6 +5,7 @@ import pydeck as pdk
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Fire-Prevention Inspections")
 st.caption(
@@ -111,6 +112,6 @@ worst_chart = (
         tooltip=["property_name", "address", "unit_count", "total_violations"],
     )
 )
-st.altair_chart(worst_chart, width="stretch")
+atlas_chart(worst_chart, width="stretch")
 
 st.dataframe(worst, width="stretch", hide_index=True)

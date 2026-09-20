@@ -4,6 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Air Quality")
 st.caption(
@@ -54,7 +55,7 @@ trend = (
         ],
     )
 )
-st.altair_chart(trend, width="stretch")
+atlas_chart(trend, width="stretch")
 
 # --- AQI category distribution by year ---
 st.subheader("Air-quality days by category")
@@ -91,4 +92,4 @@ cat_chart = (
         tooltip=["observed_year", "category", "days"],
     )
 )
-st.altair_chart(cat_chart, width="stretch")
+atlas_chart(cat_chart, width="stretch")

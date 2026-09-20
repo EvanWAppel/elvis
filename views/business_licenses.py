@@ -4,6 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 st.title("Business Licenses")
 st.caption("Business-license registries for the Las Vegas Valley.")
@@ -52,4 +53,4 @@ hen_chart = (
         tooltip=["license_type", alt.Tooltip("license_count:Q", title="Licenses", format=",")],
     )
 )
-st.altair_chart(hen_chart, width="stretch")
+atlas_chart(hen_chart, width="stretch")

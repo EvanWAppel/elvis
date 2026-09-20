@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from app_db import query
+from ui import atlas_chart
 
 
 def _sql_literal(value: str) -> str:
@@ -240,7 +241,7 @@ grade_chart = (
         tooltip=["grade", "restaurants"],
     )
 )
-st.altair_chart(grade_chart, width="stretch")
+atlas_chart(grade_chart, width="stretch")
 
 # --- Top violations ---
 st.subheader("Top 20 violations (county-wide)")
@@ -266,7 +267,7 @@ violations_chart = (
         tooltip=["violation_code", "description", "occurrences"],
     )
 )
-st.altair_chart(violations_chart, width="stretch")
+atlas_chart(violations_chart, width="stretch")
 
 # --- Compliance over time ---
 st.subheader("Compliance rate over time")
@@ -290,9 +291,13 @@ years = compliance["inspection_month"].dt.year
 lo, hi = int(years.min()), int(years.max())
 start, end = st.slider("Year range", lo, hi, (lo, hi))
 mask = (years >= start) & (years <= end)
-st.line_chart(
-    compliance[mask].set_index("inspection_month")["compliance_pct"],
-    y_label="Compliant inspections (%)",
+atlas_chart(
+    alt.Chart(compliance[mask]).mark_line().encode(
+        x=alt.X("inspection_month:T", title=None),
+        y=alt.Y("compliance_pct:Q", title="Compliant inspections (%)"),
+        tooltip=["inspection_month:T", "compliance_pct:Q"],
+    ),
+    width="stretch",
 )
 st.caption(
     "Share of passing inspections (an \"A\" grade) by month, SNHD data from "
