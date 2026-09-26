@@ -6,7 +6,7 @@ import pydeck as pdk
 import streamlit as st
 
 from app_db import query
-from ui import atlas_chart
+from ui import MAP_STYLE, PINK, SEQUENTIAL, atlas_chart
 
 st.title("Metro Calls for Service")
 st.caption(
@@ -48,7 +48,7 @@ monthly = query(
 st.subheader("Calls per month")
 trend = (
     alt.Chart(monthly)
-    .mark_line(point=True, color="#e4572e")
+    .mark_line(point=True, color=PINK)
     .encode(
         x=alt.X("incident_month:T", title=None),
         y=alt.Y("incident_count:Q", title="Calls"),
@@ -73,7 +73,7 @@ types = query(
 st.subheader("Most common call types")
 types_chart = (
     alt.Chart(types)
-    .mark_bar(color="#e4572e")
+    .mark_bar(color=PINK)
     .encode(
         x=alt.X("incident_count:Q", title="Calls"),
         y=alt.Y("incident_type:N", sort="-x", title=None),
@@ -106,7 +106,7 @@ heatmap = (
     .encode(
         x=alt.X("hour_of_day:O", title="Hour of day"),
         y=alt.Y("weekday:N", sort=weekday_order, title=None),
-        color=alt.Color("incident_count:Q", title="Calls", scale=alt.Scale(scheme="reds")),
+        color=alt.Color("incident_count:Q", title="Calls", scale=alt.Scale(range=SEQUENTIAL)),
         tooltip=[
             "weekday",
             "hour_of_day",
@@ -141,6 +141,8 @@ layer = pdk.Layer(
     pickable=True,
     auto_highlight=True,
     coverage=0.8,
+    # Dim purple -> bright gold: luminance rises with call count (neon "heat").
+    color_range=[[152, 102, 255], [255, 46, 136], [255, 122, 26], [255, 194, 71]],
 )
 view_state = pdk.ViewState(
     latitude=sample["latitude"].mean(),
@@ -151,8 +153,8 @@ view_state = pdk.ViewState(
 deck = pdk.Deck(
     layers=[layer],
     initial_view_state=view_state,
-    # Carto Positron: a light basemap with clear roads and labels, no API token.
-    map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+    # Carto dark-matter: dark basemap matching the neon theme, no API token.
+    map_style=MAP_STYLE,
 )
 event = st.pydeck_chart(
     deck, on_select="rerun", selection_mode="single-object", key="crime_hex"

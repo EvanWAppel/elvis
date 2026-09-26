@@ -7,6 +7,7 @@ import pydeck as pdk
 import streamlit as st
 
 from app_db import query
+from ui import MAP_STYLE
 
 st.title("Road Construction")
 st.caption(
@@ -72,12 +73,12 @@ c3.metric("Corridors (named roads)", f"{filtered['road_name'].nunique():,}")
 
 # --- Map: color by phase, active work highlighted orange ---
 PALETTE = {
-    "construction": [255, 111, 0, 220],  # active — orange
-    "bidding": [255, 179, 0, 200],
-    "design": [30, 136, 229, 190],
-    "pre-design": [30, 136, 229, 140],
-    "planned": [120, 144, 156, 170],
-    "closed": [120, 144, 156, 90],
+    "construction": [255, 122, 26, 230],  # active — neon orange
+    "bidding": [255, 194, 71, 210],
+    "design": [90, 200, 250, 200],
+    "pre-design": [90, 200, 250, 150],
+    "planned": [169, 163, 201, 175],
+    "closed": [169, 163, 201, 90],
 }
 
 
@@ -86,7 +87,7 @@ def phase_color(status: str) -> list[int]:
     for name, color in PALETTE.items():
         if name in key:
             return color
-    return [120, 144, 156, 150]
+    return [169, 163, 201, 150]
 
 
 filtered = filtered.copy()
@@ -125,13 +126,13 @@ tooltip = {
         "<b>{project_name}</b><br/>{road_name}<br/>{extent}<br/>"
         "<i>{status}</i> · {data_source}<br/>{start_date} → {end_date}"
     ),
-    "style": {"backgroundColor": "#263238", "color": "white", "fontSize": "12px"},
+    "style": {"backgroundColor": "#211f30", "color": "white", "fontSize": "12px"},
 }
 st.pydeck_chart(
     pdk.Deck(
         layers=[path_layer, point_layer],
         initial_view_state=view_state,
-        map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        map_style=MAP_STYLE,
         tooltip=tooltip,
     )
 )

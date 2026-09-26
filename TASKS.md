@@ -1,5 +1,67 @@
 # Tasks
 
+## Redesign — "Neon Night on the Strip" (2026-09-26)
+
+Visual reskin only: desert-atlas identity → classic neon/retro Las Vegas Strip.
+Direction & rationale in `DECISIONS.md`. Branch: `redesign/neon-strip`.
+Governing principle: **flash on the chrome, calm in the data** (legibility first).
+
+### Phase 1 — Core palette flip (reskins ~80% at once)
+- [ ] `.streamlit/config.toml`: `base="dark"`, neon `primaryColor`, dark
+      backgrounds, warm-white `textColor`.
+- [ ] `explorer.css` `:root`: flip tokens to night-sky palette (bg `#0b0a14`,
+      panel `#16141f`, text `#f4f1e9`, accents pink/cyan/gold/purple).
+- [ ] `explorer.css` lines 3–13: remove/invert the "force light in dark sessions"
+      overrides — the app now embraces dark.
+- [ ] `ui.py:atlas_chart()`: dark background + warm-white labels + dim grid +
+      neon categorical range.
+- [ ] Verify every page renders legibly on dark (local run + curl; no browser).
+
+### Phase 2 — Neon chrome
+- [x] Add Monoton font import; apply to `.elvis-brand` wordmark + the cover
+      accent word (`h1 em`, "Strip."). Left full `h1` and section labels in
+      DM Sans / Space Mono for legibility (Monoton is unreadable small).
+- [x] Glow (`text-shadow`) on display type (wordmark, star, accent word,
+      section labels); neon glow on link hover/focus.
+- [x] Marquee bulb border: `.elvis-cover` framed top & bottom by glowing gold
+      bulbs (pseudo-elements). Neon glow on collection-card top borders; metrics
+      kept calm (data zone).
+- [x] Neon marquee hero — done as a CSS bulb-frame around the existing cover
+      (robust, in-DOM) rather than a separate iframe component.
+- [x] Flicker animation on the wordmark + star, gated behind
+      `prefers-reduced-motion` (added `animation:none` to the reduce block).
+
+### Phase 3 — Data-zone cleanup (the legibility pass)
+- [x] Basemaps → Carto `dark-matter` via `ui.MAP_STYLE` on all 6 maps
+      (parks, fire, short_term_rentals, road_construction, crime, +public_art
+      which had used the default basemap).
+- [x] Centralized the palette in `ui.py` (`PINK/CYAN/GOLD/PURPLE/BLUE/GREEN/`
+      `ORANGE/MUTED`, `SERIES`, `SEQUENTIAL`); retargeted all ~28 hardcoded
+      Altair `color=`/scale hexes across 10 chart views to import from it.
+      `atlas_chart` now uses `SERIES` too.
+- [x] PyDeck fills retuned for dark tiles: `public_art` (pink), parks
+      (cyan/green/muted), STR (pink/cyan/purple by jurisdiction), fire
+      (gold→pink violation ramp), road_construction (neon phase palette),
+      crime HexagonLayer (added neon `color_range`).
+- [x] Sequential/continuous scales → dark-safe ramps: air quality
+      (green→gold→orange→pink), desert heat (gold→pink), crime (`SEQUENTIAL`).
+
+### Phase 4 — Polish
+- [x] Contrast audit (WCAG AA): all text/bg pairs pass for their use. Purple
+      was the only sub-4.5 value (4.35 as chart accent) → bumped `#8a4fff` →
+      `#9866ff` (5.32) in `ui.py` + CSS token, and fixed the stale STR Henderson
+      RGB that still used the old purple.
+- [x] Mobile breakpoint (`@media max-width:700px`) reviewed on dark: marquee
+      bulb pseudo-elements reflow with the container; `.elvis-star` repositioned
+      (`top:44px`) for the new cover padding; no overlap. No change needed.
+- [x] Adversarial review (fresh-context agent) — no HIGH findings. Actioned:
+      purple token consistency, standardized 5 PyDeck tooltip backgrounds to the
+      panel token `#211f30` (were light leftovers: steelblue/seagreen/#b22222/
+      #263238), reordered `SEQUENTIAL` to a luminance-monotonic plasma ramp
+      `[PURPLE,PINK,ORANGE,GOLD]` so the crime quantitative heatmap reads
+      "more = hotter" (+ matching hex `color_range`), updated stale Positron
+      comment in crime.py.
+
 ## Deploy — PAUSED (upstream outage, 2026-08-15)
 
 The "current only" filter is committed but NOT yet live. A `railway up` on

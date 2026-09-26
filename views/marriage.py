@@ -4,7 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
-from ui import atlas_chart
+from ui import PINK, PURPLE, atlas_chart
 
 st.title("Marriage Licenses")
 st.caption(
@@ -46,7 +46,7 @@ st.subheader("Licenses per month")
 st.caption("Note the long decline, the 2020 pandemic collapse, and the recovery.")
 trend = (
     alt.Chart(monthly)
-    .mark_line(color="#d6336c")
+    .mark_line(color=PINK)
     .encode(
         x=alt.X("license_month:T", title=None),
         y=alt.Y("license_count:Q", title="Licenses"),
@@ -72,7 +72,7 @@ st.subheader("Biggest single days")
 st.caption("Valentine's Day, New Year's Eve, and novelty dates like 07/07/07 and 12/12/12.")
 days_chart = (
     alt.Chart(big_days)
-    .mark_bar(color="#d6336c")
+    .mark_bar(color=PINK)
     .encode(
         x=alt.X("license_count:Q", title="Licenses issued"),
         y=alt.Y("label:N", sort="-x", title=None),
@@ -97,7 +97,7 @@ with col_a:
     st.subheader("Where couples come from")
     origin_chart = (
         alt.Chart(origin)
-        .mark_bar(color="#ae3ec9")
+        .mark_bar(color=PURPLE)
         .encode(
             x=alt.X("license_count:Q", title="Licenses"),
             y=alt.Y("origin:N", sort="-x", title=None),
