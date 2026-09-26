@@ -60,7 +60,7 @@ view_state = pdk.ViewState(
 )
 tooltip = {
     "html": "<b>{artwork_name}</b><br/>{artist}<br/><i>{medium}</i><br/>{address}",
-    "style": {"backgroundColor": "steelblue", "color": "white", "fontSize": "13px"},
+    "style": {"backgroundColor": "#211f30", "color": "white", "fontSize": "13px"},
 }
 st.pydeck_chart(
     pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip=tooltip, map_style=MAP_STYLE)

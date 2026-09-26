@@ -126,7 +126,7 @@ tooltip = {
         "<b>{project_name}</b><br/>{road_name}<br/>{extent}<br/>"
         "<i>{status}</i> · {data_source}<br/>{start_date} → {end_date}"
     ),
-    "style": {"backgroundColor": "#263238", "color": "white", "fontSize": "12px"},
+    "style": {"backgroundColor": "#211f30", "color": "white", "fontSize": "12px"},
 }
 st.pydeck_chart(
     pdk.Deck(

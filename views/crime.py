@@ -141,7 +141,8 @@ layer = pdk.Layer(
     pickable=True,
     auto_highlight=True,
     coverage=0.8,
-    color_range=[[40, 224, 216], [90, 200, 250], [138, 79, 255], [255, 46, 136], [255, 122, 26], [255, 194, 71]],
+    # Dim purple -> bright gold: luminance rises with call count (neon "heat").
+    color_range=[[152, 102, 255], [255, 46, 136], [255, 122, 26], [255, 194, 71]],
 )
 view_state = pdk.ViewState(
     latitude=sample["latitude"].mean(),
@@ -152,7 +153,7 @@ view_state = pdk.ViewState(
 deck = pdk.Deck(
     layers=[layer],
     initial_view_state=view_state,
-    # Carto Positron: a light basemap with clear roads and labels, no API token.
+    # Carto dark-matter: dark basemap matching the neon theme, no API token.
     map_style=MAP_STYLE,
 )
 event = st.pydeck_chart(

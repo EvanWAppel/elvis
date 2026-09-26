@@ -71,7 +71,7 @@ view_state = pdk.ViewState(
 tooltip = {
     "html": "<b>{property_name}</b><br/>{address}, {city}<br/>"
     "{unit_count} units · {total_violations} violations",
-    "style": {"backgroundColor": "#b22222", "color": "white", "fontSize": "13px"},
+    "style": {"backgroundColor": "#211f30", "color": "white", "fontSize": "13px"},
 }
 st.pydeck_chart(
     pdk.Deck(

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Monoton&family=Space+Mono:wght@400;700&display=swap');
 /* Neon Night on the Strip — night-sky palette. Old token names are kept but flipped:
    --elvis-paper is now the night sky, --elvis-ink is warm white, --elvis-red is neon pink. */
-:root{--elvis-paper:#0b0a14;--elvis-panel:#16141f;--elvis-ink:#f4f1e9;--elvis-red:#ff2e88;--elvis-cyan:#28e0d8;--elvis-gold:#ffc247;--elvis-purple:#8a4fff;--elvis-line:#2a2740;--elvis-muted:#a9a3c9;--elvis-lift:#211f30}
+:root{--elvis-paper:#0b0a14;--elvis-panel:#16141f;--elvis-ink:#f4f1e9;--elvis-red:#ff2e88;--elvis-cyan:#28e0d8;--elvis-gold:#ffc247;--elvis-purple:#9866ff;--elvis-line:#2a2740;--elvis-muted:#a9a3c9;--elvis-lift:#211f30}
 /* Pin text to our palette regardless of Streamlit session theme. */
 [data-testid="stSidebar"],.elvis-brand,
 [data-testid="stSidebarNav"] a,[data-testid="stSidebarNav"] a span,

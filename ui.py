@@ -9,7 +9,7 @@ import streamlit as st
 PINK = "#ff2e88"
 CYAN = "#28e0d8"
 GOLD = "#ffc247"
-PURPLE = "#8a4fff"
+PURPLE = "#9866ff"
 BLUE = "#5ac8fa"
 GREEN = "#4be08a"
 ORANGE = "#ff7a1a"
@@ -18,7 +18,8 @@ MUTED = "#a9a3c9"
 # Categorical range (also used by atlas_chart) and a dark-safe sequential
 # ("neon heat") ramp for quantitative color scales.
 SERIES = [PINK, CYAN, GOLD, PURPLE, BLUE, GREEN]
-SEQUENTIAL = [CYAN, PURPLE, PINK, GOLD]
+# Ordered dim->bright (luminance-monotonic) so higher values read as hotter.
+SEQUENTIAL = [PURPLE, PINK, ORANGE, GOLD]
 
 # Dark basemap for every PyDeck map (was Carto positron / light).
 MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
