@@ -1,0 +1,64 @@
+name: dbt docs
+
+# Publish the dbt documentation site (lineage graph + model/column docs) to
+# GitHub Pages on every push to main. Built hermetically from the committed seed
+# fixtures — same offline, deterministic discipline as the CI build — so the
+# lineage and all yml descriptions render without a live warehouse. (Catalog
+# column stats cover the seeded lineages; the manifest carries every model.)
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Pages deploys need these scopes; one concurrent deploy at a time.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build dbt docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv + Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync
+      - name: dbt deps
+        run: uv run dbt deps --profiles-dir .
+      - name: dbt seed (load raw.* fixtures)
+        run: uv run dbt seed --profiles-dir .
+      - name: dbt docs generate (static, single file)
+        run: uv run dbt docs generate --static --profiles-dir .
+      - name: Assemble Pages site
+        run: |
+          mkdir -p _site
+          cp target/static_index.html _site/index.html
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: deploy to GitHub Pages
+    needs: build
+    # Only publish from main; on PRs the build job alone validates the docs.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

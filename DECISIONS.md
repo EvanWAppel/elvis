@@ -2,6 +2,33 @@
 
 Append-only log of decisions that carried a real trade-off (chose X, rejected Y, why).
 
+## 2026-09-26 — P5 dbt docs: static single-file, hosted on GitHub Pages, built hermetically
+
+**Chose:** publish the dbt docs via a dedicated GitHub Actions workflow that runs
+`dbt docs generate --static` (one self-contained `static_index.html`) from the
+committed seed fixtures and deploys it to GitHub Pages on every push to `main`.
+Linked from the landing page and README; the hand-built `site/` is untouched.
+
+**Rejected:**
+- *A second Railway static service.* GitHub Pages is free, needs no extra service,
+  and a workflow keeps the docs in lockstep with `main`. Railway would add cost and
+  a separate deploy surface for a static artifact.
+- *Multi-file `target/` docs bundle.* `--static` emits a single 3.3M HTML file —
+  one artifact to upload, no path/asset wiring. The multi-file bundle offers no
+  benefit for hosting.
+- *Generating docs at deploy time from the real warehouse (full catalog).* Would
+  give complete column-type/stats catalog for all 45 models, but couples the docs
+  build to the (currently paused) Railway deploy and the live civic feeds. Building
+  hermetically from seeds keeps docs publishing independent of the data pipeline's
+  health; the manifest still carries every model's lineage and yml descriptions —
+  only catalog stats are limited to the seeded lineages. Docs freshness beats
+  catalog completeness for a portfolio reference.
+
+**Consequence / blocker:** GitHub Pages must be enabled with source = "GitHub
+Actions" before the deploy job can publish; enabling it is a public-publish action
+left to Evan (recorded in `BLOCKED.md`). The workflow builds regardless; only the
+final deploy step waits on that toggle.
+
 ## 2026-09-26 — P2 data-quality tests: severity split by value provenance
 
 **Chose:** add the P2 test suite (`accepted_values`, `dbt_expectations` range
