@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: stg_road_construction
+    description: >
+      Harmonized metro road-construction projects: City of Las Vegas CIP lines
+      plus optional Nevada 511 (NDOT) state-route roadwork. One row per
+      project/event, restricted to rows with a WGS84 centroid.
+
+      Severity policy: values our own pipeline controls are hard errors;
+      upstream-feed passthrough values (status, coordinates) are `warn` so a new
+      upstream status or an edge-of-metro centroid surfaces as a data-quality
+      signal without aborting the production `dbt build` / deploy.
+    columns:
+      - name: data_source
+        description: "Originating feed — set to a fixed literal in build_warehouse.py."
+        tests:
+          # Code-controlled closed set (build_warehouse.py:907,970) — safe to hard-assert.
+          - not_null
+          - accepted_values:
+              values:
+                - "City of Las Vegas (CIP)"
+                - "NDOT 511 (state routes)"
+      - name: status
+        description: >
+          Project status/phase, passed through from the upstream feed
+          (CLV PHASE/STATUS, NDOT EventType). The value domain is not controlled
+          by us, so this list is a known-values signal, not a contract.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["Closed", "Construction", "Design", "Planned", "Roadwork", "Full Closure"]
+              config:
+                severity: warn
+      - name: path_json
+        description: "Project geometry as a JSON array of [lon, lat] vertices."
+        tests:
+          - not_null
+      - name: latitude
+        description: "WGS84 centroid latitude. Bounds match METRO_BBOX in build_warehouse.py."
+        tests:
+          - not_null
+          # CLV centroids are not bbox-clipped upstream, so this is a `warn` signal.
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 35.8
+              max_value: 36.4
+              config:
+                severity: warn
+      - name: longitude
+        description: "WGS84 centroid longitude. Bounds match METRO_BBOX in build_warehouse.py."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -115.5
+              max_value: -114.9
+              config:
+                severity: warn

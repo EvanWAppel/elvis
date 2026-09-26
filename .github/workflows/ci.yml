@@ -42,6 +42,9 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: uv sync
+      # Install dbt packages (dbt_utils, dbt_expectations) used by the data tests.
+      - name: dbt deps
+        run: uv run dbt deps --profiles-dir .
       # No warehouse exists on a fresh checkout (vegas.duckdb is gitignored and
       # built from live civic feeds at deploy time). Seed the committed fixture
       # CSVs into raw.* so the marts can build offline and deterministically,

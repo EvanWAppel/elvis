@@ -10,6 +10,7 @@ __pycache__/
 *.pyc
 target/
 logs/
+dbt_packages/
 
 # Generated warehouse — rebuild with `uv run python build_warehouse.py && uv run dbt build`
 *.duckdb

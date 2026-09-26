@@ -122,6 +122,32 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
 - [ ] Expand seed coverage beyond the 2 starter domains (restaurants, crime,
       permits…) as P2 adds tests — CI currently gates only the seeded lineages.
 
+### P2 — Data-quality test suite (`dbt_utils` / `dbt_expectations`)
+- [x] Add `packages.yml` (`dbt_utils` 1.x, `dbt_expectations` 0.10.x, pinned via
+      `package-lock.yml`); `dbt deps` step added to CI before seed;
+      `dbt_packages/` gitignored.
+- [x] Enriched the two CI-seeded lineages beyond `not_null`/`unique`, with
+      **severity set by value provenance** (see DECISIONS 2026-09-26):
+      - hard error: `accepted_values` on `stg_road_construction.data_source`
+        (code-controlled literals); `not_null`/`unique` on keys/coords.
+      - `warn`: `accepted_values` on `status` (feed passthrough),
+        `expect_column_values_to_be_between` valley-bounds on lat/lon (bounds =
+        `METRO_BBOX`), and the singular date test — so upstream drift can't abort
+        the production `dbt build --exclude-resource-type seed` deploy.
+- [x] Singular test `tests/assert_road_construction_end_after_start.sql`
+      (end_date must not precede start_date; null dates out of scope; `warn`).
+- [x] Dropped an inert `relationships` test (mart is a straight `select` from
+      staging → can never fail); `not_null`+`unique` assert the grain instead.
+- [x] Adversarial review (fresh-context agent) — its HIGH findings (feed-passthrough
+      hard-asserts would break the deploy build) drove the severity split.
+- [x] Verified hermetically (deps→seed→build): 29 tests PASS. TDD negatives:
+      bogus `status` and off-valley latitude each **warn** (build still succeeds);
+      bad `data_source` **errors**. `ruff` clean; local warehouse restored.
+- [ ] Extend the same test types to more domains as seed coverage grows (see the
+      open P1 seed-expansion item) — CI still gates only the 2 seeded lineages.
+- [ ] (Optional, needs Evan to inspect live data) Harden `status`/coordinate
+      tests to hard errors by enumerating the real distinct values + bounds.
+
 ## Road Construction (🚧)
 
 ### Done
