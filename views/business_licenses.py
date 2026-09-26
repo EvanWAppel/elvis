@@ -4,7 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
-from ui import atlas_chart
+from ui import GOLD, atlas_chart
 
 st.title("Business Licenses")
 st.caption("Business-license registries for the Las Vegas Valley.")
@@ -46,7 +46,7 @@ hen_types = query(
 )
 hen_chart = (
     alt.Chart(hen_types)
-    .mark_bar(color="#e8590c")
+    .mark_bar(color=GOLD)
     .encode(
         x=alt.X("license_count:Q", title="Licenses"),
         y=alt.Y("license_type:N", sort="-x", title=None),

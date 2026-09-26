@@ -4,6 +4,7 @@ import pydeck as pdk
 import streamlit as st
 
 from app_db import query
+from ui import MAP_STYLE
 
 st.title("Short-Term Rentals")
 st.caption(
@@ -39,12 +40,12 @@ if filtered.empty:
 
 # --- Map, colored by jurisdiction ---
 palette = {
-    "Las Vegas": [230, 69, 46, 180],
-    "North Las Vegas": [32, 128, 128, 180],
-    "Henderson": [106, 76, 147, 180],
+    "Las Vegas": [255, 46, 136, 190],
+    "North Las Vegas": [40, 224, 216, 190],
+    "Henderson": [138, 79, 255, 190],
 }
 filtered = filtered.copy()
-filtered["fill"] = filtered["jurisdiction"].apply(lambda j: palette.get(j, [120, 120, 120, 160]))
+filtered["fill"] = filtered["jurisdiction"].apply(lambda j: palette.get(j, [169, 163, 201, 160]))
 layer = pdk.Layer(
     "ScatterplotLayer",
     data=filtered,
@@ -67,7 +68,7 @@ st.pydeck_chart(
     pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
-        map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        map_style=MAP_STYLE,
         tooltip=tooltip,
     )
 )

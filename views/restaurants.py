@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from app_db import query
-from ui import atlas_chart
+from ui import CYAN, PINK, atlas_chart
 
 
 def _sql_literal(value: str) -> str:
@@ -234,7 +234,7 @@ grades = query(
 )
 grade_chart = (
     alt.Chart(grades)
-    .mark_bar(color="#ff2e88")
+    .mark_bar(color=PINK)
     .encode(
         x=alt.X("grade:N", sort="-y", title="Grade"),
         y=alt.Y("restaurants:Q", title="Establishments"),
@@ -260,7 +260,7 @@ top_violations = query(
 top_violations["label"] = top_violations["description"].str.slice(0, 70)
 violations_chart = (
     alt.Chart(top_violations)
-    .mark_bar(color="#00e0ff")
+    .mark_bar(color=CYAN)
     .encode(
         x=alt.X("occurrences:Q", title="Occurrences"),
         y=alt.Y("label:N", sort="-x", title=None),

@@ -5,7 +5,7 @@ import pydeck as pdk
 import streamlit as st
 
 from app_db import query
-from ui import atlas_chart
+from ui import GOLD, MAP_STYLE, atlas_chart
 
 st.title("Fire-Prevention Inspections")
 st.caption(
@@ -52,7 +52,7 @@ mapped["radius"] = (mapped["unit_count"].clip(lower=1) ** 0.5) * 12
 # Red intensity scaled to each property's share of the worst violation count.
 vmax = max(int(mapped["total_violations"].max()), 1)
 mapped["fill"] = mapped["total_violations"].apply(
-    lambda v: [230, max(30, int(200 - 200 * (v / vmax))), 30, 170]
+    lambda v: [255, int(194 - 148 * (v / vmax)), int(71 + 65 * (v / vmax)), 180]
 )
 layer = pdk.Layer(
     "ScatterplotLayer",
@@ -77,7 +77,7 @@ st.pydeck_chart(
     pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
-        map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        map_style=MAP_STYLE,
         tooltip=tooltip,
     )
 )
@@ -105,7 +105,7 @@ st.caption("Properties with the most fire-prevention violations written, all-tim
 top15 = worst.head(15)
 worst_chart = (
     alt.Chart(top15)
-    .mark_bar(color="#ffbf3f")
+    .mark_bar(color=GOLD)
     .encode(
         x=alt.X("total_violations:Q", title="Total violations"),
         y=alt.Y("property_name:N", sort="-x", title=None),
