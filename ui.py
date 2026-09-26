@@ -4,6 +4,25 @@ from pathlib import Path
 
 import streamlit as st
 
+# Neon-night palette — mirrors the explorer.css tokens so charts and maps match
+# the chrome. Import these into views instead of hardcoding hex/RGB.
+PINK = "#ff2e88"
+CYAN = "#28e0d8"
+GOLD = "#ffc247"
+PURPLE = "#8a4fff"
+BLUE = "#5ac8fa"
+GREEN = "#4be08a"
+ORANGE = "#ff7a1a"
+MUTED = "#a9a3c9"
+
+# Categorical range (also used by atlas_chart) and a dark-safe sequential
+# ("neon heat") ramp for quantitative color scales.
+SERIES = [PINK, CYAN, GOLD, PURPLE, BLUE, GREEN]
+SEQUENTIAL = [CYAN, PURPLE, PINK, GOLD]
+
+# Dark basemap for every PyDeck map (was Carto positron / light).
+MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+
 
 def atlas_chart(chart, **kwargs):
     """Render charts in the atlas palette, independent of session theme."""
@@ -22,7 +41,7 @@ def atlas_chart(chart, **kwargs):
         },
         legend={"labelColor": "#f4f1e9", "titleColor": "#f4f1e9", "labelFontSize": 12},
         title={"color": "#f4f1e9"},
-        range={"category": ["#ff2e88", "#28e0d8", "#ffc247", "#8a4fff", "#5ac8fa", "#4be08a"]},
+        range={"category": SERIES},
     )
     return st.altair_chart(chart, theme=None, **kwargs)
 

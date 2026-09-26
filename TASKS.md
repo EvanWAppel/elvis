@@ -32,13 +32,19 @@ Governing principle: **flash on the chrome, calm in the data** (legibility first
       `prefers-reduced-motion` (added `animation:none` to the reduce block).
 
 ### Phase 3 — Data-zone cleanup (the legibility pass)
-- [ ] 5 map views: Carto `positron` → `dark-matter` basemap
-      (parks, fire, short_term_rentals, road_construction, crime).
-- [ ] Centralize the ~28 hardcoded Altair `color=` hexes into named constants in
-      `ui.py` (e.g. `ACCENT`, `SERIES`), then retarget to the neon palette.
-- [ ] PyDeck fill contrast on dark tiles: `public_art` orange + SQL-computed
-      `fill` columns (parks/fire/STR) checked/adjusted.
-- [ ] Sequential/continuous scales (air quality, desert heat) → dark-safe ramps.
+- [x] Basemaps → Carto `dark-matter` via `ui.MAP_STYLE` on all 6 maps
+      (parks, fire, short_term_rentals, road_construction, crime, +public_art
+      which had used the default basemap).
+- [x] Centralized the palette in `ui.py` (`PINK/CYAN/GOLD/PURPLE/BLUE/GREEN/`
+      `ORANGE/MUTED`, `SERIES`, `SEQUENTIAL`); retargeted all ~28 hardcoded
+      Altair `color=`/scale hexes across 10 chart views to import from it.
+      `atlas_chart` now uses `SERIES` too.
+- [x] PyDeck fills retuned for dark tiles: `public_art` (pink), parks
+      (cyan/green/muted), STR (pink/cyan/purple by jurisdiction), fire
+      (gold→pink violation ramp), road_construction (neon phase palette),
+      crime HexagonLayer (added neon `color_range`).
+- [x] Sequential/continuous scales → dark-safe ramps: air quality
+      (green→gold→orange→pink), desert heat (gold→pink), crime (`SEQUENTIAL`).
 
 ### Phase 4 — Polish
 - [ ] Mobile breakpoint (`@media max-width:700px`) check on dark.

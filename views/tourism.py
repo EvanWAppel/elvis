@@ -4,7 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
-from ui import atlas_chart
+from ui import CYAN, PURPLE, atlas_chart
 
 st.title("Tourism, Gaming & Air Travel")
 st.caption(
@@ -42,7 +42,7 @@ def line_of(metric_like: str, title: str, color: str, fmt: str = ",.0f"):
 # --- Visitor volume ---
 st.subheader("Visitor volume")
 st.caption("The 2020 pandemic collapse and recovery are unmistakable.")
-vv = line_of("Visitor Volume", "Visitors", "#1098ad")
+vv = line_of("Visitor Volume", "Visitors", CYAN)
 if vv is not None:
     atlas_chart(vv, width="stretch")
 
@@ -79,7 +79,7 @@ if not gaming.empty:
 
 # --- Airport passengers ---
 st.subheader("Airport passengers (Harry Reid International)")
-ap = line_of("%En/Deplaned Passengers%", "Passengers", "#7048e8")
+ap = line_of("%En/Deplaned Passengers%", "Passengers", PURPLE)
 if ap is not None:
     atlas_chart(ap, width="stretch")
 
@@ -101,7 +101,7 @@ detail = query(
 )
 detail_chart = (
     alt.Chart(detail)
-    .mark_line(point=True, color="#0c8599")
+    .mark_line(point=True, color=CYAN)
     .encode(
         x=alt.X("indicator_month:T", title=None),
         y=alt.Y("value:Q", title=choice, scale=alt.Scale(zero=False)),

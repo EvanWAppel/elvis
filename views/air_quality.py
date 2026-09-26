@@ -4,7 +4,7 @@ import altair as alt
 import streamlit as st
 
 from app_db import query
-from ui import atlas_chart
+from ui import GOLD, GREEN, ORANGE, PINK, atlas_chart
 
 st.title("Air Quality")
 st.caption(
@@ -85,7 +85,7 @@ cat_chart = (
             "category:N",
             title="AQI category",
             scale=alt.Scale(
-                domain=order, range=["#2f9e44", "#f59f00", "#e8590c", "#c92a2a"]
+                domain=order, range=[GREEN, GOLD, ORANGE, PINK]
             ),
             sort=order,
         ),

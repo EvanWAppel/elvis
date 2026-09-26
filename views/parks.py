@@ -4,6 +4,7 @@ import pydeck as pdk
 import streamlit as st
 
 from app_db import query
+from ui import MAP_STYLE
 
 st.title("Metro Parks")
 st.caption(
@@ -51,9 +52,9 @@ if filtered.empty:
     st.stop()
 
 # --- Map: blue = water feature, green = none, gray = unknown ---
-colors = {True: [28, 126, 214, 200], False: [46, 139, 87, 160]}
+colors = {True: [40, 224, 216, 210], False: [75, 224, 138, 170]}
 filtered = filtered.copy()
-filtered["fill"] = filtered["has_water"].apply(lambda v: colors.get(v, [150, 150, 150, 140]))
+filtered["fill"] = filtered["has_water"].apply(lambda v: colors.get(v, [169, 163, 201, 150]))
 filtered["radius"] = (filtered["acres"].fillna(4).clip(lower=1) ** 0.5) * 22
 layer = pdk.Layer(
     "ScatterplotLayer",
@@ -77,7 +78,7 @@ st.pydeck_chart(
     pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
-        map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        map_style=MAP_STYLE,
         tooltip=tooltip,
     )
 )

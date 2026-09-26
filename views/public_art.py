@@ -5,6 +5,7 @@ import pydeck as pdk
 import streamlit as st
 
 from app_db import query
+from ui import MAP_STYLE
 
 st.title("City of Las Vegas Public Art")
 st.caption("The City's public art collection — geocoded and filterable by council ward.")
@@ -48,7 +49,7 @@ layer = pdk.Layer(
     data=filtered,
     get_position=["longitude", "latitude"],
     get_radius=50,
-    get_fill_color=[255, 100, 0, 180],
+    get_fill_color=[255, 46, 136, 200],
     pickable=True,
 )
 view_state = pdk.ViewState(
@@ -62,7 +63,7 @@ tooltip = {
     "style": {"backgroundColor": "steelblue", "color": "white", "fontSize": "13px"},
 }
 st.pydeck_chart(
-    pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip=tooltip)
+    pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip=tooltip, map_style=MAP_STYLE)
 )
 
 # --- Detail panel ---

@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from app_db import query
-from ui import atlas_chart
+from ui import CYAN, MUTED, atlas_chart
 
 st.title("Lake Mead Water Levels")
 st.caption(
@@ -46,11 +46,11 @@ base = alt.Chart(monthly).encode(
         scale=alt.Scale(zero=False),
     ),
 )
-line = base.mark_line(color="#1c7ed6")
+line = base.mark_line(color=CYAN)
 # Reference lines for full pool and dead pool.
 rules = (
     alt.Chart(pd.DataFrame({"level": [1229, 895]}))
-    .mark_rule(strokeDash=[6, 4], color="#868e96")
+    .mark_rule(strokeDash=[6, 4], color=MUTED)
     .encode(y="level:Q")
 )
 atlas_chart(
