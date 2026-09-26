@@ -306,6 +306,10 @@ models:
     columns:
       - name: ObjectId
         data_type: bigint
+        description: "Stable public-art record id (the grain of this table)."
+        tests:
+          - not_null
+          - unique
       - name: artwork_name
         data_type: varchar
         description: "Title and year of the artwork"
