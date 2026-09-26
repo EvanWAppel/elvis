@@ -18,11 +18,18 @@ Governing principle: **flash on the chrome, calm in the data** (legibility first
 - [ ] Verify every page renders legibly on dark (local run + curl; no browser).
 
 ### Phase 2 — Neon chrome
-- [ ] Add Monoton font import; apply to `.elvis-brand`, cover `h1`, section labels.
-- [ ] Glow (`text-shadow`) on display type; neon hover/focus on links.
-- [ ] Marquee bulb border on `.elvis-cover`; neon top-accent on metrics/cards.
-- [ ] Neon marquee hero custom component on the overview landing (`overview.py`).
-- [ ] Flicker animation on the wordmark, gated behind `prefers-reduced-motion`.
+- [x] Add Monoton font import; apply to `.elvis-brand` wordmark + the cover
+      accent word (`h1 em`, "Strip."). Left full `h1` and section labels in
+      DM Sans / Space Mono for legibility (Monoton is unreadable small).
+- [x] Glow (`text-shadow`) on display type (wordmark, star, accent word,
+      section labels); neon glow on link hover/focus.
+- [x] Marquee bulb border: `.elvis-cover` framed top & bottom by glowing gold
+      bulbs (pseudo-elements). Neon glow on collection-card top borders; metrics
+      kept calm (data zone).
+- [x] Neon marquee hero — done as a CSS bulb-frame around the existing cover
+      (robust, in-DOM) rather than a separate iframe component.
+- [x] Flicker animation on the wordmark + star, gated behind
+      `prefers-reduced-motion` (added `animation:none` to the reduce block).
 
 ### Phase 3 — Data-zone cleanup (the legibility pass)
 - [ ] 5 map views: Carto `positron` → `dark-matter` basemap
