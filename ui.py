@@ -8,21 +8,21 @@ import streamlit as st
 def atlas_chart(chart, **kwargs):
     """Render charts in the atlas palette, independent of session theme."""
     chart = chart.configure(
-        background="#eeece4",
+        background="#16141f",
         font="DM Sans",
         view={"stroke": None},
         axis={
-            "labelColor": "#232820",
-            "titleColor": "#232820",
-            "gridColor": "#d4d4c8",
-            "domainColor": "#8c927e",
-            "tickColor": "#8c927e",
+            "labelColor": "#f4f1e9",
+            "titleColor": "#f4f1e9",
+            "gridColor": "#2a2740",
+            "domainColor": "#4a4668",
+            "tickColor": "#4a4668",
             "labelFontSize": 12,
             "titleFontSize": 12,
         },
-        legend={"labelColor": "#232820", "titleColor": "#232820", "labelFontSize": 12},
-        title={"color": "#232820"},
-        range={"category": ["#bd3c24", "#326b82", "#536b3f", "#80629a", "#976b20", "#427d75"]},
+        legend={"labelColor": "#f4f1e9", "titleColor": "#f4f1e9", "labelFontSize": 12},
+        title={"color": "#f4f1e9"},
+        range={"category": ["#ff2e88", "#28e0d8", "#ffc247", "#8a4fff", "#5ac8fa", "#4be08a"]},
     )
     return st.altair_chart(chart, theme=None, **kwargs)
 

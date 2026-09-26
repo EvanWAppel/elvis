@@ -4,9 +4,9 @@
 headless = true
 
 [theme]
-base = "light"
-primaryColor = "#bd3c24"
-backgroundColor = "#eeece4"
-secondaryBackgroundColor = "#e2e3d6"
-textColor = "#232820"
+base = "dark"
+primaryColor = "#ff2e88"
+backgroundColor = "#0b0a14"
+secondaryBackgroundColor = "#16141f"
+textColor = "#f4f1e9"
 font = "sans serif"

@@ -1,5 +1,43 @@
 # Tasks
 
+## Redesign — "Neon Night on the Strip" (2026-09-26)
+
+Visual reskin only: desert-atlas identity → classic neon/retro Las Vegas Strip.
+Direction & rationale in `DECISIONS.md`. Branch: `redesign/neon-strip`.
+Governing principle: **flash on the chrome, calm in the data** (legibility first).
+
+### Phase 1 — Core palette flip (reskins ~80% at once)
+- [ ] `.streamlit/config.toml`: `base="dark"`, neon `primaryColor`, dark
+      backgrounds, warm-white `textColor`.
+- [ ] `explorer.css` `:root`: flip tokens to night-sky palette (bg `#0b0a14`,
+      panel `#16141f`, text `#f4f1e9`, accents pink/cyan/gold/purple).
+- [ ] `explorer.css` lines 3–13: remove/invert the "force light in dark sessions"
+      overrides — the app now embraces dark.
+- [ ] `ui.py:atlas_chart()`: dark background + warm-white labels + dim grid +
+      neon categorical range.
+- [ ] Verify every page renders legibly on dark (local run + curl; no browser).
+
+### Phase 2 — Neon chrome
+- [ ] Add Monoton font import; apply to `.elvis-brand`, cover `h1`, section labels.
+- [ ] Glow (`text-shadow`) on display type; neon hover/focus on links.
+- [ ] Marquee bulb border on `.elvis-cover`; neon top-accent on metrics/cards.
+- [ ] Neon marquee hero custom component on the overview landing (`overview.py`).
+- [ ] Flicker animation on the wordmark, gated behind `prefers-reduced-motion`.
+
+### Phase 3 — Data-zone cleanup (the legibility pass)
+- [ ] 5 map views: Carto `positron` → `dark-matter` basemap
+      (parks, fire, short_term_rentals, road_construction, crime).
+- [ ] Centralize the ~28 hardcoded Altair `color=` hexes into named constants in
+      `ui.py` (e.g. `ACCENT`, `SERIES`), then retarget to the neon palette.
+- [ ] PyDeck fill contrast on dark tiles: `public_art` orange + SQL-computed
+      `fill` columns (parks/fire/STR) checked/adjusted.
+- [ ] Sequential/continuous scales (air quality, desert heat) → dark-safe ramps.
+
+### Phase 4 — Polish
+- [ ] Mobile breakpoint (`@media max-width:700px`) check on dark.
+- [ ] Contrast audit: WCAG AA on all body text.
+- [ ] Adversarial review of the merge; log any follow-ups.
+
 ## Deploy — PAUSED (upstream outage, 2026-08-15)
 
 The "current only" filter is committed but NOT yet live. A `railway up` on
