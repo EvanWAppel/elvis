@@ -47,9 +47,20 @@ Governing principle: **flash on the chrome, calm in the data** (legibility first
       (green→gold→orange→pink), desert heat (gold→pink), crime (`SEQUENTIAL`).
 
 ### Phase 4 — Polish
-- [ ] Mobile breakpoint (`@media max-width:700px`) check on dark.
-- [ ] Contrast audit: WCAG AA on all body text.
-- [ ] Adversarial review of the merge; log any follow-ups.
+- [x] Contrast audit (WCAG AA): all text/bg pairs pass for their use. Purple
+      was the only sub-4.5 value (4.35 as chart accent) → bumped `#8a4fff` →
+      `#9866ff` (5.32) in `ui.py` + CSS token, and fixed the stale STR Henderson
+      RGB that still used the old purple.
+- [x] Mobile breakpoint (`@media max-width:700px`) reviewed on dark: marquee
+      bulb pseudo-elements reflow with the container; `.elvis-star` repositioned
+      (`top:44px`) for the new cover padding; no overlap. No change needed.
+- [x] Adversarial review (fresh-context agent) — no HIGH findings. Actioned:
+      purple token consistency, standardized 5 PyDeck tooltip backgrounds to the
+      panel token `#211f30` (were light leftovers: steelblue/seagreen/#b22222/
+      #263238), reordered `SEQUENTIAL` to a luminance-monotonic plasma ramp
+      `[PURPLE,PINK,ORANGE,GOLD]` so the crime quantitative heatmap reads
+      "more = hotter" (+ matching hex `color_range`), updated stale Positron
+      comment in crime.py.
 
 ## Deploy — PAUSED (upstream outage, 2026-08-15)
 

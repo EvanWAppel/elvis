@@ -42,7 +42,7 @@ if filtered.empty:
 palette = {
     "Las Vegas": [255, 46, 136, 190],
     "North Las Vegas": [40, 224, 216, 190],
-    "Henderson": [138, 79, 255, 190],
+    "Henderson": [152, 102, 255, 190],
 }
 filtered = filtered.copy()
 filtered["fill"] = filtered["jurisdiction"].apply(lambda j: palette.get(j, [169, 163, 201, 160]))
@@ -62,7 +62,7 @@ view_state = pdk.ViewState(
 )
 tooltip = {
     "html": "<b>{business_name}</b><br/>{jurisdiction}<br/>{address}<br/>{category}<br/>{status}",
-    "style": {"backgroundColor": "steelblue", "color": "white", "fontSize": "13px"},
+    "style": {"backgroundColor": "#211f30", "color": "white", "fontSize": "13px"},
 }
 st.pydeck_chart(
     pdk.Deck(
