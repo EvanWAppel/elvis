@@ -5,6 +5,16 @@ sources:
     database: vegas
     schema: raw
     tables:
+      - name: census_tracts
+        description: "Census 2020 tract polygons and POP100; full geometry, matching vintages."
+      - name: tract_counts
+        description: "Build-time full-snapshot spatial aggregates, topic/tract/category."
+      - name: tract_coverage
+        description: "Explicit source-footprint coverage and rate eligibility."
+      - name: tract_assignment_audit
+        description: "Reconciled assigned/unassigned source-record accounting."
+      - name: henderson_art
+        description: "City of Henderson public-art inventory, OpenDataRecreation layer 10."
       - name: snhd_inspections
         description: "SNHD restaurant inspection facts (2020-present) from the nightly developer bundle. Keyed on permit_number; violation codes are comma-separated."
       - name: snhd_establishments

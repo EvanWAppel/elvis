@@ -20,6 +20,7 @@ apply_theme()
 pages = {
     "The atlas": [
         st.Page("views/overview.py", title="Overview", default=True),
+        st.Page("views/tracts.py", title="Compare Census Tracts"),
         st.Page("views/tiresias.py", title="Ask Tiresias"),
     ],
     "01 / Culture & place": [

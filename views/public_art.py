@@ -7,13 +7,14 @@ import streamlit as st
 from app_db import query
 from ui import MAP_STYLE
 
-st.title("City of Las Vegas Public Art")
-st.caption("The City's public art collection — geocoded and filterable by council ward.")
+st.title("Valley Public Art")
+st.caption("Las Vegas and Henderson public-art collections. North Las Vegas coverage is not yet verified.")
 
 df = query(
     """
     select
-        "ObjectId"  as objectid,
+        artwork_id,
+        jurisdiction,
         artwork_name,
         artist,
         medium,
@@ -24,7 +25,7 @@ df = query(
         longitude,
         "PIC_URL"   as pic_url,
         "THUMB_URL" as thumb_url
-    from main.mart_art_work_points
+    from main.mart_public_art_metro
     """
 )
 
@@ -34,10 +35,12 @@ df["ward"] = df["ward"].replace("", pd.NA).fillna("Other")
 
 # --- Sidebar filter ---
 st.sidebar.header("Filters")
+cities = sorted(df["jurisdiction"].unique())
+selected_cities = st.sidebar.multiselect("Collection city", cities, default=cities)
 wards = sorted(df["ward"].unique())
 selected_wards = st.sidebar.multiselect("Ward", wards, default=wards)
 
-filtered = df[df["ward"].isin(selected_wards)]
+filtered = df[df["ward"].isin(selected_wards) & df["jurisdiction"].isin(selected_cities)]
 
 if filtered.empty:
     st.info("No artworks match the selected wards — pick at least one ward.")
@@ -69,9 +72,10 @@ st.pydeck_chart(
 # --- Detail panel ---
 st.subheader(f"Artworks ({len(filtered)})")
 selected = st.selectbox(
-    "Select an artwork to preview", filtered["artwork_name"].sort_values()
+    "Select an artwork to preview", filtered["artwork_id"].tolist(),
+    format_func=lambda key: filtered.set_index("artwork_id").loc[key, "artwork_name"]
 )
-row = filtered[filtered["artwork_name"] == selected].iloc[0]
+row = filtered[filtered["artwork_id"] == selected].iloc[0]
 
 col1, col2 = st.columns([1, 2])
 with col1:

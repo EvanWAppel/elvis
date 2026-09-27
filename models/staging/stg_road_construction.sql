@@ -14,7 +14,7 @@ select
     try_cast(end_date as date)    as end_date,
     contractor,
     is_full_closure,
-    url,
+    cast(url as varchar)          as url,
     path_json,                    -- JSON [[lon, lat], ...] for the deck.gl PathLayer
     try_cast(latitude as double)  as latitude,
     try_cast(longitude as double) as longitude

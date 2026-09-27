@@ -1,5 +1,109 @@
 # Tasks
 
+## In progress — Valley expansion & tract choropleths (2026-09-26)
+
+**Interview complete; development authorized. First increment implemented on
+`feat/valley-tracts`; further source expansion remains open.**
+Requirements: `PRD.md`, "In development: Valley coverage expansion & census-tract
+choropleths." Existing completed work below remains historical context; this
+section supersedes the crime HexagonLayer direction and the optional status of
+Henderson/North Las Vegas road-source discovery.
+
+Accepted: pursue as many existing topics as public data supports in both cities;
+use census-tract choropleths for area comparisons; retain useful point/line maps;
+default to counts with valid optional per-resident rates; open on all covered
+cities with a city filter and shared scale; release incrementally with explicit
+coverage gaps. Preserve the snapshot architecture and current visual identity.
+
+### First increment — implemented and checked locally
+- [x] Shared Census 2020 tract/population foundation; whole-tract city selection,
+      deterministic spatial assignment, full-record accounting, and coverage states.
+- [x] Crime hex columns replaced; shared tract explorer added for calls, parks,
+      rentals, and art, with counts/default and eligible per-1,000 rates.
+- [x] Henderson public-art and transportation CIP adapters; namespaced artwork
+      IDs, road source IDs, exact geometry deduplication, separate multipart paths.
+- [x] Correct Henderson permit labeling to residential scope; fix the road URL
+      contract from integer to varchar and label road counts as segments/events.
+- [x] Coverage matrix and source contracts in `docs/COVERAGE.md`; proposed
+      implementation trade-offs drafted in `DECISIONS.md` for Evan's confirmation.
+- [x] 21 pytest tests (spatial, adapter, SQL negatives, map scales and Streamlit
+      controls); hermetic dbt build: 49/49 selected nodes passed, no warnings.
+      New modules pass `ty`; `ruff` passes. `prek` local hooks added and run.
+- [x] Isolated integration against the existing full snapshot plus live new
+      sources: geographic assignment reconciles, full dbt checked, changed pages
+      pass AppTest. Final local full dbt build: 131 passed, 2 upstream road
+      status/date warnings, 0 errors/skips. Local warehouse/catalog refreshed;
+      previous warehouse backed up at `/tmp/elvis-expansion/vegas-before-tracts.duckdb`.
+      No raw records displayed; no browser automation used.
+- [ ] Human source/visual review and draft-ledger confirmation before release;
+      see `BLOCKED.md`. PR creation authorized; deployment remains with Evan.
+
+### Phase 1 — Coverage and source discovery
+- [x] Inventory every existing topic against Las Vegas, Henderson, North Las
+      Vegas, and existing unincorporated coverage; distinguish repository
+      integration from verified current source availability.
+- [x] Audit existing Henderson/North Las Vegas parks and rental integrations,
+      Henderson permits/licenses, and regional feeds before adding duplicates.
+- [ ] Find and verify official public sources for missing city/topic pairs,
+      including local road projects/ROW permits. Record publisher, endpoint,
+      access/reuse requirements, fields, grain, dates, location precision, and
+      source health. Record unavailable or incompatible sources with reasons.
+- [x] Define comparable measures and reporting windows per topic; preserve
+      differences such as calls versus crimes and missing permit valuations.
+      Assess regional/station topics without inventing tract or city detail.
+- [x] Publish the coverage matrix and choose incremental topic releases based
+      on verified feasibility; parity across all cities is not a release gate.
+
+### Phase 2 — Shared tract foundation
+- [x] Select authoritative tract boundaries and compatible population data;
+      document vintages, GEOIDs, rate units, and topic-specific rate eligibility.
+- [x] Define geographic city assignment separately from source jurisdiction,
+      city-filter/tract membership rules, and treatment of crossing tracts,
+      boundary points, overlaps, missing coordinates, and invalid geometry.
+- [x] Ingest versioned geographic/denominator data into the build-time pipeline;
+      create reusable dbt tract models and deterministic spatial assignments.
+- [x] Build full-snapshot tract aggregates with documented counting units;
+      report unassigned/excluded records and reconcile totals to source data.
+- [x] Model coverage explicitly so true zero, missing, partial, and suppressed
+      values stay distinct. Guard missing/zero population and numerator/
+      denominator geography mismatches; disable unsupported rates.
+- [x] Add hermetic spatial/coverage fixtures and dbt tests for GEOID integrity,
+      unique assignment, crossing/edge cases, aggregate reconciliation, and
+      rate eligibility. Include the new lineages in CI.
+
+### Phase 3 — Crime choropleth and reusable map behavior
+- [x] Replace `views/crime.py` hex columns with flat census-tract polygons using
+      full eligible snapshot aggregates, not `mart_crime_map_sample` counts.
+- [x] Implement all-covered-jurisdictions default, city filtering, counts as
+      default, and eligible optional rate selection with clear units/periods.
+- [x] Keep a common scale for comparable city values; city filtering alone must
+      not change it. Provide a readable legend and distinct no-data styling.
+- [x] Add tract tooltips and selection details consistent with active filters;
+      update sampling/hexagon captions and preserve useful breakdowns.
+- [ ] Verify dark-theme/WebGL legibility visually. Filter/detail consistency,
+      empty states, full-snapshot totals, and app execution pass automated tests;
+      visual review remains with Evan per CLAUDE.md.
+
+### Phase 4 — Incremental municipal/topic expansion
+- [ ] Add verified Henderson/North Las Vegas sources in topic batches, retaining
+      provenance, definitions, source IDs, and reporting periods; deduplicate
+      overlapping feeds using a documented rule.
+- [ ] Extend staging/marts and hermetic fixtures/tests with each batch. Keep
+      incompatible measures separate and verify build-time snapshot behavior.
+- [ ] Add tract comparisons where location detail supports them; retain place
+      points and road paths. Expose unavailable coverage rather than zero counts.
+- [ ] Publish coverage, source/vintage, and metric definitions in the app and
+      update README/dbt documentation as each topic ships.
+
+### Phase 5 — Release validation
+- [ ] Verify each topic against PRD acceptance: observed zero versus missing,
+      full-data counts, valid rates, city filter, stable comparative colors,
+      tract selection, and documented coverage/assignment limitations.
+- [ ] Run expanded hermetic CI and an end-to-end warehouse/dbt/app build;
+      assess source health and existing deployment blockers before release.
+- [ ] Mark assessed-but-unavailable city/topic pairs with reasons; do not mark
+      unsupported coverage as implemented or hold unrelated topics for parity.
+
 ## Redesign — "Neon Night on the Strip" (2026-09-26)
 
 Visual reskin only: desert-atlas identity → classic neon/retro Las Vegas Strip.
@@ -62,7 +166,11 @@ Governing principle: **flash on the chrome, calm in the data** (legibility first
       "more = hotter" (+ matching hex `color_range`), updated stale Positron
       comment in crime.py.
 
-## Deploy — PAUSED (upstream outage, 2026-08-15)
+## Historical deploy failure (upstream outage, 2026-08-15)
+
+Current branch: the failing CLV license feed and dependent models are disabled;
+the full local build passes. The incident below is historical, not a current
+deployment blocker. The PR also installs dbt packages during a clean Docker build.
 
 The "current only" filter is committed but NOT yet live. A `railway up` on
 2026-08-15 **failed the build** — not from our change, but from an unrelated
@@ -194,8 +302,9 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
       past-end projects. Snapshot counts: 382 → 160 current (222 hidden = 135
       Closed + 87 past end date, incl. 29 lapsed `Construction`-phase). ruff + ty
       clean.
-- [ ] Phase 2 (optional): local surface-street construction for Henderson /
-      North Las Vegas / unincorporated Clark County via their ROW-permit feeds.
+- [ ] Henderson / North Las Vegas local surface-street construction: now tracked
+      in the planned valley expansion above (source availability unverified).
+      Additional unincorporated Clark County ROW coverage remains optional.
 - [x] Add the Road Construction dataset to the README dataset list. (Already
       done in fb0ca12 — the Datasets paragraph lists CLV CIP + Nevada 511/NDOT
       with the keyless/`NVROADS_API_KEY` note. Item was stale.)

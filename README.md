@@ -77,3 +77,30 @@ needed — the Dockerfile is the source of truth.
 A portfolio project showcasing analytics/data-engineering skills. See the
 `groening` (Portland) and `robbins` (Seattle) sibling folders for handoff primers
 that port this same architecture to other cities.
+
+## Census-tract comparisons and valley coverage
+
+The **Compare Census Tracts** page compares full-snapshot calls, parks, rental
+registrations, and public-art counts. The calls page now uses the same flat
+choropleth instead of sampled hex columns. City filtering selects whole
+intersecting tracts and keeps the color scale fixed. Counts are the default;
+calls and rentals can use per-1,000 **2020 Census residents** where the source
+footprint and denominator support it. Missing coverage is distinct from zero.
+
+Henderson public art and transportation CIP lines supplement existing Henderson
+and North Las Vegas parks/rentals and Henderson permits/licenses. See
+[the coverage matrix](docs/COVERAGE.md) for remaining gaps and source definitions.
+Census geometry, spatial assignments, and counts are baked into the warehouse;
+no spatial queries or source downloads run during app interaction.
+
+```bash
+uv run pytest tests/python -q  # synthetic spatial, SQL, adapter, and UI tests
+uv run ruff check .
+uv run ty check geography.py choropleth.py tract_pipeline.py tract_map.py views/tracts.py
+uv run prek run --all-files
+```
+
+CI seeds include synthetic tracts and Henderson art. Never run `dbt seed` on a
+production or full local snapshot; use an isolated profile/database for fixture
+checks. A source/build refresh plus `dbt build --exclude-resource-type seed` is
+required before using the new pages against an older warehouse.

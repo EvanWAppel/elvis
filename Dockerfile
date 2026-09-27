@@ -9,6 +9,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # App source.
 COPY . .
 
+# A clean GitHub/Railway checkout has no gitignored dbt_packages directory.
+RUN dbt deps --profiles-dir .
+
 # Bake the DuckDB warehouse into the image at build time. Railway's release
 # phase runs in a throwaway container, so the build must happen here (fetches
 # the SNHD bundle + ArcGIS layers, then materializes the dbt marts). The DB
@@ -17,7 +20,7 @@ COPY . .
 # NVROADS_API_KEY is a Railway service variable; it reaches the runtime by
 # default but NOT a Dockerfile RUN step, so declare it as a build arg and pass
 # it inline (kept out of the final image's ENV). Without it, build_warehouse
-# skips the Nevada 511 roadwork source and only the keyless CLV CIP layer ships.
+# skips Nevada 511; the keyless Las Vegas and Henderson CIP layers still ship.
 # `--exclude-resource-type seed` keeps the CI fixture CSVs in seeds/ from ever
 # running here — they exist only to let CI build the marts offline, and must not
 # overwrite the full-size raw.* tables that build_warehouse.py just loaded.
