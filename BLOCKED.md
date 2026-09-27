@@ -1,5 +1,7 @@
 # BLOCKED — what I need from Evan
 
 - [ ] 🔴 **Paused-deploy decision (TASKS "Deploy — PAUSED")** — the City of Las Vegas `Business_Licenses_OpenData` ArcGIS layer returned zero rows on the 2026-08-15 build (had data Aug 13; sibling sources healthy). Decide: (a) wait for the City to repopulate, (b) make the build resilient to empty sources (type metadata + WARNING, keep dbt happy on 0-row raw), or (c) retry now (will fail identically). The Aug 13 live deploy is unaffected.
-- [ ] 🔴 **Authorize the CI PR push (P1)** — the CI branch with hermetic `dbt seed` + `ruff` checks is written but not pushed. Confirm/push and open the PR so GitHub Actions runs the checks (currently only local manual verification).
+- [x] **CI PR push authorized** — Evan requested the valley-expansion PR; its branch includes the expanded hermetic checks. Earlier CI work is already present on `main`.
 - [ ] 🟡 **Nevada 511 API key for local dev (`NVROADS_API_KEY`)** — already set in Railway prod and verified live (24 events). For local testing, request a free rate-limited key at https://nvroads.com/developer. Optional if a keyless build is acceptable.
+
+- [ ] 🟡 **Review the first tract-map increment before release** — per portfolio `CLAUDE.md` (“The human inspects the data” and “The agent drafts the entry; the human confirms it”), review `docs/COVERAGE.md` against its linked official sources and the new Compare Census Tracts page, then confirm or amend the 2026-09-26 draft entry in `DECISIONS.md`. Check the 2020 population/municipal vintage, whole-tract city filtering, incomplete police coverage, and source status/date warnings. Automated tests process data without displaying raw records; this review is required before release, not a blocker for continued local source work.

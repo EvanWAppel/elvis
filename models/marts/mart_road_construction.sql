@@ -1,6 +1,6 @@
 {{ config(materialized='table') }}
 
--- Metro road construction, one row per project/event: City of Las Vegas Capital
+-- Metro road construction, one row per mapped project/event segment: Las Vegas and Henderson Capital
 -- Improvement Program lines plus (when a Nevada 511 key is configured) NDOT
 -- state-route roadwork and closures. Geometry travels as a JSON path string.
 with projects as (

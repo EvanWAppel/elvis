@@ -2,14 +2,14 @@ version: 2
 
 models:
   - name: mart_road_construction
-    description: "Metro road construction, one row per project/event: City of Las Vegas CIP lines plus optional Nevada 511 NDOT state-route roadwork. Carries status/phase, schedule, road extent, a JSON polyline path for the map, and a WGS84 centroid."
+    description: "Metro road construction, one row per mapped project/event segment: Las Vegas and Henderson CIP lines plus optional Nevada 511 NDOT state-route roadwork. Carries status/phase, schedule, road extent, a JSON polyline path for the map, and a WGS84 centroid."
     config:
       contract:
         enforced: true
     columns:
       - name: data_source
         data_type: varchar
-        description: "Originating feed: 'City of Las Vegas (CIP)' or 'NDOT 511 (state routes)'."
+        description: "Originating feed: 'City of Las Vegas (CIP)', 'City of Henderson (CIP)', or 'NDOT 511 (state routes)'."
         tests:
           - not_null
       - name: project_name
@@ -33,7 +33,7 @@ models:
       - name: is_full_closure
         data_type: boolean
       - name: url
-        data_type: integer
+        data_type: varchar
       - name: path_json
         data_type: varchar
         description: "Project geometry as a JSON array of [lon, lat] vertices, for the deck.gl PathLayer."

@@ -84,3 +84,37 @@ mono labels stay Space Mono — both kept for readability.
 **Consequence:** the recent "dark session contrast" work (commits fixing the CSS
 that *forced* a light palette in dark browser sessions) is inverted by this change —
 the app now embraces dark. Those overrides in `explorer.css` are removed/reversed.
+
+## 2026-09-26 — DRAFT, awaiting Evan's confirmation: tract maps and first municipal increment
+
+**Interview-confirmed product direction:** expand Henderson/North Las Vegas as
+far as public data supports; census-tract choropleths for area comparisons;
+retain useful point/line maps; counts by default, optional defensible population
+rates; shared city scales; incremental releases with explicit coverage gaps.
+
+**Implementation trade-offs proposed in this branch:**
+
+- Use the Census 2020 tract/place layers and their matching `POP100` field. This
+  avoids mismatching boundary/population vintages or adding an API-key dependency.
+  Rejected a current-population claim: the denominator and city limits are from
+  2020, and the app labels this. A newer matched vintage remains a later upgrade.
+- City selection retains whole intersecting tracts, including boundary-crossing
+  tracts. Rejected clipped numerators divided by full-tract population. The app
+  explicitly says these are tract totals, not city totals; partial source
+  footprints cannot produce population rates.
+- Compute spatial assignments with Shapely's spatial index at build time and
+  model the aggregates in dbt. Rejected runtime joins and sample-derived counts.
+  Edge/overlap ties use the lowest GEOID once and are audited. Known source-scope
+  gaps remain unavailable/partial, not zeros.
+- Permit a logged topology repair only when polygon area changes by at most one
+  part per million (absolute floor 1e-12 square degrees). Material changes still
+  fail. Synthetic tests exercise holes, ties, invalid coordinates, harmless
+  zero-area artifacts, and rejected material repairs.
+- Add Henderson art and transportation lines from verified city schemas; retain
+  separate road segments and namespace artwork IDs. Henderson crime-report
+  layers are not silently merged into LVMPD calls. North Las Vegas source gaps
+  and further Henderson permit/crime candidates remain explicitly documented.
+
+These implementation choices are a draft ledger entry for human confirmation,
+not a claim that source meaning has received human review. See `docs/COVERAGE.md`
+for official source links and `TASKS.md` for verified implementation status.

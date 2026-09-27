@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: uv run ruff check .
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: spatial-tests
+        name: spatial and map regression tests
+        entry: uv run pytest tests/python -q
+        language: system
+        pass_filenames: false
+        files: '^(geography|choropleth|tract_|build_warehouse|models/|tests/|views/|seeds/)'

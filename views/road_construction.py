@@ -12,7 +12,7 @@ from ui import MAP_STYLE
 st.title("Road Construction")
 st.caption(
     "Where the metro is under construction: City of Las Vegas Capital Improvement "
-    "Program projects (streets, sewer, safety) and — when a Nevada 511 key is "
+    "Program projects (streets, sewer, safety), Henderson transportation projects, and — when a Nevada 511 key is "
     "configured — NDOT state-route roadwork and closures. Each line is the project "
     "extent; color marks the phase."
 )
@@ -67,8 +67,8 @@ if filtered.empty:
     st.stop()
 
 c1, c2, c3 = st.columns(3)
-c1.metric("Projects", f"{len(filtered):,}")
-c2.metric("Actively under construction", f"{int(active_mask[filtered.index].sum()):,}")
+c1.metric("Mapped segments / events", f"{len(filtered):,}")
+c2.metric("Active segments / events", f"{int(active_mask[filtered.index].sum()):,}")
 c3.metric("Corridors (named roads)", f"{filtered['road_name'].nunique():,}")
 
 # --- Map: color by phase, active work highlighted orange ---

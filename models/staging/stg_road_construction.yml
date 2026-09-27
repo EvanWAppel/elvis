@@ -20,6 +20,7 @@ models:
           - accepted_values:
               values:
                 - "City of Las Vegas (CIP)"
+                - "City of Henderson (CIP)"
                 - "NDOT 511 (state routes)"
       - name: status
         description: >

@@ -4,6 +4,7 @@ pandas>=2.0
 duckdb>=1.5
 dbt-duckdb>=1.11
 openpyxl>=3.1
+shapely>=2.1.2
 
 # Tiresias agent layer (kept in sync with pyproject.toml; Railway installs via pip).
 anthropic>=0.122.0
