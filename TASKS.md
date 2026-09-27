@@ -256,6 +256,26 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
 - [ ] (Optional, needs Evan to inspect live data) Harden `status`/coordinate
       tests to hard errors by enumerating the real distinct values + bounds.
 
+### P5 — Generated & hosted dbt docs site
+- [x] `.github/workflows/docs.yml`: on push to `main`, build the docs
+      hermetically (uv sync → dbt deps → dbt seed → `dbt docs generate --static`)
+      and deploy the single-file site to GitHub Pages
+      (`upload-pages-artifact` + `deploy-pages`, `pages: write`/`id-token` scopes).
+- [x] `--static` single-file output (3.3M `static_index.html`) chosen over the
+      multi-file `target/` bundle — one artifact, trivial to host. Verified locally
+      both against the real warehouse (full catalog, 45 models) and hermetically
+      from seeds (full lineage/descriptions; catalog covers the seeded lineages).
+- [x] Linked from the landing page (`site/index.html`, "Under the surface"
+      section) and the README ("Live" section) to
+      <https://evanwappel.github.io/elvis/>. Did NOT touch the hand-built site
+      otherwise.
+- [ ] **Blocked on Evan:** enable GitHub Pages (source = GitHub Actions) so the
+      deploy job can publish — see `BLOCKED.md`. Until then the workflow builds but
+      the deploy step fails.
+- [ ] (Bonus, needs Evan's voice/register) `docs/ANALYTICS-ENGINEERING.md`
+      explaining the layering + how an AI agent navigates the dbt metadata
+      (primer P5 bonus for Samsara/dbt Labs). Deferred — needs Evan's input.
+
 ## Road Construction (🚧)
 
 ### Done

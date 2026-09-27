@@ -10,6 +10,12 @@ Henderson, North Las Vegas, and unincorporated Clark County).
 It's a portfolio piece demonstrating end-to-end data engineering: multi-source
 ingestion, a reproducible warehouse, dbt modeling, and an interactive front end.
 
+## Live
+
+- **Explorer** — the interactive app: <https://elvis-production-e07a.up.railway.app>
+- **dbt docs** — the lineage graph and model/column reference, auto-published to
+  GitHub Pages on every push to `main`: <https://evanwappel.github.io/elvis/>
+
 ## Stack
 
 - **DuckDB** — single-file embedded warehouse (no server).
