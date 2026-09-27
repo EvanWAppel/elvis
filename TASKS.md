@@ -166,7 +166,11 @@ Governing principle: **flash on the chrome, calm in the data** (legibility first
       "more = hotter" (+ matching hex `color_range`), updated stale Positron
       comment in crime.py.
 
-## Deploy — PAUSED (upstream outage, 2026-08-15)
+## Historical deploy failure (upstream outage, 2026-08-15)
+
+Current branch: the failing CLV license feed and dependent models are disabled;
+the full local build passes. The incident below is historical, not a current
+deployment blocker. The PR also installs dbt packages during a clean Docker build.
 
 The "current only" filter is committed but NOT yet live. A `railway up` on
 2026-08-15 **failed the build** — not from our change, but from an unrelated

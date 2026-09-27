@@ -1,5 +1,8 @@
 .venv
 .git
+dbt_packages
+.env
+.env.*
 __pycache__
 *.pyc
 target
