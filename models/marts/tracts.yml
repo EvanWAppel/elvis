@@ -1,0 +1,44 @@
+version: 2
+models:
+  - name: stg_census_tracts
+    description: "Full 2020 Census tracts intersecting the valley extent; matching POP100 population. City memberships reflect positive-area intersections, not clipped tracts."
+    columns:
+      - name: geoid
+        data_tests: [unique, not_null]
+      - name: geometry_json
+        data_tests: [not_null]
+  - name: stg_tract_coverage
+    description: "Topic/source scope by tract; unavailable does not imply zero. Period is the source snapshot's observed date range or inventory label."
+    columns:
+      - name: coverage
+        data_tests:
+          - accepted_values:
+              values: [available, partial, unavailable]
+      - name: geoid
+        data_tests:
+          - relationships:
+              to: ref('stg_census_tracts')
+              field: geoid
+  - name: stg_tract_counts
+    description: "Full eligible source-record counts by topic, tract, category; never random map samples. Boundary ties use the lowest GEOID once."
+    columns:
+      - name: geoid
+        data_tests:
+          - relationships:
+              to: ref('stg_census_tracts')
+              field: geoid
+  - name: mart_tract_metrics
+    description: "Whole-tract counts and optional per-1,000 2020 residents. Zero only for covered source footprints; rates absent for partial coverage/invalid denominators. Not annualized risk."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [topic, geoid]
+  - name: mart_tract_assignment_audit
+    description: "One row per topic accounting for every source record, including invalid and out-of-tract coordinates. No source records are exposed."
+    columns:
+      - name: topic
+        data_tests: [unique, not_null]
+  - name: mart_public_art_metro
+    description: "Las Vegas and Henderson public art, with namespaced IDs and original collection jurisdiction. Henderson detail URLs are not assumed to be photos."
+    columns:
+      - name: artwork_id
+        data_tests: [unique, not_null]

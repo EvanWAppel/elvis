@@ -29,7 +29,7 @@ seeds:
     road_construction:
       +column_types:
         is_full_closure: boolean
-        url: integer
+        url: varchar
         latitude: double
         longitude: double
     art_work_points:
@@ -37,3 +37,26 @@ seeds:
         LAT_1: double
         LONG: double
         ObjectId: bigint
+    census_tracts:
+      +column_types:
+        geoid: varchar
+        population: bigint
+        boundary_vintage: varchar
+        population_vintage: varchar
+    tract_counts:
+      +column_types:
+        geoid: varchar
+        record_count: bigint
+    tract_coverage:
+      +column_types:
+        geoid: varchar
+        rate_allowed: boolean
+    henderson_art:
+      +column_types:
+        medium: varchar
+        address: varchar
+        ward: varchar
+        pic_url: varchar
+        thumb_url: varchar
+        latitude: double
+        longitude: double

@@ -98,9 +98,9 @@ st.dataframe(by_type, width="stretch", hide_index=True)
 st.divider()
 
 # --- Henderson permits (counts only — the Henderson feed carries no valuation) ---
-st.header("🏙️ Henderson permits")
+st.header("🏙️ Henderson residential permits")
 st.caption(
-    "City of Henderson building permits. Henderson's feed has no valuation, so "
+    "City of Henderson residential permits. This feed has no valuation, so "
     "this is by permit count — but it runs to the present, unlike the archived "
     "Las Vegas series above."
 )

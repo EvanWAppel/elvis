@@ -1,0 +1,4 @@
+geoid,tract_name,population,boundary_vintage,population_vintage,population_source,cities_json,geometry_json
+32003000100,Tract 32003000100,100.0,2020,2020,https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/6,"[""Las Vegas""]","{""type"": ""Polygon"", ""coordinates"": [[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]]]}"
+32003000200,Tract 32003000200,0.0,2020,2020,https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/6,"[""Henderson"", ""Las Vegas""]","{""type"": ""Polygon"", ""coordinates"": [[[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0], [1.0, 0.0]]]}"
+32003000300,Tract 32003000300,,2020,2020,https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/6,"[""Henderson""]","{""type"": ""Polygon"", ""coordinates"": [[[2.0, 0.0], [3.0, 0.0], [3.0, 1.0], [2.0, 1.0], [2.0, 0.0]]]}"

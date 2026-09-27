@@ -27,6 +27,8 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: uv sync
+      - name: Python spatial and map tests (synthetic fixtures)
+        run: uv run pytest tests/python -q
       - name: ruff check
         run: uv run ruff check .
 
@@ -52,4 +54,4 @@ jobs:
       - name: dbt seed (load raw.* fixtures)
         run: uv run dbt seed --profiles-dir .
       - name: dbt build (models + tests)
-        run: uv run dbt build --profiles-dir . --select stg_road_construction+ stg_art_work_points+
+        run: uv run dbt build --profiles-dir . --select stg_road_construction+ stg_art_work_points+ stg_henderson_art+ stg_census_tracts+ stg_tract_counts+ stg_tract_coverage+ mart_tract_assignment_audit

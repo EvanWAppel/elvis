@@ -258,7 +258,10 @@ def fetch_features(
 
     def get(url: str) -> dict:
         with urllib.request.urlopen(url, timeout=180, context=ctx) as r:
-            return json.load(r)
+            data = json.load(r)
+        if "error" in data:
+            raise RuntimeError(f"ArcGIS request failed for {base_url}: {data['error']}")
+        return data
 
     meta = get(f"{base_url}?f=json")
     page = min(meta.get("maxRecordCount") or PAGE_SIZE, PAGE_SIZE)
@@ -276,12 +279,17 @@ def fetch_features(
                 "resultRecordCount": page,
             }
         )
-        feats = get(f"{base_url}/query?{params}").get("features", [])
+        response = get(f"{base_url}/query?{params}")
+        if "features" not in response:
+            raise RuntimeError(f"ArcGIS response missing features: {base_url}")
+        feats = response["features"]
         if not feats:
+            if response.get("exceededTransferLimit"):
+                raise RuntimeError(f"ArcGIS empty truncated page: {base_url}")
             break
         out.extend((f.get("attributes", {}), f.get("geometry")) for f in feats)
         offset += len(feats)
-        if len(feats) < page:
+        if not response.get("exceededTransferLimit") and len(feats) < page:
             break
     log.info("  %s: %d features", base_url.rsplit("/services/", 1)[-1], len(out))
     return out
@@ -880,6 +888,7 @@ ROAD_CONSTRUCTION_COLUMNS = [
     "path_json",
     "latitude",
     "longitude",
+    "source_record_id",
 ]
 
 
@@ -924,6 +933,62 @@ def fetch_clv_cip() -> pd.DataFrame:
                 "longitude": lon,
             }
         )
+    return pd.DataFrame(rows, columns=ROAD_CONSTRUCTION_COLUMNS)
+
+
+ART_COLUMNS = [
+    'artwork_id', 'jurisdiction', 'artwork_name', 'artist', 'medium',
+    'location_detail', 'address', 'ward', 'latitude', 'longitude',
+    'pic_url', 'thumb_url', 'source_url',
+]
+
+
+def fetch_henderson_art() -> pd.DataFrame:
+    """Official public-art inventory; URL is a detail page, not necessarily an image."""
+    url = f'{HENDERSON}/public/OpenDataRecreation/MapServer/10'
+    rows = []
+    for attrs, geom in fetch_features(url, out_fields='OBJECTID,TITLE,LOCATION,ARTIST,URL'):
+        lon, lat = _centroid(geom)
+        rows.append({'artwork_id': f'henderson:{attrs["OBJECTID"]}',
+                     'jurisdiction': 'Henderson', 'artwork_name': attrs.get('TITLE'),
+                     'artist': attrs.get('ARTIST'), 'location_detail': attrs.get('LOCATION'),
+                     'latitude': lat, 'longitude': lon, 'source_url': attrs.get('URL')})
+    return pd.DataFrame(rows, columns=ART_COLUMNS)
+
+
+def fetch_henderson_cip() -> pd.DataFrame:
+    """Transportation line layers only; preserve disjoint paths and source phases."""
+    rows = []
+    seen = set()
+    for layer in (7, 8):
+        url = f'{HENDERSON}/public/CIP/MapServer/{layer}'
+        for attrs, geom in fetch_features(
+            url, out_fields='OBJECTID,PROJECT_NUMBER,PROJECT_NAME,DESCRIPTION,PROJECT_PHASE,'
+                            'PROJECT_STATUS,LOCATION_DESCRIPTION,START_DATE,COMPLETION_DATE',
+        ):
+            for part_index, path in enumerate((geom or {}).get('paths', [])):
+                if len(path) < 2:
+                    continue
+                path = [[point[0], point[1]] for point in path]
+                path_json = json.dumps(path)
+                # Layers 7/8 are cartographic representations; collapse only exact
+                # project+path duplicates. Distinct segments must remain separate.
+                key = (attrs.get('PROJECT_NUMBER') or f'{layer}:{attrs["OBJECTID"]}', path_json)
+                if key in seen:
+                    continue
+                seen.add(key)
+                lon, lat = _path_centroid(path)
+                rows.append({
+                    'source': 'City of Henderson (CIP)',
+                    'source_record_id': f'henderson:{layer}:{attrs["OBJECTID"]}:{part_index}',
+                    'project_name': attrs.get('PROJECT_NAME'),
+                    'description': attrs.get('DESCRIPTION'),
+                    'status': attrs.get('PROJECT_PHASE') or attrs.get('PROJECT_STATUS'),
+                    'category': 'Transportation', 'extent': attrs.get('LOCATION_DESCRIPTION'),
+                    'start_date': _iso_date(attrs.get('START_DATE')),
+                    'end_date': _iso_date(attrs.get('COMPLETION_DATE')),
+                    'url': url, 'path_json': path_json, 'latitude': lat, 'longitude': lon,
+                })
     return pd.DataFrame(rows, columns=ROAD_CONSTRUCTION_COLUMNS)
 
 
@@ -994,7 +1059,8 @@ def fetch_road_construction() -> pd.DataFrame:
     clv = fetch_clv_cip()
     log.info("Fetching Nevada 511 roadwork events ...")
     nvroads = fetch_nvroads_roadwork()
-    return pd.concat([clv, nvroads], ignore_index=True)
+    henderson = fetch_henderson_cip()
+    return pd.concat([clv, henderson, nvroads], ignore_index=True)
 
 
 def load_raw(con: duckdb.DuckDBPyConnection, table: str, df: pd.DataFrame) -> None:
@@ -1021,6 +1087,7 @@ def main() -> None:
     try:
         log.info("Fetching art_work_points (ArcGIS) ...")
         load_raw(con, "art_work_points", fetch_layer("Art_Work_Points_Open_Data"))
+        load_raw(con, "henderson_art", fetch_henderson_art())
 
         log.info("Fetching fire_prevention_inspections (ArcGIS) ...")
         load_raw(
@@ -1075,6 +1142,10 @@ def main() -> None:
 
         log.info("Loading SNHD restaurant bundle ...")
         load_snhd(con)
+
+        from tract_pipeline import build_tract_tables
+
+        build_tract_tables(con)
     finally:
         con.close()
 

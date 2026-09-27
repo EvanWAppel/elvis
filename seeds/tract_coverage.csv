@@ -1,0 +1,4 @@
+topic,geoid,coverage,period,rate_allowed
+calls,32003000100,available,2026-01-01 to 2026-01-01,True
+calls,32003000200,partial,2026-01-01 to 2026-01-01,True
+calls,32003000300,unavailable,2026-01-01 to 2026-01-01,True

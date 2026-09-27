@@ -1,0 +1,2 @@
+artwork_id,jurisdiction,artwork_name,artist,medium,location_detail,address,ward,latitude,longitude,pic_url,thumb_url,source_url
+henderson:fixture,Henderson,Synthetic artwork,Fixture,,Test location,,,36,-115,,,https://example.test/art
