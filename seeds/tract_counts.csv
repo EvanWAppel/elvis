@@ -1,3 +1,6 @@
 topic,geoid,category,record_count
 calls,32003000100,A,2
 calls,32003000100,B,1
+henderson_crime,32003000300,BURGLARY,3
+henderson_crime,32003000300,THEFT,2
+henderson_crime,32003000200,ASSAULT,1

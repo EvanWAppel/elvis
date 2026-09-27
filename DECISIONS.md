@@ -2,6 +2,43 @@
 
 Append-only log of decisions that carried a real trade-off (chose X, rejected Y, why).
 
+## 2026-09-27 — Phase 4 batch 1: Henderson crime *reports* as a separate topic, count-only
+
+*Draft for Evan's confirmation (agent drafts; human confirms). Batch and measure
+choice were confirmed interactively on 2026-09-27.*
+
+**Chose:** add City of Henderson crime **reports** (public-safety ArcGIS,
+`OpenDataPublicSafety` "Crime Data {year}" layers, recent years `[2024, 2025]`)
+as a **new, clearly-labeled tract topic** (`henderson_crime`) — never merged with
+or scaled against LVMPD calls-for-service. Layers are resolved **by name** (not
+hardcoded ids) so an appended annual layer can't silently return the wrong year;
+a missing requested year raises. Dates are `esriFieldTypeDate` epoch-ms, parsed
+with `_epoch_to_date`. Coverage is Henderson-only: Henderson-only tracts read
+`available`, LV/Henderson crossing tracts `partial` (observed records, no zero),
+others `unavailable`.
+
+**Rejected:**
+- *Merging Henderson crime into the `calls` map/metric.* A crime **report** is a
+  different measure from a **call for service**; combining them (or sharing a
+  color domain) would invent false comparability. Kept as a distinct topic with
+  an explicit note. (Confirmed by Evan.)
+- *Offering a per-1,000 resident rate (as `calls` does).* **Deferred — count-only
+  (`rate: False`).** The verified feature counts are inconsistent across years
+  (2024 ≈ 6,405 vs 2025 ≈ 27,168 as of the 2026-09-27 source check); a per-capita
+  rate over that ragged, non-annualized window would mislead. Counts are the
+  honest default until annual completeness is human-verified. Rejected `rate:True`
+  parity with `calls`.
+- *Loading the full 2014–2025 archive.* Mirrored the LVMPD two-recent-years window
+  to keep the snapshot/image bounded; older layers remain available to add later.
+- *North Las Vegas crime in this batch.* No verified bulk feed exists (portals are
+  interactive-search only); left a documented gap rather than a fabricated source.
+
+**Needs human inspection before release (per CLAUDE.md — the agent never sees raw
+records):** the 2024-vs-2025 report-volume gap. A full 2024 year at ~¼ of 2025's
+volume suggests a partial load, a retention change, or a real reporting shift —
+Evan should confirm which before the topic is presented as complete. Recorded in
+`BLOCKED.md`.
+
 ## 2026-09-26 — P5 dbt docs: static single-file, hosted on GitHub Pages, built hermetically
 
 **Chose:** publish the dbt docs via a dedicated GitHub Actions workflow that runs

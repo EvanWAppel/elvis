@@ -58,6 +58,53 @@ def test_henderson_road_parts_are_not_connected_by_fake_diagonals(monkeypatch):
     assert set(result.source) == {"City of Henderson (CIP)"}
 
 
+def test_henderson_crime_namespaces_year_and_parses_offense_and_point(monkeypatch):
+    # Only the configured recent years are pulled, resolved by layer name so a
+    # reordered service cannot silently return the wrong year.
+    monkeypatch.setattr(warehouse, "HENDERSON_CRIME_YEARS", [2025])
+    monkeypatch.setattr(
+        warehouse, "_henderson_crime_layer_ids", lambda years: {2025: 17}
+    )
+    monkeypatch.setattr(
+        warehouse,
+        "fetch_features",
+        lambda *a, **k: [
+            (
+                {
+                    "OBJECTID": 4,
+                    "EVENT__": "LLV250001",
+                    "CITY": "HENDERSON",
+                    "BEAT": "H12",
+                    "INC_PRIMAR": "BURGLARY",
+                    "INC_ADDRESS": "100 WATER ST",
+                    "OCCURRED_S": 1735732800000,  # 2025-01-01, epoch ms
+                    "PROC_DATE": 1735819200000,
+                },
+                {"x": -114.98, "y": 36.03},
+            )
+        ],
+    )
+    result = warehouse.fetch_henderson_crime()
+    row = result.iloc[0]
+    assert row.crime_id == "henderson:2025:4"
+    assert row.jurisdiction == "Henderson"
+    assert row.category == "BURGLARY"
+    assert row.observed_date == "2025-01-01"
+    assert (row.longitude, row.latitude) == (-114.98, 36.03)
+    # No LVMPD call-record fields are fabricated onto a crime-report record.
+    assert list(result.columns) == warehouse.HENDERSON_CRIME_COLUMNS
+
+
+def test_henderson_crime_missing_year_layer_fails_loudly(monkeypatch):
+    monkeypatch.setattr(
+        warehouse,
+        "_get_json",
+        lambda url: {"layers": [{"id": 17, "name": "Crime Data 2025"}]},
+    )
+    with pytest.raises(RuntimeError, match="Crime Data 2099"):
+        warehouse._henderson_crime_layer_ids([2099])
+
+
 def test_arcgis_service_error_is_not_an_empty_dataset(monkeypatch):
     class Response:
         def __enter__(self):

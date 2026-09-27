@@ -78,6 +78,9 @@ CLARK = "https://gisgate.co.clark.nv.us/arcgis/rest/services"
 # Only the two most recent LVMPD yearly layers are loaded — enough for month/hour
 # /weekday patterns and a recent trend without baking millions of rows into the image.
 CRIME_YEARS = [2025, 2026]
+# City of Henderson crime *reports* (a distinct measure from LVMPD calls). Only
+# recent years are baked into the snapshot, mirroring the LVMPD two-year window.
+HENDERSON_CRIME_YEARS = [2024, 2025]
 DB_PATH = Path(__file__).parent / "vegas.duckdb"
 
 SNHD_ZIP_URL = (
@@ -956,6 +959,59 @@ def fetch_henderson_art() -> pd.DataFrame:
     return pd.DataFrame(rows, columns=ART_COLUMNS)
 
 
+HENDERSON_CRIME_COLUMNS = [
+    'crime_id', 'jurisdiction', 'category', 'beat', 'address',
+    'observed_date', 'latitude', 'longitude', 'source_url',
+]
+
+
+def _henderson_crime_layer_ids(years: list[int]) -> dict[int, int]:
+    """Resolve 'Crime Data {year}' layers by name from the public-safety service.
+
+    Name resolution (not hardcoded ids) keeps the right year even after the City
+    appends a new annual layer and reshuffles ids. A requested year with no layer
+    raises, so a gap never masquerades as an empty year.
+    """
+    meta = _get_json(f'{HENDERSON}/public/OpenDataPublicSafety/MapServer?f=json')
+    by_name = {layer['name']: layer['id'] for layer in meta.get('layers', [])}
+    ids = {}
+    for year in years:
+        name = f'Crime Data {year}'
+        if name not in by_name:
+            raise RuntimeError(f'Henderson public-safety layer missing: {name}')
+        ids[year] = by_name[name]
+    return ids
+
+
+def fetch_henderson_crime() -> pd.DataFrame:
+    """City of Henderson crime *reports* (recent years), a distinct measure from
+    LVMPD calls-for-service. Point geometry; counts are source report records."""
+    layers = _henderson_crime_layer_ids(HENDERSON_CRIME_YEARS)
+    rows = []
+    for year, layer in layers.items():
+        url = f'{HENDERSON}/public/OpenDataPublicSafety/MapServer/{layer}'
+        log.info('Fetching Henderson crime reports %d ...', year)
+        for attrs, geom in fetch_features(
+            url, out_fields='OBJECTID,EVENT__,CITY,BEAT,INC_PRIMAR,INC_ADDRESS,OCCURRED_S,PROC_DATE',
+        ):
+            lon, lat = _centroid(geom)
+            rows.append({
+                'crime_id': f'henderson:{year}:{attrs["OBJECTID"]}',
+                'jurisdiction': 'Henderson',
+                'category': attrs.get('INC_PRIMAR'),
+                'beat': attrs.get('BEAT'),
+                'address': attrs.get('INC_ADDRESS'),
+                # OCCURRED_S (occurrence start) is the reporting date; fall back to
+                # the processing date only when occurrence is missing. Both are
+                # esriFieldTypeDate → epoch milliseconds in the f=json response.
+                'observed_date': _epoch_to_date(attrs.get('OCCURRED_S'))
+                or _epoch_to_date(attrs.get('PROC_DATE')),
+                'latitude': lat, 'longitude': lon,
+                'source_url': url,
+            })
+    return pd.DataFrame(rows, columns=HENDERSON_CRIME_COLUMNS)
+
+
 def fetch_henderson_cip() -> pd.DataFrame:
     """Transportation line layers only; preserve disjoint paths and source phases."""
     rows = []
@@ -1098,6 +1154,9 @@ def main() -> None:
 
         log.info("Fetching crime / calls-for-service (LVMPD ArcGIS) ...")
         load_raw(con, "crime_calls", fetch_crime())
+
+        log.info("Fetching Henderson crime reports (ArcGIS) ...")
+        load_raw(con, "henderson_crime", fetch_henderson_crime())
 
         log.info("Fetching building_permits (ArcGIS) ...")
         load_raw(con, "building_permits", fetch_layer("Archived_Building_Permits"))

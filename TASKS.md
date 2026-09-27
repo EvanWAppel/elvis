@@ -85,6 +85,18 @@ coverage gaps. Preserve the snapshot architecture and current visual identity.
       visual review remains with Evan per CLAUDE.md.
 
 ### Phase 4 — Incremental municipal/topic expansion
+
+**Batch 1 (2026-09-27) — Henderson crime reports.** Shipped on `feat/henderson-crime`:
+verified the City of Henderson public-safety ArcGIS layers (metadata/counts only,
+no records), added a `fetch_henderson_crime()` adapter (name-resolved recent-year
+layers, epoch-ms dates, namespaced `henderson:{year}:{id}` keys), registered a new
+count-only `henderson_crime` tract topic kept distinct from LVMPD calls, extended
+the hermetic tract fixtures + adapter/model tests (24 pytest pass; hermetic dbt
+49/49, 0 warn), and documented it in `COVERAGE.md` + a `DECISIONS.md` draft. Open:
+human review of the 2024-vs-2025 volume gap before presenting as complete (`BLOCKED.md`).
+Henderson permit-layer expansion and any NLV feed remain unbuilt (NLV has no verified
+bulk feed).
+
 - [ ] Add verified Henderson/North Las Vegas sources in topic batches, retaining
       provenance, definitions, source IDs, and reporting periods; deduplicate
       overlapping feeds using a documented rule.
