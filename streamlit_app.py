@@ -11,7 +11,7 @@ from ui import apply_theme
 
 st.set_page_config(
     page_title="Elvis — Las Vegas, in data",
-    page_icon="✳",
+    page_icon="🎲",
     layout="wide",
 )
 
