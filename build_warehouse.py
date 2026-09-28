@@ -992,7 +992,7 @@ def fetch_henderson_crime() -> pd.DataFrame:
         url = f'{HENDERSON}/public/OpenDataPublicSafety/MapServer/{layer}'
         log.info('Fetching Henderson crime reports %d ...', year)
         for attrs, geom in fetch_features(
-            url, out_fields='OBJECTID,EVENT__,CITY,BEAT,INC_PRIMAR,INC_ADDRESS,OCCURRED_S,PROC_DATE',
+            url, out_fields='OBJECTID,BEAT,INC_PRIMAR,INC_ADDRESS,OCCURRED_S,PROC_DATE',
         ):
             lon, lat = _centroid(geom)
             rows.append({
