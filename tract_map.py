@@ -12,6 +12,7 @@ from ui import MAP_STYLE
 
 TOPIC_LABELS = {
     "calls": "LVMPD calls for service",
+    "henderson_crime": "Henderson crime reports",
     "parks": "Park records",
     "rentals": "Short-term rental registrations",
     "public_art": "Public artworks",
@@ -19,6 +20,10 @@ TOPIC_LABELS = {
 TOPIC_NOTES = {
     "calls": "LVMPD records are not complete Henderson or North Las Vegas police coverage. "
     "Counts are source call records, not confirmed crimes or individual risk.",
+    "henderson_crime": "City of Henderson crime *reports* — a different measure from LVMPD "
+    "calls for service; the two are never combined. Henderson only; counts are source report "
+    "records for recent years, not annualized and not comparable to call volumes. Annual "
+    "report volumes differ, so no per-resident rate is offered.",
     "parks": "Published park inventories; a park is assigned using its source point/centroid. "
     "Counts do not measure acreage or access.",
     "rentals": "Published registrations across all statuses; city licensing definitions differ. "

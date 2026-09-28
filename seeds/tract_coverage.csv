@@ -2,3 +2,6 @@ topic,geoid,coverage,period,rate_allowed
 calls,32003000100,available,2026-01-01 to 2026-01-01,True
 calls,32003000200,partial,2026-01-01 to 2026-01-01,True
 calls,32003000300,unavailable,2026-01-01 to 2026-01-01,True
+henderson_crime,32003000100,unavailable,2024-01-01 to 2025-12-31,False
+henderson_crime,32003000200,partial,2024-01-01 to 2025-12-31,False
+henderson_crime,32003000300,available,2024-01-01 to 2025-12-31,False

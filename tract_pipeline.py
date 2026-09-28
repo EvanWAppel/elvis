@@ -40,6 +40,15 @@ TOPICS: dict[str, TopicSpec] = {
         "city_column": True,
         "rate": True,
     },
+    "henderson_crime": {
+        "sql": """select latitude, longitude, category,
+                  observed_date from raw.henderson_crime""",
+        "cities": {"Henderson"},
+        # Count-only: 2024 vs 2025 report volumes are inconsistent, so a per-1,000
+        # rate over the ragged period would mislead until annual completeness is
+        # human-verified. A distinct measure from LVMPD calls; never combined.
+        "rate": False,
+    },
     "public_art": {
         "sql": """select try_cast(LAT_1 as double) latitude,
                   try_cast("LONG" as double) longitude, 'Las Vegas' category,

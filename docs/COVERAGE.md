@@ -10,7 +10,8 @@ verified; it does not mean the city has no activity or that no source exists.
 | Public art | City collection | City collection added | Gap: no verified art feed | Collection jurisdiction differs from artwork location |
 | Restaurant inspections | SNHD regional source | SNHD regional source | SNHD regional source | Coverage depends on establishment geocoding; no new municipal feed needed |
 | Fire inspections | City inspection feed | Gap: station layers are not inspections | Gap: station layers are not inspections | Do not substitute facilities for inspection records |
-| Calls for service | LVMPD source | Gap: Henderson crime reports are a different measure | Gap: no verified comparable call feed | LVMPD also covers unincorporated areas; not universal valley police coverage |
+| Calls for service | LVMPD source | Different measure — see Crime reports row | Gap: no verified comparable call feed | LVMPD also covers unincorporated areas; not universal valley police coverage |
+| Crime reports | Use calls-for-service instead | City crime-report feed added (recent years) | Gap: no verified bulk feed | A **report** is not a **call for service**; the two are never combined or compared. Henderson annual volumes differ across years — count-only, no rate |
 | Building permits | Archived permits | Residential permits only | Gap: online permit portal located; bulk feed not verified | Henderson grading/other layers are discovery candidates, not yet harmonized |
 | Business licenses | Existing feed disabled after outage | Existing city registry | Gap: searchable portal located; bulk feed not verified | A licensing-jurisdiction lookup is not a license dataset |
 | Short-term rentals | Existing registrations | Existing registrations | Existing approvals via county GIS | Definitions/statuses differ; tract counts are inventory records |
@@ -66,8 +67,16 @@ mapped tracts. Boundary/overlap ties are assigned once, to the lowest GEOID.
   existing integration; residential scope confirmed. No valuation field in the
   selected schema. Additional permit layers require grain/deduplication review.
 - [Henderson public safety](https://maps.cityofhenderson.com/arcgis/rest/services/public/OpenDataPublicSafety/MapServer):
-  yearly crime-report layers are discoverable, including 2025. They are **not
-  comparable LVMPD call records** and have not been merged into the calls map.
+  city publisher; keyless query; per-year "Crime Data {year}" point layers
+  (2014–2025) plus a rolling "Daily Crime Data" layer. Recent years (`[2024, 2025]`)
+  are ingested as the **`henderson_crime`** tract topic, keyed by
+  `henderson:{year}:{OBJECTID}`, with offense (`INC_PRIMAR`), beat, address, and
+  occurrence date (`OCCURRED_S`, epoch-ms). These are crime **reports** — a
+  different measure from LVMPD calls-for-service; they are **never merged with the
+  calls map** and carry no per-resident rate. Verified 2026-09-27: 2025 ≈ 27,168
+  and 2024 ≈ 6,405 features — the cross-year gap is pending human review of annual
+  completeness before the topic is presented as complete. No explicit reuse license
+  in the layer metadata; retain attribution.
 - [North Las Vegas GIS catalog](https://services5.arcgis.com/Y7XI8T2pEBpNKRDw/arcgis/rest/services):
   catalog discovery found a general facilities service and utility/planning
   layers, not a verified equivalent for calls, art, inspections, or local roads.
