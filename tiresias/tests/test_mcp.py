@@ -68,3 +68,33 @@ async def test_profile_unknown_column_is_structured_error(_require_warehouse: No
             "profile_column", {"table": "mart_restaurants", "column": "nope"}
         )
     assert payload["ok"] is False
+
+
+async def test_timeout_is_structured_over_mcp(
+    _require_warehouse: None, monkeypatch
+) -> None:
+    from tiresias import tools
+
+    def _slow(sql: str):
+        raise tools.QueryTimeoutError("query timed out after 15.0s")
+
+    monkeypatch.setattr(tools, "run_validated_sql", _slow)
+    async with warehouse_session() as ware:
+        payload = await ware.run_sql("select count(*) from mart_restaurants")
+    assert payload["ok"] is False
+    assert "timed out" in payload["error"]
+
+
+async def test_oversized_result_is_structured_over_mcp(
+    _require_warehouse: None, monkeypatch
+) -> None:
+    from tiresias import tools
+
+    def _huge(sql: str):
+        raise tools.ResultTooLargeError("result too large (999999 bytes > 256000)")
+
+    monkeypatch.setattr(tools, "run_validated_sql", _huge)
+    async with warehouse_session() as ware:
+        payload = await ware.run_sql("select * from mart_parks")
+    assert payload["ok"] is False
+    assert "too large" in payload["error"]

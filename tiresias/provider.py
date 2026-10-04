@@ -4,7 +4,7 @@ The agent depends only on the ``LLMProvider`` protocol, so the same LangGraph lo
 can run against the Anthropic API now and Amazon Bedrock behind the same interface
 in a later phase (PRD Layer 4). Claude is called via the official Anthropic SDK.
 
-Two operations are all Phase 0 needs:
+The agent needs two operations:
   * ``plan_sql`` — given grounding, draft a read-only SELECT *or* decide to abstain.
     Uses structured output (``messages.parse``) so the decision is a typed object.
   * ``synthesize`` — turn query results into a concise, grounded answer.
@@ -29,14 +29,22 @@ DEFAULT_MODEL = "claude-opus-4-8"
 Effort = Literal["low", "medium", "high", "xhigh", "max"]
 
 _PLAN_SYSTEM = (
-    "You are Tiresias, a grounded SQL analyst for the Elvis Las Vegas "
-    "restaurant-inspection warehouse. You are given the exact schema (tables and "
+    "You are Tiresias, a grounded SQL analyst for the Elvis Las Vegas open-data "
+    "warehouse (restaurant inspections, police calls for service, permits and "
+    "licenses, tourism, weather, air quality, Lake Mead, marriages, rentals, roads, "
+    "parks, public art, and census-tract counts). It is a point-in-time snapshot, "
+    "not live data. You are given the exact schema (tables and "
     "columns) and the governed metric definitions. Draft exactly ONE read-only "
     "DuckDB SELECT that answers the user's question using ONLY the listed tables "
     "and columns, and prefer a governed metric's canonical expression over "
     "inventing arithmetic. Reference tables by their bare name (e.g. "
     "mart_restaurants). If the question cannot be answered from these tables and "
-    "columns, or is not about restaurant inspections, do NOT guess — abstain. "
+    "columns — including forecasts, live/current conditions, or topics the "
+    "warehouse does not hold — do NOT guess; abstain. Respect each column's "
+    "documented caveats (e.g. police calls for service are not confirmed crimes; "
+    "per-capita tract rates are null unless coverage is 'available'). Tables "
+    "document their coverage period; if a question asks about a period outside "
+    "it (e.g. a year with no loaded data), abstain rather than report a zero. "
     "Return action='query' with the SQL, or action='abstain' with a brief reason. "
     "SELECT only; never DDL/DML."
 )

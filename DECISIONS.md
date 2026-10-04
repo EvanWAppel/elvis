@@ -181,3 +181,63 @@ rates; shared city scales; incremental releases with explicit coverage gaps.
 These implementation choices are a draft ledger entry for human confirmation,
 not a claim that source meaning has received human review. See `docs/COVERAGE.md`
 for official source links and `TASKS.md` for verified implementation status.
+
+## 2026-10-03 — Tiresias widened from restaurant inspections to every Elvis domain (decisions confirmed by Evan 2026-10-03; column-doc review pending)
+
+**Decision (Evan, via interview):** Tiresias may query all user-facing marts;
+column docs written first; schema only (no new governed metrics yet); verify
+offline plus one local live eval run.
+
+**Implementation trade-offs proposed in `feat/tiresias-all-domains`:**
+
+- **Explicit allowlist, not "every `mart_*`".** `ALLOWED_TABLES` in
+  `tiresias/config.py` lists the queryable marts by name (29 after review). Rejected deriving
+  scope from the dbt catalog: the allowlist is a security boundary on a public
+  endpoint, so a new mart must be opted in deliberately. A test fails if an
+  allowlisted mart is not built, so the list cannot silently go stale.
+  `mart_tract_assignment_audit` is excluded as internal QA bookkeeping.
+- **Full schema in every planner prompt (~11k chars), not retrieval-selected
+  tables.** Rejected top-k table selection: at this size, sending the whole
+  catalog costs little, and the planner can't miss a table that retrieval
+  ranked low. Revisit if the catalog grows a lot.
+- **Column docs written from mart SQL and loader code, not from raw data.** 113
+  descriptions in `marts.yml` and 27 in `tracts.yml`, carrying semantic caveats
+  the planner must respect (LVMPD calls ≠ confirmed crimes; tract rates are
+  null unless coverage = 'available'; LVCVA metric names should be matched with
+  ILIKE). A test now requires every in-scope column to be documented.
+  **These descriptions need human review against the sources.**
+- **Grounding threshold 0.55 → 0.56**, recalibrated on the all-domains corpus
+  with real fastembed scores: generic off-topic 0.43–0.555, answerable across
+  every domain 0.598–0.83. Subtle off-topic questions (forecasts, home prices,
+  school scores) score 0.58–0.68, inside the answerable band, so the planner
+  stays the authoritative abstain decider. Rejected a higher threshold that
+  would hard-abstain on real crime/tourism questions.
+- **Gold set:** `ood_crime` removed (crime is now in-domain); 16 answerable
+  cases added (one per domain) and 3 subtle-OOD abstain cases (home price,
+  school scores, live traffic). 33 cases total, 26 answerable and 7 abstain.
+
+**Amendments from the adversarial review** (`reviews/2026-10-03-tiresias-all-domains.md`;
+adjudicated by Evan 2026-10-03). These amendments await Evan's confirmation:
+
+- **Exclude `mart_crime_map_sample`** (now 29 queryable marts). Rejected keeping
+  it with "sample" warnings: it is the only crime table with address/date, so
+  it would answer location questions with a ~1% undercount and rely on the
+  model to obey a caveat. Address- and area-level crime questions now abstain.
+- **Enforce `statement_timeout_s` (15s)** with a watchdog that calls
+  `cursor.interrupt()`. Rejected a Python signal (it cannot preempt DuckDB's
+  native execution) and rejected an EXPLAIN-plan cross-product filter as the
+  only defense (it is a heuristic; the timeout bounds every query shape).
+- **Column docs corrected against the loader code.** Several approved
+  descriptions were wrong (road closure flag, tract `record_count`, STR fields,
+  air-quality labels). Evan had not yet reviewed the column docs; that review is pending before merge.
+- **Coverage periods are documented, and the planner abstains outside them**,
+  rather than reporting a false zero for a year with no loaded data.
+- **Threshold stays 0.56** after recalibration: answerable floor 0.61 (it was
+  0.598 only because an unanswerable question had been counted as answerable).
+- **Map-only geometry hidden and rejected (S2, Evan chose option a).** Rejected
+  leaving `geometry_json`/`path_json` selectable behind a "do not select" note.
+  The guard checks direct, whole-row, and star/`COLUMNS()` references; a
+  256 KB result cap backstops query shapes the checks don't anticipate.
+- **Gold set: 36 cases** (27 answer, 9 abstain), with a new deterministic
+  `sql_must_contain` check. Live eval 36/36.
+

@@ -1,6 +1,6 @@
 """Tiresias MCP server — the governed, read-only surface over the warehouse.
 
-Exposes the Phase-0 grounding surface as MCP:
+Exposes the Tiresias grounding surface as MCP:
 
   * Resources: the in-scope table catalog and the governed metric registry.
   * Tool: ``run_validated_sql`` — SELECT-only, allowlisted, row-capped, and
@@ -37,9 +37,11 @@ def build_server() -> MCPServer:
         name="tiresias-warehouse",
         version="0.0.0",
         instructions=(
-            "Read-only access to the Elvis Las Vegas restaurant-inspection warehouse. "
-            "Read the catalog and metric resources to ground SQL in real columns and "
-            "the governed failure-rate metric, then call run_validated_sql. Only the "
+            "Read-only access to the Elvis Las Vegas open-data warehouse (restaurant "
+            "inspections, police calls, permits, tourism, weather, air quality, Lake "
+            "Mead, marriages, rentals, roads, parks, public art, tract counts). Read "
+            "the catalog and metric resources to ground SQL in real columns and the "
+            "governed metrics, then call run_validated_sql. Only the "
             "allowlisted marts are queryable; the tool is SELECT-only and row-capped."
         ),
     )
@@ -64,7 +66,7 @@ def build_server() -> MCPServer:
 
     @server.tool(
         description=(
-            "Execute a single read-only SELECT against the allowlisted restaurant "
+            "Execute a single read-only SELECT against the allowlisted Elvis "
             "marts. The query is validated (SELECT-only, known tables, EXPLAIN-checked) "
             "and row-capped. Returns rows plus the exact SQL that ran (cite it). On a "
             "validation failure, returns {ok: false, error} so you can repair the SQL."
@@ -73,7 +75,7 @@ def build_server() -> MCPServer:
     def run_validated_sql(sql: str) -> dict[str, Any]:
         try:
             result = tools.run_validated_sql(sql)
-        except SqlGuardError as exc:
+        except (SqlGuardError, tools.QueryTimeoutError, tools.ResultTooLargeError) as exc:
             logger.info("run_validated_sql rejected a query: %s", exc)
             return {"ok": False, "error": str(exc)}
         return {"ok": True, **result.model_dump()}
