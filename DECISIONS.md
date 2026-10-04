@@ -182,7 +182,7 @@ These implementation choices are a draft ledger entry for human confirmation,
 not a claim that source meaning has received human review. See `docs/COVERAGE.md`
 for official source links and `TASKS.md` for verified implementation status.
 
-## 2026-10-03 — Tiresias widened from restaurant inspections to every Elvis domain (decisions confirmed by Evan 2026-10-03; column-doc review pending)
+## 2026-10-03 — Tiresias widened from restaurant inspections to every Elvis domain (decisions confirmed by Evan 2026-10-03; amendments confirmed 2026-10-04)
 
 **Decision (Evan, via interview):** Tiresias may query all user-facing marts;
 column docs written first; schema only (no new governed metrics yet); verify
@@ -217,7 +217,7 @@ offline plus one local live eval run.
   school scores, live traffic). 33 cases total, 26 answerable and 7 abstain.
 
 **Amendments from the adversarial review** (`reviews/2026-10-03-tiresias-all-domains.md`;
-adjudicated by Evan 2026-10-03). These amendments await Evan's confirmation:
+adjudicated by Evan 2026-10-03; confirmed by Evan 2026-10-04):
 
 - **Exclude `mart_crime_map_sample`** (now 29 queryable marts). Rejected keeping
   it with "sample" warnings: it is the only crime table with address/date, so
@@ -229,7 +229,7 @@ adjudicated by Evan 2026-10-03). These amendments await Evan's confirmation:
   only defense (it is a heuristic; the timeout bounds every query shape).
 - **Column docs corrected against the loader code.** Several approved
   descriptions were wrong (road closure flag, tract `record_count`, STR fields,
-  air-quality labels). Evan had not yet reviewed the column docs; that review is pending before merge.
+  air-quality labels). Evan reviewed the corrected docs on 2026-10-04 and accepted them as good enough; any description that later misleads the agent gets fixed when it surfaces.
 - **Coverage periods are documented, and the planner abstains outside them**,
   rather than reporting a false zero for a year with no loaded data.
 - **Threshold stays 0.56** after recalibration: answerable floor 0.61 (it was
