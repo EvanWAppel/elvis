@@ -241,3 +241,14 @@ adjudicated by Evan 2026-10-03; confirmed by Evan 2026-10-04):
 - **Gold set: 36 cases** (27 answer, 9 abstain), with a new deterministic
   `sql_must_contain` check. Live eval 36/36.
 
+## 2026-10-04 — Flaky upstream sources: retry with backoff, then fail loudly (Evan)
+
+Two Railway builds failed when Clark County's short-term-rental ArcGIS server
+returned an HTTP 500, then a 503 error body ("User couldn't access this
+resource"), while the same queries succeeded locally. **Chose:** retry 5xx and
+timeouts in `fetch_features` (3 attempts, 10s/20s backoff), then re-raise.
+**Rejected:** making the rentals source optional (it would ship builds with a
+silent data gap) and doing nothing (every merge to `main` auto-deploys, so a
+flaky source blocks every release). If a source stays down past the retries,
+the build still fails and the previous deployment keeps serving.
+
