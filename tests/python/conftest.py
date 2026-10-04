@@ -110,7 +110,8 @@ def fake_arcgis(monkeypatch):
     """Script urlopen responses for build_warehouse's ArcGIS fetch; no network.
 
     Each scripted item is a dict (returned as the JSON body) or an exception
-    (raised). Returns the list of requested URLs; sleeps are recorded, not taken.
+    (raised). Returns the state dict: ``script`` (set by the test), ``urls``
+    (requested URLs), and ``sleeps`` (backoff delays, recorded rather than taken).
     """
     import io
     import urllib.request

@@ -21,8 +21,10 @@ RUN dbt deps --profiles-dir .
 # default but NOT a Dockerfile RUN step, so declare it as a build arg. A declared
 # ARG is already in the environment of later RUN steps, so do NOT also pass it
 # inline (`VAR=${VAR} cmd`): BuildKit logs the expanded command, which printed
-# the key into the build logs. Without it, build_warehouse skips Nevada 511; the
-# keyless Las Vegas and Henderson CIP layers still ship.
+# the key into the build logs. (A declared ARG's value is still recorded in the
+# image history metadata; a BuildKit secret mount would remove that.) Without
+# it, build_warehouse skips Nevada 511; the keyless Las Vegas and Henderson CIP
+# layers still ship.
 # `--exclude-resource-type seed` keeps the CI fixture CSVs in seeds/ from ever
 # running here — they exist only to let CI build the marts offline, and must not
 # overwrite the full-size raw.* tables that build_warehouse.py just loaded.

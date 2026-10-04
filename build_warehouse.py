@@ -32,6 +32,7 @@ Usage:
 """
 
 import datetime
+import http.client
 import io
 import json
 import logging
@@ -157,8 +158,8 @@ DATE_COLUMNS = {
 # ArcGIS (public art + fire)                                                   #
 # --------------------------------------------------------------------------- #
 def _get_json(url: str) -> dict:
-    with urllib.request.urlopen(url, timeout=180) as resp:
-        return json.load(resp)
+    """GET an ArcGIS JSON endpoint with the shared retry + error-body checks."""
+    return _arcgis_get(url, url.split("?", 1)[0], None)
 
 
 def fetch_layer(
@@ -206,7 +207,9 @@ def fetch_layer(
             query["outSR"] = out_sr
         params = urllib.parse.urlencode(query)
         data = _get_json(f"{base}/query?{params}")
-        feats = data.get("features", [])
+        if "features" not in data:
+            raise RuntimeError(f"ArcGIS response missing features: {base}")
+        feats = data["features"]
         if not feats:
             break
         for feat in feats:
@@ -245,9 +248,12 @@ def _ssl_ctx(verify: bool) -> ssl.SSLContext | None:
     return ctx
 
 
-# Transient upstream failures (5xx, timeouts) are retried with exponential backoff,
-# then re-raised: a source that stays down still fails the build loudly. Client
-# errors (4xx, bad queries) fail immediately — retrying cannot fix them.
+# Transient upstream failures (HTTP 5xx, ArcGIS error bodies with code >= 500,
+# timeouts, dropped/reset connections, truncated bodies, other URLErrors) are
+# retried with exponential backoff, then re-raised: a source that stays down still
+# fails the build loudly. Client errors (4xx, bad queries) fail immediately.
+# Shared by fetch_features and fetch_layer (via _get_json); the non-ArcGIS sources
+# (SNHD, marriage, NOAA, LVCVA, AQS, Nevada 511) are not retried.
 ARCGIS_ATTEMPTS = 3
 ARCGIS_BACKOFF_S = 10.0
 
@@ -269,8 +275,15 @@ def _arcgis_get(url: str, base_url: str, ctx: ssl.SSLContext | None) -> dict:
         except urllib.error.HTTPError as exc:
             if exc.code < 500 or attempt == ARCGIS_ATTEMPTS:
                 raise
+            exc.close()  # release the error response's socket before backing off
             reason: object = exc
-        except (_TransientArcGISError, urllib.error.URLError, TimeoutError) as exc:
+        except (
+            _TransientArcGISError,
+            urllib.error.URLError,
+            TimeoutError,
+            ConnectionError,  # RemoteDisconnected, ConnectionResetError, ...
+            http.client.IncompleteRead,
+        ) as exc:
             if attempt == ARCGIS_ATTEMPTS:
                 raise
             reason = exc
