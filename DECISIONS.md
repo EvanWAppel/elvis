@@ -182,7 +182,7 @@ These implementation choices are a draft ledger entry for human confirmation,
 not a claim that source meaning has received human review. See `docs/COVERAGE.md`
 for official source links and `TASKS.md` for verified implementation status.
 
-## 2026-10-03 — Tiresias widened from restaurant inspections to every Elvis domain (confirmed by Evan 2026-10-03)
+## 2026-10-03 — Tiresias widened from restaurant inspections to every Elvis domain (decisions confirmed by Evan 2026-10-03; column-doc review pending)
 
 **Decision (Evan, via interview):** Tiresias may query all user-facing marts;
 column docs written first; schema only (no new governed metrics yet); verify
@@ -229,11 +229,15 @@ adjudicated by Evan 2026-10-03). These amendments await Evan's confirmation:
   only defense (it is a heuristic; the timeout bounds every query shape).
 - **Column docs corrected against the loader code.** Several approved
   descriptions were wrong (road closure flag, tract `record_count`, STR fields,
-  air-quality labels); the earlier approval is superseded for those columns.
+  air-quality labels). Evan had not yet reviewed the column docs; that review is pending before merge.
 - **Coverage periods are documented, and the planner abstains outside them**,
   rather than reporting a false zero for a year with no loaded data.
 - **Threshold stays 0.56** after recalibration: answerable floor 0.61 (it was
   0.598 only because an unanswerable question had been counted as answerable).
+- **Map-only geometry hidden and rejected (S2, Evan chose option a).** Rejected
+  leaving `geometry_json`/`path_json` selectable behind a "do not select" note.
+  The guard checks direct, whole-row, and star/`COLUMNS()` references; a
+  256 KB result cap backstops query shapes the checks don't anticipate.
 - **Gold set: 36 cases** (27 answer, 9 abstain), with a new deterministic
   `sql_must_contain` check. Live eval 36/36.
 
