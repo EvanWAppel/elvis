@@ -32,6 +32,7 @@ Usage:
 """
 
 import datetime
+import http.client
 import io
 import json
 import logging
@@ -40,6 +41,7 @@ import re
 import socket
 import ssl
 import tempfile
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -156,8 +158,8 @@ DATE_COLUMNS = {
 # ArcGIS (public art + fire)                                                   #
 # --------------------------------------------------------------------------- #
 def _get_json(url: str) -> dict:
-    with urllib.request.urlopen(url, timeout=180) as resp:
-        return json.load(resp)
+    """GET an ArcGIS JSON endpoint with the shared retry + error-body checks."""
+    return _arcgis_get(url, url.split("?", 1)[0], None)
 
 
 def fetch_layer(
@@ -205,7 +207,9 @@ def fetch_layer(
             query["outSR"] = out_sr
         params = urllib.parse.urlencode(query)
         data = _get_json(f"{base}/query?{params}")
-        feats = data.get("features", [])
+        if "features" not in data:
+            raise RuntimeError(f"ArcGIS response missing features: {base}")
+        feats = data["features"]
         if not feats:
             break
         for feat in feats:
@@ -244,6 +248,54 @@ def _ssl_ctx(verify: bool) -> ssl.SSLContext | None:
     return ctx
 
 
+# Transient upstream failures (HTTP 5xx, ArcGIS error bodies with code >= 500,
+# timeouts, dropped/reset connections, truncated bodies, other URLErrors) are
+# retried with exponential backoff, then re-raised: a source that stays down still
+# fails the build loudly. Client errors (4xx, bad queries) fail immediately.
+# Shared by fetch_features and fetch_layer (via _get_json); the non-ArcGIS sources
+# (SNHD, marriage, NOAA, LVCVA, AQS, Nevada 511) are not retried.
+ARCGIS_ATTEMPTS = 3
+ARCGIS_BACKOFF_S = 10.0
+
+
+class _TransientArcGISError(RuntimeError):
+    """An ArcGIS error body reporting a server-side (5xx) failure."""
+
+
+def _arcgis_get(url: str, base_url: str, ctx: ssl.SSLContext | None) -> dict:
+    for attempt in range(1, ARCGIS_ATTEMPTS + 1):
+        try:
+            with urllib.request.urlopen(url, timeout=180, context=ctx) as r:
+                data = json.load(r)
+            if "error" in data:
+                code = int((data["error"] or {}).get("code") or 0)
+                cls = _TransientArcGISError if code >= 500 else RuntimeError
+                raise cls(f"ArcGIS request failed for {base_url}: {data['error']}")
+            return data
+        except urllib.error.HTTPError as exc:
+            if exc.code < 500 or attempt == ARCGIS_ATTEMPTS:
+                raise
+            exc.close()  # release the error response's socket before backing off
+            reason: object = exc
+        except (
+            _TransientArcGISError,
+            urllib.error.URLError,
+            TimeoutError,
+            ConnectionError,  # RemoteDisconnected, ConnectionResetError, ...
+            http.client.IncompleteRead,
+        ) as exc:
+            if attempt == ARCGIS_ATTEMPTS:
+                raise
+            reason = exc
+        delay = ARCGIS_BACKOFF_S * 2 ** (attempt - 1)
+        log.warning(
+            "ArcGIS attempt %d/%d failed for %s (%s); retrying in %.0fs",
+            attempt, ARCGIS_ATTEMPTS, base_url, reason, delay,
+        )
+        time.sleep(delay)
+    raise AssertionError("unreachable")
+
+
 def fetch_features(
     base_url: str,
     where: str = "1=1",
@@ -260,11 +312,7 @@ def fetch_features(
     ctx = _ssl_ctx(ssl_verify)
 
     def get(url: str) -> dict:
-        with urllib.request.urlopen(url, timeout=180, context=ctx) as r:
-            data = json.load(r)
-        if "error" in data:
-            raise RuntimeError(f"ArcGIS request failed for {base_url}: {data['error']}")
-        return data
+        return _arcgis_get(url, base_url, ctx)
 
     meta = get(f"{base_url}?f=json")
     page = min(meta.get("maxRecordCount") or PAGE_SIZE, PAGE_SIZE)
