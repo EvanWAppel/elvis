@@ -103,3 +103,36 @@ def map_rows():
             },
         ]
     )
+
+
+@pytest.fixture
+def fake_arcgis(monkeypatch):
+    """Script urlopen responses for build_warehouse's ArcGIS fetch; no network.
+
+    Each scripted item is a dict (returned as the JSON body) or an exception
+    (raised). Returns the list of requested URLs; sleeps are recorded, not taken.
+    """
+    import io
+    import urllib.request
+
+    import build_warehouse as warehouse
+
+    state = {"script": [], "urls": [], "sleeps": []}
+
+    class _Resp(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    def fake_urlopen(url, timeout=None, context=None):
+        state["urls"].append(url)
+        item = state["script"].pop(0)
+        if isinstance(item, BaseException):
+            raise item
+        return _Resp(json.dumps(item).encode())
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(warehouse.time, "sleep", state["sleeps"].append)
+    return state

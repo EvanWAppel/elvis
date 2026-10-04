@@ -18,14 +18,16 @@ RUN dbt deps --profiles-dir .
 # stays out of git and is rebuilt fresh on every deploy.
 #
 # NVROADS_API_KEY is a Railway service variable; it reaches the runtime by
-# default but NOT a Dockerfile RUN step, so declare it as a build arg and pass
-# it inline (kept out of the final image's ENV). Without it, build_warehouse
-# skips Nevada 511; the keyless Las Vegas and Henderson CIP layers still ship.
+# default but NOT a Dockerfile RUN step, so declare it as a build arg. A declared
+# ARG is already in the environment of later RUN steps, so do NOT also pass it
+# inline (`VAR=${VAR} cmd`): BuildKit logs the expanded command, which printed
+# the key into the build logs. Without it, build_warehouse skips Nevada 511; the
+# keyless Las Vegas and Henderson CIP layers still ship.
 # `--exclude-resource-type seed` keeps the CI fixture CSVs in seeds/ from ever
 # running here — they exist only to let CI build the marts offline, and must not
 # overwrite the full-size raw.* tables that build_warehouse.py just loaded.
 ARG NVROADS_API_KEY
-RUN NVROADS_API_KEY=${NVROADS_API_KEY} python build_warehouse.py && dbt build --profiles-dir . --exclude-resource-type seed
+RUN python build_warehouse.py && dbt build --profiles-dir . --exclude-resource-type seed
 
 # Generate catalog.json (column types) so Tiresias's catalog loader has the
 # dbt-native schema artifact at runtime. manifest.json is already produced above.
