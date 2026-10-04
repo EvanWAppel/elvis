@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: mart_road_construction
-    description: "Metro road construction, one row per mapped project/event segment: Las Vegas and Henderson CIP lines plus optional Nevada 511 NDOT state-route roadwork. Carries status/phase, schedule, road extent, a JSON polyline path for the map, and a WGS84 centroid."
+    description: "Metro road construction, one row per mapped segment (NOT per project): Las Vegas and Henderson CIP lines plus optional Nevada 511 NDOT state-route roadwork (present only when the warehouse is built with a 511 key). Henderson emits one row per path part, so count distinct project_name to count projects. Carries status/phase, schedule, road extent, a JSON polyline path for the map, and a WGS84 centroid."
     config:
       contract:
         enforced: true
@@ -20,31 +20,31 @@ models:
         description: "Free-text project/event description from the source feed."
       - name: status
         data_type: varchar
-        description: "Source-reported project status/phase (free text; values differ by feed)."
+        description: "Project status, per source: CLV CIP = PHASE (Design/Bidding/Construction/...) else STATUS; Henderson CIP = PROJECT_PHASE else PROJECT_STATUS; NDOT 511 = event type."
       - name: category
         data_type: varchar
-        description: "Source-reported work category (free text; values differ by feed)."
+        description: "Work category, per source: CLV CIP = CATEGORY else ProjType; Henderson CIP = always 'Transportation' (set by our loader); NDOT 511 = event subtype."
       - name: road_name
         data_type: varchar
-        description: "Primary road the project is on."
+        description: "Primary road: CLV CIP street name; NDOT 511 roadway name; always null for Henderson CIP rows."
       - name: extent
         data_type: varchar
-        description: "Free-text description of the affected road segment (from/to limits)."
+        description: "Affected segment: CLV CIP 'From -> To' streets (else location text); Henderson CIP location description; NDOT 511 direction and lanes affected."
       - name: start_date
         data_type: date
-        description: "Scheduled or actual start date of the work."
+        description: "Start date: CLV CIP construction start, else overall project start; Henderson CIP start date; NDOT 511 event start."
       - name: end_date
         data_type: date
-        description: "Scheduled or actual end date of the work (null when open-ended)."
+        description: "End date: CLV CIP construction end, else overall project end; Henderson CIP completion date; NDOT 511 planned end. Null when not published."
       - name: contractor
         data_type: varchar
-        description: "Contractor name, where the source publishes it."
+        description: "CLV CIP: contractor. NDOT 511: the reporting organization (not a contractor). Null for Henderson CIP rows."
       - name: is_full_closure
         data_type: boolean
-        description: "True when the source flags the work as a full road closure."
+        description: "Full-closure flag, ONLY for NDOT 511 rows (true/false from the event). Null for every CLV and Henderson CIP row, and the whole column is null when the warehouse was built without a 511 key. Never count closures from CIP rows; if no NDOT rows exist, closure questions cannot be answered."
       - name: url
         data_type: varchar
-        description: "Link to the project/event page at the source, where available."
+        description: "CLV CIP: project website. Henderson CIP: the ArcGIS layer endpoint (not a project page). NDOT 511: null."
       - name: path_json
         data_type: varchar
         description: "Project geometry as a JSON array of [lon, lat] vertices, for the deck.gl PathLayer."
@@ -200,10 +200,10 @@ models:
         description: "Date of the inspection."
       - name: inspection_type
         data_type: varchar
-        description: "SNHD inspection type (e.g. routine, re-inspection)."
+        description: "SNHD inspection type description as published (match with ILIKE patterns; exact values are not documented here)."
       - name: inspection_grade
         data_type: varchar
-        description: "Letter grade awarded at this inspection (A/B/C) or other SNHD outcome code."
+        description: "Grade code assigned at this inspection, as published by SNHD (A/B/C/F/N/P/S/O and others)."
       - name: inspection_result
         data_type: varchar
         description: "SNHD inspection result description."
@@ -373,7 +373,7 @@ models:
         description: "URL of the artwork's thumbnail photo."
 
   - name: mart_crime_by_type
-    description: "LVMPD call counts by classification and incident type."
+    description: "LVMPD calls-for-service counts by classification and incident type. Covers calls from 2025-2026 only (the latest month is partial); no earlier years are loaded."
     config:
       contract:
         enforced: true
@@ -386,12 +386,12 @@ models:
         description: "LVMPD incident type description (specific call type)."
       - name: incident_count
         data_type: bigint
-        description: "Number of LVMPD calls for service with this classification and incident type across all loaded years. These are calls for service, not confirmed crimes."
+        description: "Number of LVMPD calls for service with this classification and incident type, 2025-2026. These are calls for service, not confirmed crimes."
         tests:
           - not_null
 
   - name: mart_crime_by_hour_weekday
-    description: "LVMPD call counts by hour of day and day of week, for a heatmap."
+    description: "LVMPD calls-for-service counts by hour of day and day of week, for a heatmap. Covers 2025-2026 only."
     config:
       contract:
         enforced: true
@@ -404,12 +404,12 @@ models:
         description: "Hour of day the call was received, 0-23."
       - name: incident_count
         data_type: bigint
-        description: "Number of LVMPD calls for service in this weekday/hour cell across all loaded years."
+        description: "Number of LVMPD calls for service in this weekday/hour cell, 2025-2026."
         tests:
           - not_null
 
   - name: mart_crime_monthly
-    description: "LVMPD calls per month across the loaded years."
+    description: "LVMPD calls for service per month. Covers 2025-2026 only (the latest month is partial); months outside that window have no rows, not zero calls."
     config:
       contract:
         enforced: true
@@ -446,7 +446,7 @@ models:
         description: "Timestamp of the call."
       - name: address
         data_type: varchar
-        description: "Block-level address of the call."
+        description: "Address of the call as published by LVMPD."
       - name: latitude
         data_type: double
         description: "WGS84 latitude (bounded to the valley)."
@@ -525,19 +525,19 @@ models:
           - not_null
       - name: business_name
         data_type: varchar
-        description: "Licensed business / operator name."
+        description: "Las Vegas: business name. North Las Vegas: the property OWNER (not a business). Henderson: business name."
       - name: status
         data_type: varchar
-        description: "License status as published by the jurisdiction (free text)."
+        description: "Las Vegas: license status as published; Henderson: status as published; North Las Vegas: always 'Approved' (set by our loader; NLV publishes only approved rentals)."
       - name: category
         data_type: varchar
-        description: "License category as published by the jurisdiction (free text)."
+        description: "Las Vegas: business type as published. Henderson: 'Max occupancy N' derived by our loader from the max-occupancy field (not a license category). North Las Vegas: null. Not comparable across jurisdictions."
       - name: address
         data_type: varchar
         description: "Street address of the rental."
       - name: issued_date
         data_type: date
-        description: "Date the short-term rental license was issued."
+        description: "Las Vegas and Henderson: license issue date. North Las Vegas: approval date."
       - name: latitude
         data_type: double
         description: "WGS84 latitude of the rental."
@@ -609,7 +609,7 @@ models:
         description: "Park size in acres, where published."
       - name: has_water
         data_type: boolean
-        description: "True/false where the source publishes a water feature flag; null when unknown."
+        description: "Las Vegas: inferred by our loader via a spatial join of city water-feature points into the park polygon (false when the park has no geometry). Henderson: true when the swimming or water-play field says yes. Clark County and North Las Vegas: null (no attribute published)."
       - name: latitude
         data_type: double
         description: "WGS84 centroid latitude."
@@ -618,7 +618,7 @@ models:
         description: "WGS84 centroid longitude."
 
   - name: mart_marriage_monthly
-    description: "Clark County marriage licenses per month."
+    description: "Clark County marriage licenses per month, 2007-2025."
     config:
       contract:
         enforced: true
@@ -633,7 +633,7 @@ models:
         description: "Clark County marriage licenses issued in the month."
 
   - name: mart_marriage_daily
-    description: "Marriage licenses per calendar day, for spotting Valentine's / NYE / novelty-date spikes."
+    description: "Marriage licenses per calendar day, 2007-2025, for spotting Valentine's / NYE / novelty-date spikes."
     config:
       contract:
         enforced: true
@@ -654,14 +654,14 @@ models:
         description: "Clark County marriage licenses issued that day."
 
   - name: mart_marriage_by_origin
-    description: "Marriage licenses by mailing origin (US state, else country)."
+    description: "Marriage licenses by mailing origin (US state, else country), 2007-2025."
     config:
       contract:
         enforced: true
     columns:
       - name: origin
         data_type: varchar
-        description: "Couple's mailing origin: the US state for US addresses, otherwise the country; 'UNKNOWN' when missing. Values are uppercase as published."
+        description: "Couple's mailing origin, upper-cased and trimmed in staging: the US state when the country is UNITED STATES/USA/US and a state is present; otherwise the country (so a US address with no state appears as the country value); 'UNKNOWN' when both are missing."
         tests:
           - not_null
       - name: license_count
@@ -669,7 +669,7 @@ models:
         description: "Clark County marriage licenses from this origin across all loaded years."
 
   - name: mart_marriage_by_gender_year
-    description: "Same-sex vs different-sex marriage licenses per year."
+    description: "Same-sex vs different-sex marriage licenses per year, 2007-2025."
     config:
       contract:
         enforced: true
@@ -760,7 +760,7 @@ models:
     columns:
       - name: metric
         data_type: varchar
-        description: "LVCVA indicator name (free text), e.g. 'Visitor Volume', names containing 'En/Deplaned Passengers', and 'Gaming Revenue: <area>'. Match with ILIKE patterns rather than exact strings."
+        description: "LVCVA indicator name (free text), e.g. 'Visitor Volume', names containing 'En/Deplaned Passengers', and 'Gaming Revenue <area>' (the colon is optional). Gaming revenue includes a Clark County total alongside its sub-areas: exclude ILIKE '%Clark County%' when summing areas, or use only the Clark County row for a county total. Match with ILIKE patterns rather than exact strings."
         tests:
           - not_null
       - name: indicator_month
@@ -773,7 +773,7 @@ models:
         description: "Indicator value for the month, in the indicator's own unit (count, percent, USD, ...)."
 
   - name: mart_air_quality_daily
-    description: "Daily worst-site AQI and average concentration by pollutant (PM2.5 / ozone) across the Las Vegas metro (Clark County)."
+    description: "Daily worst-site AQI and average concentration by pollutant (PM2.5 / ozone) across the Las Vegas metro (Clark County), from 2015 onward."
     config:
       contract:
         enforced: true
@@ -783,16 +783,16 @@ models:
         description: "Calendar date of the observations."
       - name: parameter
         data_type: varchar
-        description: "Pollutant measured (PM2.5 or ozone), as published by the source."
+        description: "Pollutant label set by our loader from the EPA AQS parameter code: exactly 'PM2.5' (88101) or 'Ozone' (44201)."
       - name: max_aqi
         data_type: integer
         description: "Worst (maximum) AQI across Clark County monitoring sites that day; the standard way to report a day's air quality."
       - name: avg_concentration
         data_type: double
-        description: "Mean pollutant concentration across sites that day, rounded to 2 decimals."
+        description: "Mean concentration across sites that day (2 decimals), in the pollutant's own unit: PM2.5 in micrograms/m3, ozone in ppm. Never compare or average across parameters."
 
   - name: mart_air_quality_monthly
-    description: "Monthly average and peak AQI by pollutant for Clark County."
+    description: "Monthly average and peak AQI by pollutant for Clark County, from 2015 onward."
     config:
       contract:
         enforced: true
@@ -802,7 +802,7 @@ models:
         description: "First day of the calendar month (timestamp)."
       - name: parameter
         data_type: varchar
-        description: "Pollutant measured (PM2.5 or ozone)."
+        description: "Pollutant label: exactly 'PM2.5' or 'Ozone'."
       - name: avg_aqi
         data_type: double
         description: "Mean of the daily worst-site AQI over the month, rounded to a whole number."

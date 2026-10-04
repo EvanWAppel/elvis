@@ -58,7 +58,7 @@ models:
       - name: rate_allowed
         description: "Whether a per-1,000-resident rate is meaningful for this topic."
       - name: record_count
-        description: "Number of the topic's records located in the tract (whole tract, not clipped to a city). Null when coverage is 'unavailable'."
+        description: "Number of the topic's records located in the tract (whole tract, not clipped to a city). Coverage 'available': zero-filled, so 0 is a real zero. Coverage 'partial' or 'unavailable': the raw observed count if any records fall in the tract, else null; never a zero and not comparable across tracts."
       - name: rate_per_1000
         description: "record_count per 1,000 2020 residents. Only populated when coverage is 'available', rate_allowed is true, and population > 0. Not an annualized risk."
   - name: mart_tract_assignment_audit
