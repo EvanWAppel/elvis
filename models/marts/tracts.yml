@@ -32,6 +32,35 @@ models:
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: [topic, geoid]
+    columns:
+      - name: topic
+        description: "Which point dataset is counted: 'calls' (LVMPD calls for service), 'henderson_crime' (Henderson police reports; count-only, never combined with calls), 'parks', 'rentals' (short-term rentals), or 'public_art'."
+      - name: geoid
+        description: "2020 Census tract GEOID (11-digit string). One row per topic x tract."
+      - name: tract_name
+        description: "Census tract display name."
+      - name: population
+        description: "2020 decennial Census population of the whole tract."
+      - name: boundary_vintage
+        description: "Vintage of the tract boundaries."
+      - name: population_vintage
+        description: "Vintage of the population figure."
+      - name: population_source
+        description: "Source of the population figure."
+      - name: cities_json
+        description: "JSON array of the cities/unincorporated areas the tract overlaps."
+      - name: geometry_json
+        description: "Tract boundary geometry as JSON, for mapping. Do not select for analysis."
+      - name: coverage
+        description: "Whether the topic's source covers this tract: 'available' (fully covered; zero counts are real zeros), 'partial' (only part of the tract is covered; counts are a floor and no rate is computed), or 'unavailable' (not covered; record_count is null)."
+      - name: period
+        description: "Date range of the topic's observations ('YYYY-MM-DD to YYYY-MM-DD'), or 'Snapshot inventory' for undated inventories."
+      - name: rate_allowed
+        description: "Whether a per-1,000-resident rate is meaningful for this topic."
+      - name: record_count
+        description: "Number of the topic's records located in the tract (whole tract, not clipped to a city). Null when coverage is 'unavailable'."
+      - name: rate_per_1000
+        description: "record_count per 1,000 2020 residents. Only populated when coverage is 'available', rate_allowed is true, and population > 0. Not an annualized risk."
   - name: mart_tract_assignment_audit
     description: "One row per topic accounting for every source record, including invalid and out-of-tract coordinates. No source records are exposed."
     columns:
@@ -41,4 +70,29 @@ models:
     description: "Las Vegas and Henderson public art, with namespaced IDs and original collection jurisdiction. Henderson detail URLs are not assumed to be photos."
     columns:
       - name: artwork_id
+        description: "Namespaced artwork id, 'las_vegas:<objectid>' or 'henderson:<objectid>'."
         data_tests: [unique, not_null]
+      - name: jurisdiction
+        description: "Collection the artwork belongs to: 'Las Vegas' or 'Henderson'."
+      - name: artwork_name
+        description: "Artwork title."
+      - name: artist
+        description: "Artist name."
+      - name: medium
+        description: "Artwork medium/materials."
+      - name: location_detail
+        description: "Free-text placement detail."
+      - name: address
+        description: "Street address of the artwork's site."
+      - name: ward
+        description: "City of Las Vegas council ward (Las Vegas records only)."
+      - name: latitude
+        description: "WGS84 latitude."
+      - name: longitude
+        description: "WGS84 longitude."
+      - name: PIC_URL
+        description: "Full-size photo URL (Las Vegas records)."
+      - name: THUMB_URL
+        description: "Thumbnail photo URL (Las Vegas records)."
+      - name: source_url
+        description: "Henderson detail-page URL; not assumed to be a photo."
