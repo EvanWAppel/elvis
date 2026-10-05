@@ -36,3 +36,23 @@ def test_every_built_mart_is_classified(built):
     nodes = json.loads(built.catalog_path.read_text())["nodes"].values()
     marts = {n["metadata"]["name"] for n in nodes if n["metadata"]["name"].startswith("mart_")}
     assert marts == built.tables.allowed | built.tables.excluded
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "select geometry_json from mart_tract_metrics",
+        "select path_json from mart_road_construction",
+        "select t from mart_tract_metrics t",
+        "select * from mart_tract_metrics",
+    ],
+)
+def test_guard_rejects_map_only_columns_on_the_real_schema(config, sql):
+    # Elvis-side regression for review S2, against the real warehouse schema.
+    from tiresias import db
+    from tiresias.sql_guard import SqlGuardError, guard_sql
+
+    if not config.db_path.exists():
+        pytest.skip("warehouse absent; build it to run")
+    with pytest.raises(SqlGuardError, match="map-only"):
+        guard_sql(sql, config, connection=db.get_connection(config.db_path))

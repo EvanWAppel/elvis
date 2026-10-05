@@ -22,7 +22,7 @@ markers = [
 ]
 
 [tool.uv.sources]
-tiresias = { url = "https://github.com/EvanWAppel/tiresias/archive/refs/tags/v0.1.0.zip" }
+tiresias = { url = "https://github.com/EvanWAppel/tiresias/archive/bbb34d6d2ebf4c9da9b4d76d20b501470214211b.zip" }
 
 [dependency-groups]
 dev = [
