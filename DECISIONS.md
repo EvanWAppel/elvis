@@ -259,3 +259,18 @@ silent data gap) and doing nothing (every merge to `main` auto-deploys, so a
 flaky source blocks every release). If a source stays down past the retries,
 the build still fails and the previous deployment keeps serving.
 
+
+## 2026-10-05 — Adopt the standalone Tiresias library v0.1.0 (drafted by Claude, awaiting Evan's confirmation)
+
+Elvis deletes its vendored `tiresias/` package and pins the extracted library
+(github.com/EvanWAppel/tiresias, MIT) at `v0.1.0`; it keeps only its city config
+(`tiresias.yml`, `metrics.yml`, `evals/tiresias_*.yaml`), generated from the
+former engine constants and checked by `tests/python/test_tiresias_config.py`
+(config valid, `tiresias check` clean, every built mart classified). The
+Streamlit page is now `render_chat(load_config(...))`. **Pinned by the tag's
+archive URL** in both `pyproject.toml` and `requirements.txt` (rejected:
+`git+https`, which needs git in the slim Docker image; rejected: keeping the
+vendored copy, which forks the engine per city). Planning docs and history now
+live in the library repo; `TIRESIAS.md` is the pointer. Acceptance: `check` clean,
+retrieval recall@3 = 1.00, **live gold 36/36** (Opus, dedicated key, 2026-10-05). Merging deploys (main
+auto-deploys), so it waits for Evan's approval.

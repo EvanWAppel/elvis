@@ -6,13 +6,6 @@ dbt-duckdb>=1.11
 openpyxl>=3.1
 shapely>=2.1.2
 
-# Tiresias agent layer (kept in sync with pyproject.toml; Railway installs via pip).
-anthropic>=0.122.0
-langgraph>=1.2.11
-mcp>=2.0.0
-fastembed>=0.8.0
-rank-bm25>=0.2.2
-onnxruntime<1.24
-sqlglot>=30.15.0
-pydantic>=2.13.4
-pyyaml>=6.0.3
+# Tiresias (grounded text-to-SQL) v0.1.0, pinned to the tag's commit; keep in sync with
+# pyproject.toml. The tag's archive URL needs no git in the slim image.
+tiresias[streamlit] @ https://github.com/EvanWAppel/tiresias/archive/bbb34d6d2ebf4c9da9b4d76d20b501470214211b.zip
