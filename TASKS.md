@@ -123,7 +123,8 @@ Direction & rationale in `DECISIONS.md`. Branch: `redesign/neon-strip`.
 Governing principle: **flash on the chrome, calm in the data** (legibility first).
 
 ### Phase 1 — Core palette flip (reskins ~80% at once)
-Implemented in `5376b46`; boxes ticked and verified 2026-10-05.
+Implemented in `5376b46` (purple later tuned to `#9866ff` in `05c841f`); boxes
+ticked and verified 2026-10-05 on branch `redesign-neon-phase1`.
 - [x] `.streamlit/config.toml`: `base="dark"`, neon `primaryColor`, dark
       backgrounds, warm-white `textColor`.
 - [x] `explorer.css` `:root`: flip tokens to night-sky palette (bg `#0b0a14`,
@@ -134,8 +135,9 @@ Implemented in `5376b46`; boxes ticked and verified 2026-10-05.
       neon categorical range.
 - [x] Verify every page renders legibly on dark (no browser):
       `tests/python/test_theme.py` locks config ↔ CSS tokens ↔ `ui.py` palette
-      and WCAG AA (≥4.5) for every text/surface pairing the app uses; all 17
-      pages render via `AppTest` on the local warehouse with no exceptions; local
+      and WCAG AA (≥4.5) for every text/surface pairing the app uses; a one-off
+      (uncommitted) `AppTest` run rendered all 17 pages on the local warehouse
+      with no exceptions; local
       `streamlit run` serves `/_stcore/health` ok and `/` 200. Visual
       eyeballing of the deployed site is left to Evan.
 

@@ -53,24 +53,30 @@ def test_ui_palette_matches_css_tokens(css_tokens):
     assert ui.MUTED == css_tokens["muted"]
 
 
-# Pairings the app actually renders. `lift` (hover rows, PyDeck tooltips) only
-# carries ink text and the pink hover state; purple is a chart mark on panel.
+# Text/surface pairings, deliberately a superset of what the CSS renders today
+# (cyan/gold are accents now, but may carry text). `lift` (hover rows) only
+# carries ink, muted and the pink hover state; the primary button is paper on red.
 USED_PAIRS = [
     *[
         (fg, bg)
         for fg in ["ink", "muted", "red", "cyan", "gold"]
         for bg in ["paper", "panel"]
     ],
-    ("purple", "paper"),
-    ("purple", "panel"),
     ("ink", "lift"),
+    ("muted", "lift"),
     ("red", "lift"),
+    ("paper", "red"),
 ]
 
 
 @pytest.mark.parametrize(("fg", "bg"), USED_PAIRS)
 def test_text_tokens_meet_wcag_aa_on_dark_surfaces(css_tokens, fg, bg):
     assert contrast(css_tokens[fg], css_tokens[bg]) >= 4.5
+
+
+@pytest.mark.parametrize("mark", [*ui.SERIES, ui.ORANGE])
+def test_chart_marks_meet_wcag_aa_on_panel(css_tokens, mark):
+    assert contrast(mark, css_tokens["panel"]) >= 4.5
 
 
 def test_atlas_chart_uses_dark_panel_and_neon_series(monkeypatch, css_tokens):
@@ -85,4 +91,5 @@ def test_atlas_chart_uses_dark_panel_and_neon_series(monkeypatch, css_tokens):
     config = captured["c"].to_dict()["config"]
     assert config["background"] == css_tokens["panel"]
     assert config["axis"]["labelColor"] == css_tokens["ink"]
+    assert config["axis"]["gridColor"] == css_tokens["line"]
     assert config["range"]["category"] == ui.SERIES
