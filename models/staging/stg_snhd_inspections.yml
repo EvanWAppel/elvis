@@ -27,3 +27,6 @@ models:
         description: "Number of violations cited"
         tests:
           - not_null
+          # Computed in staging as 0 or a split length: code-controlled (hard).
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0

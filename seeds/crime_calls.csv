@@ -1,0 +1,7 @@
+IncidentNumber,IncidentDate,Classification,IncidentTypeDescription,Address,Disposition,Weekday,Hour,Month,Year,ZipCode,Latitude,Longitude
+LLV000000001,2025-01-03 08:15:00,Property,Synthetic Burglary,100 Example St,Report Taken,Friday,8,1,2025,89101,36.170000,-115.140000
+LLV000000002,2025-01-03 22:40:00,Traffic,Synthetic Collision,200 Sample Ave,Cleared,Friday,22,1,2025,89102,36.150000,-115.180000
+LLV000000003,2025-02-14 13:05:00,Disturbance,Synthetic Noise Complaint,300 Fixture Blvd,Unfounded,Friday,13,2,2025,89109,36.120000,-115.170000
+LLV000000004,2025-02-16 02:30:00,Property,Synthetic Burglary,400 Mock Rd,Report Taken,Sunday,2,2,2025,89117,36.140000,-115.280000
+LLV000000005,2026-03-02 17:50:00,Traffic,Synthetic Collision,500 Test Way,Cleared,Monday,17,3,2026,89123,36.030000,-115.150000
+LLV000000006,2026-03-02 17:55:00,Traffic,Synthetic Collision,600 Far Away Ln,Cleared,Monday,17,3,2026,89019,35.600000,-115.400000

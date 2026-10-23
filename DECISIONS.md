@@ -274,3 +274,21 @@ vendored copy, which forks the engine per city). Planning docs and history now
 live in the library repo; `TIRESIAS.md` is the pointer. Acceptance: `check` clean,
 retrieval recall@3 = 1.00, **live gold 36/36** (Opus, dedicated key, 2026-10-05). Merging deploys (main
 auto-deploys), so it waits for Evan's approval.
+
+## 2026-10-24 — Seed expansion: unverified feed keys get `warn`, not hard `unique` (drafted by Claude, awaiting Evan's confirmation)
+
+**Chose:** extend hermetic CI to the crime (`crime_calls`), CLV permits
+(`building_permits`) and SNHD restaurant (`snhd_*`) lineages with synthetic seeds,
+and apply the 2026-09-26 severity-by-provenance rule. Hard errors are kept to
+invariants our own SQL guarantees: mart grains (`unique` /
+`unique_combination_of_columns` on GROUP BY keys), computed 0-100 rates, the
+valley bounds that `mart_crime_map_sample` filters on, and the staging-computed
+`violation_count >= 0`. Feed-passthrough checks are `warn`: `not_null` and `unique`
+on `incident_number`, `application_number` and `violation_code`, weekday/hour/month
+domains, non-negative valuation and demerits, and the decoded SNHD `status` set.
+
+**Rejected:** *Hard `not_null`/`unique` on those three keys*, which the 2026-09-26
+entry applied to the road/art keys. Those keys were never checked against live
+data (the agent may not look at it), and these tests also run in the production
+`dbt build`, so a duplicate LVMPD incident number would abort the Railway deploy.
+Hardening them is the open "needs Evan to inspect live data" P2 item.

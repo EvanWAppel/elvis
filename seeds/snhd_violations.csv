@@ -1,0 +1,4 @@
+violation_code,violation_demerits,violation_description
+201,5,Synthetic: food held at improper temperature
+202,3,Synthetic: handwashing sink not accessible
+209,1,Synthetic: non-food-contact surface not clean

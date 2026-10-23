@@ -1,0 +1,5 @@
+permit_number,restaurant_name,location_name,address,city_name,zip_code,latitude,longitude,current_grade,current_demerits,date_current,previous_grade,record_status
+PR0000001,Example Diner,Example Diner,100 Example St,Las Vegas,89101,-115.140000,36.170000,A,3,2025-06-01 00:00:00,A,01
+PR0000002,Sample Cafe,Sample Cafe,200 Sample Ave,Las Vegas,89102,-115.180000,36.150000,B,15,2025-05-12 00:00:00,A,01
+PR0000003,Fixture Grill,Fixture Grill,300 Fixture Blvd,Henderson,89014,-115.060000,36.040000,,,,,02
+PR0000004,Mock Taqueria,Mock Taqueria,400 Mock Rd,North Las Vegas,89030,-115.120000,36.200000,A,0,2025-04-20 00:00:00,,04

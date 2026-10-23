@@ -255,8 +255,13 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
 - [x] Push branch + open PR so the checks actually run on GitHub. (Closed
       2026-10-22: stale. Evan authorized PR pushes (see `BLOCKED.md`), and
       `ci.yml` has run on every pull request since, e.g. PRs #31–#33.)
-- [ ] Expand seed coverage beyond the 2 starter domains (restaurants, crime,
+- [x] Expand seed coverage beyond the 2 starter domains (restaurants, crime,
       permits…) as P2 adds tests — CI currently gates only the seeded lineages.
+      (Done 2026-10-24: synthetic `crime_calls`, `building_permits` and
+      `snhd_inspections`/`_establishments`/`_inspection_types`/`_violations`
+      seeds, all columns typed in `dbt_project.yml`; CI `--select` extended.
+      Hermetic build 49 → 111 nodes PASS; `tests/python/test_seed_coverage.py`
+      guards registration and CI coverage.)
 
 ### P2 — Data-quality test suite (`dbt_utils` / `dbt_expectations`)
 - [x] Add `packages.yml` (`dbt_utils` 1.x, `dbt_expectations` 0.10.x, pinned via
@@ -279,8 +284,11 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
 - [x] Verified hermetically (deps→seed→build): 29 tests PASS. TDD negatives:
       bogus `status` and off-valley latitude each **warn** (build still succeeds);
       bad `data_source` **errors**. `ruff` clean; local warehouse restored.
-- [ ] Extend the same test types to more domains as seed coverage grows (see the
+- [x] Extend the same test types to more domains as seed coverage grows (see the
       open P1 seed-expansion item) — CI still gates only the 2 seeded lineages.
+      (Done 2026-10-24 for crime, CLV permits and SNHD restaurants; severity per
+      DECISIONS 2026-10-24 draft. TDD negatives: a null inspection
+      `permit_number` fails the build; an hour of 25 only warns.)
 - [ ] (Optional, needs Evan to inspect live data) Harden `status`/coordinate
       tests to hard errors by enumerating the real distinct values + bounds.
 

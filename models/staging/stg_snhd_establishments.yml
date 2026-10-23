@@ -18,3 +18,19 @@ models:
 
       - name: longitude
         description: "Longitude (source columns are swapped and corrected here)"
+
+      - name: status
+        description: >
+          Establishment status decoded from SNHD record_status codes 01-05 in the
+          staging CASE; unknown codes pass through unchanged. The code domain is
+          the feed's, so this is a `warn` known-values signal (DECISIONS 2026-09-26).
+        tests:
+          - accepted_values:
+              values:
+                - "Active"
+                - "Inactive"
+                - "Temporarily inactive"
+                - "Active (billing-exempt)"
+                - "Inactive (billable)"
+              config:
+                severity: warn

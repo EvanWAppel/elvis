@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_violation_codes
+    description: "SNHD violation-code reference: code to description and demerit weight."
+    columns:
+      - name: violation_code
+        description: "Violation code (feed passthrough; uniqueness not verified on live data)."
+        tests:
+          - not_null:
+              config:
+                severity: warn
+          - unique:
+              config:
+                severity: warn
+      - name: violation_demerits
+        description: "Demerit weight for the code."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              config:
+                severity: warn

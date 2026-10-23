@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: stg_crime_calls
+    description: >
+      LVMPD calls-for-service, one row per call, typed from the ArcGIS layers.
+
+      Severity policy (DECISIONS 2026-09-26): every column here is passed
+      through from the LVMPD feed, so these tests are `warn` signals. They
+      surface upstream drift without aborting the production `dbt build`.
+    columns:
+      - name: incident_number
+        description: "LVMPD incident number (feed passthrough; uniqueness not verified on live data)."
+        tests:
+          - not_null:
+              config:
+                severity: warn
+          - unique:
+              config:
+                severity: warn
+      - name: weekday
+        description: "Day of week as a full English name."
+        tests:
+          - accepted_values:
+              values: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+              config:
+                severity: warn
+      - name: hour_of_day
+        description: "Hour of day the call was received, 0-23."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 23
+              config:
+                severity: warn
+      - name: month_of_year
+        description: "Calendar month of the call, 1-12."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 12
+              config:
+                severity: warn
