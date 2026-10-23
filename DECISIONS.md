@@ -260,7 +260,9 @@ flaky source blocks every release). If a source stays down past the retries,
 the build still fails and the previous deployment keeps serving.
 
 
-## 2026-10-05 — Adopt the standalone Tiresias library v0.1.0 (drafted by Claude, awaiting Evan's confirmation)
+## 2026-10-05 — Adopt the standalone Tiresias library v0.1.0 (confirmed by Evan 2026-10-23)
+
+*Confirmed by Evan, blocker triage 2026-10-23: the drafted entry is approved as written.*
 
 Elvis deletes its vendored `tiresias/` package and pins the extracted library
 (github.com/EvanWAppel/tiresias, MIT) at `v0.1.0`; it keeps only its city config
@@ -273,7 +275,7 @@ archive URL** in both `pyproject.toml` and `requirements.txt` (rejected:
 vendored copy, which forks the engine per city). Planning docs and history now
 live in the library repo; `TIRESIAS.md` is the pointer. Acceptance: `check` clean,
 retrieval recall@3 = 1.00, **live gold 36/36** (Opus, dedicated key, 2026-10-05). Merging deploys (main
-auto-deploys), so it waits for Evan's approval.
+auto-deploys); Evan approved and it merged as PR #32 on 2026-10-05.
 
 ## 2026-10-24 — Seed expansion: unverified feed keys get `warn`, not hard `unique` (drafted by Claude, awaiting Evan's confirmation)
 
@@ -292,3 +294,17 @@ entry applied to the road/art keys. Those keys were never checked against live
 data (the agent may not look at it), and these tests also run in the production
 `dbt build`, so a duplicate LVMPD incident number would abort the Railway deploy.
 Hardening them is the open "needs Evan to inspect live data" P2 item.
+
+## 2026-10-23 — Bump Tiresias to v0.1.1; Anthropic key guardrail confirmed (Evan, blocker triage 2026-10-23)
+
+**Chose:** pin Tiresias `v0.1.1` (commit `0ae9123`: fixes a HIGH CTE-scope
+allowlist bypass and opens DuckDB locked down) by the same commit-archive URL in
+`pyproject.toml` and `requirements.txt`, guarded by `tests/python/test_tiresias_pin.py`
+so the two pins cannot drift. Merging still deploys, so the PR waits for Evan.
+Separately, Evan confirmed with Console screenshots that the live
+`ANTHROPIC_API_KEY` is a scoped key in a dedicated `elvis` workspace with a
+$10/month cap and a $9 email alert ($8.79 spent this month), so the personal-key
+guardrail checklist is satisfied; recorded under `[keys]` in `project.toml`.
+
+**Rejected:** *staying on v0.1.0*, which is exposed to the allowlist bypass on a
+public, unauthenticated page.
