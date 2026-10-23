@@ -44,10 +44,13 @@ coverage gaps. Preserve the snapshot architecture and current visual identity.
       integration from verified current source availability.
 - [x] Audit existing Henderson/North Las Vegas parks and rental integrations,
       Henderson permits/licenses, and regional feeds before adding duplicates.
-- [ ] Find and verify official public sources for missing city/topic pairs,
+- [x] Find and verify official public sources for missing city/topic pairs,
       including local road projects/ROW permits. Record publisher, endpoint,
       access/reuse requirements, fields, grain, dates, location precision, and
       source health. Record unavailable or incompatible sources with reasons.
+      (2026-10-22, metadata/counts only: see "Phase 1 source discovery" in
+      `docs/COVERAGE.md`. Candidates are Henderson Other Permits and the NLV
+      draft P1 incident layer. Choosing what to build is Evan's call; see `BLOCKED.md`.)
 - [x] Define comparable measures and reporting windows per topic; preserve
       differences such as calls versus crimes and missing permit valuations.
       Assess regional/station topics without inventing tract or city detail.
