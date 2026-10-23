@@ -1,8 +1,9 @@
 """Guard the hermetic CI seed fixtures (P1/P2 seed expansion).
 
-Every committed seed CSV must be (a) registered in ``dbt_project.yml`` with
-explicit ``+column_types`` so CI types match the warehouse that
-``build_warehouse.py`` loads, and (b) gated by CI's ``dbt build --select``.
+Every committed seed CSV must be registered in ``dbt_project.yml``. The seeds
+added by the expansion must also (a) type every column with explicit
+``+column_types`` so CI types match the warehouse that ``build_warehouse.py``
+loads, and (b) be gated by CI's ``dbt build --select``.
 Reads repo config files only; no warehouse or public data.
 """
 
@@ -53,7 +54,8 @@ def test_expanded_seed_exists_with_rows(seed):
 
 @pytest.mark.parametrize("seed", sorted(EXPANDED))
 def test_expanded_seed_types_every_column(seed, seed_config):
-    header = next(csv.reader((SEEDS / f"{seed}.csv").open(newline="")))
+    with (SEEDS / f"{seed}.csv").open(newline="") as f:
+        header = next(csv.reader(f))
     types = seed_config.get(seed, {}).get("+column_types", {})
     untyped = [c for c in header if c not in types]
     assert not untyped, f"{seed}: columns without +column_types: {untyped}"
