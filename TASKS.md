@@ -123,17 +123,23 @@ Direction & rationale in `DECISIONS.md`. Branch: `redesign/neon-strip`.
 Governing principle: **flash on the chrome, calm in the data** (legibility first).
 
 ### Phase 1 — Core palette flip (reskins ~80% at once)
-_Code items shipped in 5376b46 (config.toml, explorer.css tokens, light overrides removed,
-`atlas_chart` dark). Checked off 2026-10-17 after confirming on `main`._
+Implemented in `5376b46` (purple later tuned to `#9866ff` in `05c841f`); boxes
+ticked and verified 2026-10-05 on branch `redesign-neon-phase1`.
 - [x] `.streamlit/config.toml`: `base="dark"`, neon `primaryColor`, dark
       backgrounds, warm-white `textColor`.
 - [x] `explorer.css` `:root`: flip tokens to night-sky palette (bg `#0b0a14`,
       panel `#16141f`, text `#f4f1e9`, accents pink/cyan/gold/purple).
-- [x] `explorer.css` lines 3–13: remove/invert the "force light in dark sessions"
-      overrides — the app now embraces dark.
+- [x] `explorer.css` lines 3–13: the "force light in dark sessions" overrides
+      now pin text to the dark palette tokens instead.
 - [x] `ui.py:atlas_chart()`: dark background + warm-white labels + dim grid +
       neon categorical range.
-- [ ] Verify every page renders legibly on dark (local run + curl; no browser).
+- [x] Verify every page renders legibly on dark (no browser):
+      `tests/python/test_theme.py` locks config ↔ CSS tokens ↔ `ui.py` palette
+      and WCAG AA (≥4.5) for every text/surface pairing the app uses; a one-off
+      (uncommitted) `AppTest` run rendered all 17 pages on the local warehouse
+      with no exceptions; local
+      `streamlit run` serves `/_stcore/health` ok and `/` 200. Visual
+      eyeballing of the deployed site is left to Evan.
 
 ### Phase 2 — Neon chrome
 - [x] Add Monoton font import; apply to `.elvis-brand` wordmark + the cover
