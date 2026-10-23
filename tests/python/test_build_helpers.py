@@ -232,3 +232,17 @@ def test_read_delimited_header_only(write_snhd):
     df = warehouse._read_delimited(write_snhd("empty.csv", ["a;b;"]))
     assert list(df.columns) == ["a", "b"]
     assert df.empty
+
+
+# --- _clv_water_points ----------------------------------------------------- #
+def test_clv_water_points_drops_half_missing_coordinates(monkeypatch):
+    # A point geometry with an x but no y must not leak a (lon, None) pair.
+    geoms = [{"x": -115.1, "y": 36.1}, {"x": -115.2, "y": None}, None]
+    monkeypatch.setattr(
+        warehouse,
+        "fetch_features",
+        lambda url, out_fields="*": [({}, g) for g in geoms],
+    )
+    pts = warehouse._clv_water_points()
+    assert pts and all(lat is not None and lon is not None for lon, lat in pts)
+    assert set(pts) == {(-115.1, 36.1)}

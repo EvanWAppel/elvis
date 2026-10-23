@@ -471,7 +471,7 @@ def _clv_water_points() -> list[tuple[float, float]]:
     for url in layers:
         for _attrs, geom in fetch_features(url, out_fields="OBJECTID"):
             lon, lat = _centroid(geom)
-            if lon is not None:
+            if lon is not None and lat is not None:
                 pts.append((lon, lat))
     return pts
 
