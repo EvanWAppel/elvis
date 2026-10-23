@@ -120,19 +120,12 @@ def fake_arcgis(monkeypatch):
 
     state = {"script": [], "urls": [], "sleeps": []}
 
-    class _Resp(io.BytesIO):
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *exc):
-            return False
-
     def fake_urlopen(url, timeout=None, context=None):
         state["urls"].append(url)
         item = state["script"].pop(0)
         if isinstance(item, BaseException):
             raise item
-        return _Resp(json.dumps(item).encode())
+        return io.BytesIO(json.dumps(item).encode())
 
     monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
     monkeypatch.setattr(warehouse.time, "sleep", state["sleeps"].append)

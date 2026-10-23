@@ -262,6 +262,14 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
       seeds, all columns typed in `dbt_project.yml`; CI `--select` extended.
       Hermetic build 49 → 111 nodes PASS; `tests/python/test_seed_coverage.py`
       guards registration and CI coverage.)
+- [x] `uv run ty check` at zero diagnostics (was 37) and gated in CI's lint job
+      and the prek hooks. (Done 2026-10-24: Altair charts call `.encode()` before
+      `.mark_*()` because ty can't type altair's signature-copying `mark_*`
+      helpers; the layered Lake Mead chart passes `mark=alt.MarkDef(...)` instead.
+      Restaurants reads `event["selection"]["rows"]` (TypedDict keys). The
+      legacy `main.py`/`__init__.py`/`scratch.ipynb` are excluded in `[tool.ty.src]`.
+      One reasoned `ty: ignore` on the intentional `socket.getaddrinfo`
+      monkeypatch. Fixed test-first: `_clv_water_points` let `(lon, None)` through.)
 
 ### P2 — Data-quality test suite (`dbt_utils` / `dbt_expectations`)
 - [x] Add `packages.yml` (`dbt_utils` 1.x, `dbt_expectations` 0.10.x, pinned via

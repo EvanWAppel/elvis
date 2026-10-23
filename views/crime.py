@@ -47,7 +47,6 @@ monthly = query(
 st.subheader("Calls per month")
 trend = (
     alt.Chart(monthly)
-    .mark_line(point=True, color=PINK)
     .encode(
         x=alt.X("incident_month:T", title=None),
         y=alt.Y("incident_count:Q", title="Calls"),
@@ -56,6 +55,7 @@ trend = (
             alt.Tooltip("incident_count:Q", title="Calls", format=","),
         ],
     )
+    .mark_line(point=True, color=PINK)
 )
 atlas_chart(trend, width="stretch")
 
@@ -72,7 +72,6 @@ types = query(
 st.subheader("Most common call types")
 types_chart = (
     alt.Chart(types)
-    .mark_bar(color=PINK)
     .encode(
         x=alt.X("incident_count:Q", title="Calls"),
         y=alt.Y("incident_type:N", sort="-x", title=None),
@@ -81,6 +80,7 @@ types_chart = (
             alt.Tooltip("incident_count:Q", title="Calls", format=","),
         ],
     )
+    .mark_bar(color=PINK)
 )
 atlas_chart(types_chart, width="stretch")
 
@@ -101,7 +101,6 @@ st.subheader("When calls happen")
 st.caption("Calls for service by hour of day and day of week.")
 heatmap = (
     alt.Chart(heat)
-    .mark_rect()
     .encode(
         x=alt.X("hour_of_day:O", title="Hour of day"),
         y=alt.Y("weekday:N", sort=weekday_order, title=None),
@@ -114,6 +113,7 @@ heatmap = (
             alt.Tooltip("incident_count:Q", title="Calls", format=","),
         ],
     )
+    .mark_rect()
 )
 atlas_chart(heatmap, width="stretch")
 

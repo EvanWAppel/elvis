@@ -63,12 +63,19 @@ log = logging.getLogger("build_warehouse")
 _orig_getaddrinfo = socket.getaddrinfo
 
 
-def _ipv4_first(*args, **kwargs):
-    results = _orig_getaddrinfo(*args, **kwargs)
+def _ipv4_first(
+    host: bytes | str | None,
+    port: bytes | str | int | None,
+    family: int = 0,
+    type: int = 0,  # same parameter names as socket.getaddrinfo
+    proto: int = 0,
+    flags: int = 0,
+):
+    results = _orig_getaddrinfo(host, port, family, type, proto, flags)
     return [r for r in results if r[0] == socket.AF_INET] or results
 
 
-socket.getaddrinfo = _ipv4_first
+socket.getaddrinfo = _ipv4_first  # ty: ignore[invalid-assignment] - ty rejects rebinding a stdlib def even with a matching signature; this monkeypatch is intentional
 
 ORG = "https://services1.arcgis.com/F1v0ufATbBQScMtY/arcgis/rest/services"
 # LVMPD publishes calls-for-service in its own ArcGIS Online org, not the City's.

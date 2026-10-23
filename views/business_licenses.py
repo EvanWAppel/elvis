@@ -46,11 +46,11 @@ hen_types = query(
 )
 hen_chart = (
     alt.Chart(hen_types)
-    .mark_bar(color=GOLD)
     .encode(
         x=alt.X("license_count:Q", title="Licenses"),
         y=alt.Y("license_type:N", sort="-x", title=None),
         tooltip=["license_type", alt.Tooltip("license_count:Q", title="Licenses", format=",")],
     )
+    .mark_bar(color=GOLD)
 )
 atlas_chart(hen_chart, width="stretch")

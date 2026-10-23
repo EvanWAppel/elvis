@@ -38,7 +38,10 @@ monthly = query(
     "select reading_month, avg_elevation_ft from main.mart_lake_mead_monthly order by 1"
 )
 st.subheader("Elevation over time")
-base = alt.Chart(monthly).encode(
+# The mark goes in the constructor rather than via .mark_line()/.mark_rule():
+# ty can't resolve the return type of altair's signature-copying mark_*
+# helpers, and these two charts are layered with `+`, which needs real types.
+line = alt.Chart(monthly, mark=alt.MarkDef(type="line", color=CYAN)).encode(
     x=alt.X("reading_month:T", title=None),
     y=alt.Y(
         "avg_elevation_ft:Q",
@@ -46,11 +49,12 @@ base = alt.Chart(monthly).encode(
         scale=alt.Scale(zero=False),
     ),
 )
-line = base.mark_line(color=CYAN)
 # Reference lines for full pool and dead pool.
 rules = (
-    alt.Chart(pd.DataFrame({"level": [1229, 895]}))
-    .mark_rule(strokeDash=[6, 4], color=MUTED)
+    alt.Chart(
+        pd.DataFrame({"level": [1229, 895]}),
+        mark=alt.MarkDef(type="rule", strokeDash=[6, 4], color=MUTED),
+    )
     .encode(y="level:Q")
 )
 atlas_chart(

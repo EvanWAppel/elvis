@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import duckdb
 import pandas as pd
@@ -50,7 +51,14 @@ def modeled_tracts(tract_features, city_features, observations):
     ]:
         load_raw(con, table, frame)
     env = Environment()
-    env.globals.update(source=lambda _, table: f"raw.{table}", ref=lambda model: model)
+    # Stand-ins for dbt's source()/ref(). jinja2 leaves Environment.globals
+    # unannotated, so its type is inferred from the default namespace; an
+    # explicit dict[str, Any] keeps these callables assignable to it.
+    dbt_shims: dict[str, Any] = {
+        "source": lambda _, table: f"raw.{table}",
+        "ref": lambda model: model,
+    }
+    env.globals.update(dbt_shims)
     for name in [
         "stg_census_tracts",
         "stg_tract_counts",

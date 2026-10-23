@@ -87,7 +87,7 @@ def test_atlas_chart_uses_dark_panel_and_neon_series(monkeypatch, css_tokens):
     monkeypatch.setattr(
         ui.st, "altair_chart", lambda chart, **_: captured.setdefault("c", chart)
     )
-    ui.atlas_chart(alt.Chart(pd.DataFrame({"x": [1]})).mark_point().encode(x="x"))
+    ui.atlas_chart(alt.Chart(pd.DataFrame({"x": [1]})).encode(x="x").mark_point())
     config = captured["c"].to_dict()["config"]
     assert config["background"] == css_tokens["panel"]
     assert config["axis"]["labelColor"] == css_tokens["ink"]

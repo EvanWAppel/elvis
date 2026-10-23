@@ -31,6 +31,8 @@ jobs:
         run: uv run pytest tests/python -q
       - name: ruff check
         run: uv run ruff check .
+      - name: ty check
+        run: uv run ty check
 
   dbt:
     name: dbt build (hermetic seeds)

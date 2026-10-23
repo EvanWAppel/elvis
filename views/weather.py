@@ -55,7 +55,6 @@ melted["threshold"] = melted["threshold"].map(
 )
 heat_chart = (
     alt.Chart(melted)
-    .mark_bar()
     .encode(
         x=alt.X("observed_year:O", title=None),
         y=alt.Y("days:Q", title="Days"),
@@ -66,6 +65,7 @@ heat_chart = (
         ),
         tooltip=["observed_year", "threshold", "days"],
     )
+    .mark_bar()
 )
 atlas_chart(heat_chart, width="stretch")
 
@@ -73,7 +73,6 @@ atlas_chart(heat_chart, width="stretch")
 st.subheader("Average daily high, by year")
 avg_chart = (
     alt.Chart(extreme)
-    .mark_line(point=True, color=GOLD)
     .encode(
         x=alt.X("observed_year:O", title=None),
         y=alt.Y("avg_high_f:Q", title="Avg high (°F)", scale=alt.Scale(zero=False)),
@@ -82,5 +81,6 @@ avg_chart = (
             alt.Tooltip("avg_high_f:Q", title="Avg high °F"),
         ],
     )
+    .mark_line(point=True, color=GOLD)
 )
 atlas_chart(avg_chart, width="stretch")

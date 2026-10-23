@@ -46,7 +46,6 @@ st.subheader("Licenses per month")
 st.caption("Note the long decline, the 2020 pandemic collapse, and the recovery.")
 trend = (
     alt.Chart(monthly)
-    .mark_line(color=PINK)
     .encode(
         x=alt.X("license_month:T", title=None),
         y=alt.Y("license_count:Q", title="Licenses"),
@@ -55,6 +54,7 @@ trend = (
             alt.Tooltip("license_count:Q", title="Licenses", format=","),
         ],
     )
+    .mark_line(color=PINK)
 )
 atlas_chart(trend, width="stretch")
 
@@ -72,12 +72,12 @@ st.subheader("Biggest single days")
 st.caption("Valentine's Day, New Year's Eve, and novelty dates like 07/07/07 and 12/12/12.")
 days_chart = (
     alt.Chart(big_days)
-    .mark_bar(color=PINK)
     .encode(
         x=alt.X("license_count:Q", title="Licenses issued"),
         y=alt.Y("label:N", sort="-x", title=None),
         tooltip=["label", alt.Tooltip("license_count:Q", title="Licenses", format=",")],
     )
+    .mark_bar(color=PINK)
 )
 atlas_chart(days_chart, width="stretch")
 
@@ -97,12 +97,12 @@ with col_a:
     st.subheader("Where couples come from")
     origin_chart = (
         alt.Chart(origin)
-        .mark_bar(color=PURPLE)
         .encode(
             x=alt.X("license_count:Q", title="Licenses"),
             y=alt.Y("origin:N", sort="-x", title=None),
             tooltip=["origin", alt.Tooltip("license_count:Q", title="Licenses", format=",")],
         )
+        .mark_bar(color=PURPLE)
     )
     atlas_chart(origin_chart, width="stretch")
 
@@ -119,7 +119,6 @@ with col_b:
     st.caption("Nevada began issuing same-sex licenses in October 2014.")
     gender_chart = (
         alt.Chart(gender)
-        .mark_area()
         .encode(
             x=alt.X("license_year:O", title=None),
             y=alt.Y("license_count:Q", title="Licenses", stack="normalize"),
@@ -130,5 +129,6 @@ with col_b:
                 alt.Tooltip("license_count:Q", title="Licenses", format=","),
             ],
         )
+        .mark_area()
     )
     atlas_chart(gender_chart, width="stretch")
