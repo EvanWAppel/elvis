@@ -32,8 +32,9 @@ path = "/"
 
 [keys]
 paid = ["anthropic"]          # Ask Tiresias page (tiresias library); NVROADS_API_KEY is a free key
-isolated = "yes"              # dedicated Elvis/Tiresias Anthropic workspace key (BLOCKED.md, global CLAUDE.md)
-spend_cap = "yes"             # $10 cap on that workspace (BLOCKED.md, global CLAUDE.md)
+isolated = "yes"              # dedicated `elvis` Anthropic workspace + scoped key; Evan confirmed with Console screenshots, blocker triage 2026-10-23
+spend_cap = "yes"             # $10/month cap + $9 email alert on the `elvis` workspace (spend $8.79 in Oct 2026); Evan confirmed 2026-10-23
+key_confirmed_not_personal = "2026-10-23"  # personal-key guardrail checklist (isolated, scoped, capped+alert, confirmed) satisfied
 
 [platform]
 done = []
