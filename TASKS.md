@@ -188,6 +188,13 @@ ticked and verified 2026-10-05 on branch `redesign-neon-phase1`.
 
 ## Historical deploy failure (upstream outage, 2026-08-15)
 
+> **Superseded (2026-10-22 tidy).** The open question below ("Not decided yet")
+> was settled by `DECISIONS.md` 2026-10-04, "Flaky upstream sources: retry with
+> backoff, then fail loudly": transient ArcGIS failures retry 3 times with
+> backoff, then the build fails loudly and the previous deployment keeps
+> serving. Option (b), tolerating an empty source, was rejected. The empty CLV
+> license feed itself stays disabled (see `BLOCKED.md`). Kept as history only.
+
 Current branch: the failing CLV license feed and dependent models are disabled;
 the full local build passes. The incident below is historical, not a current
 deployment blocker. The PR also installs dbt packages during a clean Docker build.
@@ -245,8 +252,9 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
       <1.5s; negative test (null latitude fixture) turns it red as required;
       `ruff check .` clean repo-wide (fixed a stray unused import; excluded the
       scratch notebook via `ruff.toml`).
-- [ ] Push branch + open PR so the checks actually run on GitHub (needs Evan —
-      not pushing without the ask).
+- [x] Push branch + open PR so the checks actually run on GitHub. (Closed
+      2026-10-22: stale. Evan authorized PR pushes (see `BLOCKED.md`), and
+      `ci.yml` has run on every pull request since, e.g. PRs #31–#33.)
 - [ ] Expand seed coverage beyond the 2 starter domains (restaurants, crime,
       permits…) as P2 adds tests — CI currently gates only the seeded lineages.
 
@@ -289,9 +297,9 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
       section) and the README ("Live" section) to
       <https://evanwappel.github.io/elvis/>. Did NOT touch the hand-built site
       otherwise.
-- [ ] **Blocked on Evan:** enable GitHub Pages (source = GitHub Actions) so the
-      deploy job can publish — see `BLOCKED.md`. Until then the workflow builds but
-      the deploy step fails.
+- [x] Enable GitHub Pages (source = GitHub Actions) so the deploy job can
+      publish. (Closed 2026-10-22: stale. Evan enabled Pages on 2026-09-27 and
+      <https://evanwappel.github.io/elvis/> went live; resolved in `BLOCKED.md`.)
 - [ ] (Bonus, needs Evan's voice/register) `docs/ANALYTICS-ENGINEERING.md`
       explaining the layering + how an AI agent navigates the dbt metadata
       (primer P5 bonus for Samsara/dbt Labs). Deferred — needs Evan's input.
@@ -345,9 +353,12 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
       past-end projects. Snapshot counts: 382 → 160 current (222 hidden = 135
       Closed + 87 past end date, incl. 29 lapsed `Construction`-phase). ruff + ty
       clean.
-- [ ] Henderson / North Las Vegas local surface-street construction: now tracked
-      in the planned valley expansion above (source availability unverified).
-      Additional unincorporated Clark County ROW coverage remains optional.
+- [x] Henderson / North Las Vegas local surface-street construction. (Closed
+      2026-10-22 as a duplicate: tracked by Phase 1 "Find and verify official
+      public sources… including local road projects/ROW permits" and the Phase 4
+      batch items above. Henderson's transportation CIP adapter already shipped
+      in the first increment.) Additional unincorporated Clark County ROW
+      coverage remains optional.
 - [x] Add the Road Construction dataset to the README dataset list. (Already
       done in fb0ca12 — the Datasets paragraph lists CLV CIP + Nevada 511/NDOT
       with the keyless/`NVROADS_API_KEY` note. Item was stale.)
