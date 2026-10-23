@@ -1,0 +1,39 @@
+# Drafted by elvis's weekend-prep session on 2026-10-22 (unverified until Evan's / the
+# project session's check flips `verified`). Format: ~/Documents/_system/docs/project-toml.md
+
+[project]
+name = "elvis"
+group = "portfolio/geographic"
+kind = "app"
+status = "active"
+repo = "EvanWAppel/elvis"
+visibility = "public"         # gh repo view, 2026-10-22
+on_site = true                # card in enki data/projects.ts (id "elvis")
+verified = false
+
+[deploy]
+host = "railway"              # Dockerfile; main auto-deploys
+services = ["elvis"]          # Railway project/service "elvis" per BLOCKED.md; origin elvis-production-e07a.up.railway.app
+domain = "elvis.evanappel.me" # HTTP 200, 2026-10-22
+origin_urls_closed = false    # elvis-production-e07a.up.railway.app still serves (HTTP 200, 2026-10-22)
+
+[auth]
+scheme = "none"               # no auth code in the app; fully public explorer
+access_list = ""
+target = "unknown"            # no recorded decision on Cloudflare Access for elvis
+
+[data]
+db = "duckdb"                 # vegas.duckdb baked at Docker build time
+
+[demo]
+status = "live"               # whole app is public
+url = "https://elvis.evanappel.me/"
+path = "/"
+
+[keys]
+paid = ["anthropic"]          # Ask Tiresias page (tiresias library); NVROADS_API_KEY is a free key
+isolated = "yes"              # dedicated Elvis/Tiresias Anthropic workspace key (BLOCKED.md, global CLAUDE.md)
+spend_cap = "yes"             # $10 cap on that workspace (BLOCKED.md, global CLAUDE.md)
+
+[platform]
+done = []

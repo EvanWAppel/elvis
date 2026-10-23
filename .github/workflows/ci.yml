@@ -31,6 +31,8 @@ jobs:
         run: uv run pytest tests/python -q
       - name: ruff check
         run: uv run ruff check .
+      - name: ty check
+        run: uv run ty check
 
   dbt:
     name: dbt build (hermetic seeds)
@@ -54,4 +56,4 @@ jobs:
       - name: dbt seed (load raw.* fixtures)
         run: uv run dbt seed --profiles-dir .
       - name: dbt build (models + tests)
-        run: uv run dbt build --profiles-dir . --select stg_road_construction+ stg_art_work_points+ stg_henderson_art+ stg_census_tracts+ stg_tract_counts+ stg_tract_coverage+ mart_tract_assignment_audit
+        run: uv run dbt build --profiles-dir . --select stg_road_construction+ stg_art_work_points+ stg_henderson_art+ stg_census_tracts+ stg_tract_counts+ stg_tract_coverage+ mart_tract_assignment_audit stg_crime_calls+ stg_building_permits+ stg_snhd_inspections+ stg_snhd_establishments+ stg_violation_codes+

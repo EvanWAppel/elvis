@@ -27,7 +27,6 @@ def line_of(metric_like: str, title: str, color: str, fmt: str = ",.0f"):
         return None
     return (
         alt.Chart(df)
-        .mark_line(color=color)
         .encode(
             x=alt.X("indicator_month:T", title=None),
             y=alt.Y("value:Q", title=title, axis=alt.Axis(format="~s")),
@@ -36,6 +35,7 @@ def line_of(metric_like: str, title: str, color: str, fmt: str = ",.0f"):
                 alt.Tooltip("value:Q", title=title, format=fmt),
             ],
         )
+        .mark_line(color=color)
     )
 
 
@@ -63,7 +63,6 @@ gaming = query(
 if not gaming.empty:
     gaming_chart = (
         alt.Chart(gaming)
-        .mark_line()
         .encode(
             x=alt.X("indicator_month:T", title=None),
             y=alt.Y("value:Q", title="Revenue ($)", axis=alt.Axis(format="~s")),
@@ -74,6 +73,7 @@ if not gaming.empty:
                 alt.Tooltip("value:Q", title="Revenue", format="$,.0f"),
             ],
         )
+        .mark_line()
     )
     atlas_chart(gaming_chart, width="stretch")
 
@@ -101,7 +101,6 @@ detail = query(
 )
 detail_chart = (
     alt.Chart(detail)
-    .mark_line(point=True, color=CYAN)
     .encode(
         x=alt.X("indicator_month:T", title=None),
         y=alt.Y("value:Q", title=choice, scale=alt.Scale(zero=False)),
@@ -110,5 +109,6 @@ detail_chart = (
             alt.Tooltip("value:Q", title="Value", format=",.2f"),
         ],
     )
+    .mark_line(point=True, color=CYAN)
 )
 atlas_chart(detail_chart, width="stretch")

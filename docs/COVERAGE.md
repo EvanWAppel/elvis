@@ -7,16 +7,16 @@ verified; it does not mean the city has no activity or that no source exists.
 
 | Topic | Las Vegas | Henderson | North Las Vegas | Regional / county context |
 | --- | --- | --- | --- | --- |
-| Public art | City collection | City collection added | Gap: no verified art feed | Collection jurisdiction differs from artwork location |
+| Public art | City collection | City collection added | Unavailable: no official art feed found (searched 2026-10-22) | Collection jurisdiction differs from artwork location |
 | Restaurant inspections | SNHD regional source | SNHD regional source | SNHD regional source | Coverage depends on establishment geocoding; no new municipal feed needed |
-| Fire inspections | City inspection feed | Gap: station layers are not inspections | Gap: station layers are not inspections | Do not substitute facilities for inspection records |
-| Calls for service | LVMPD source | Different measure — see Crime reports row | Gap: no verified comparable call feed | LVMPD also covers unincorporated areas; not universal valley police coverage |
-| Crime reports | Use calls-for-service instead | City crime-report feed added (recent years) | Gap: no verified bulk feed | A **report** is not a **call for service**; the two are never combined or compared. Henderson annual volumes differ across years — count-only, no rate |
-| Building permits | Archived permits | Residential permits only | Gap: online permit portal located; bulk feed not verified | Henderson grading/other layers are discovery candidates, not yet harmonized |
-| Business licenses | Existing feed disabled after outage | Existing city registry | Gap: searchable portal located; bulk feed not verified | A licensing-jurisdiction lookup is not a license dataset |
+| Fire inspections | City inspection feed | Unavailable: no public inspection layer found; station layers are not inspections | Unavailable: no public inspection layer found; station layers are not inspections | Do not substitute facilities for inspection records |
+| Calls for service | LVMPD source | Different measure — see Crime reports row | Candidate: city *draft* priority-1 incident layer, Sept 2026 onward (see discovery notes) | LVMPD also covers unincorporated areas; not universal valley police coverage |
+| Crime reports | Use calls-for-service instead | City crime-report feed added (recent years) | Unavailable: no crime-report feed found (searched 2026-10-22) | A **report** is not a **call for service**; the two are never combined or compared. Henderson annual volumes differ across years — count-only, no rate |
+| Building permits | Archived permits | Residential permits integrated; other/grading/park permit layers verified as candidates | Unavailable: interactive permit portal only; no bulk feed found | Henderson grading/other layers are discovery candidates, not yet harmonized |
+| Business licenses | Existing feed disabled after outage | Existing city registry | Unavailable: interactive search only; no bulk feed found | A licensing-jurisdiction lookup is not a license dataset |
 | Short-term rentals | Existing registrations | Existing registrations | Existing approvals via county GIS | Definitions/statuses differ; tract counts are inventory records |
 | Parks | Existing inventory | Existing inventory | Existing county-hosted inventory | Existing county inventory retained; counts use representative points |
-| Road construction | CIP projects + optional NDOT | Transportation CIP lines added + optional NDOT | NDOT state routes only; local-road source gap | Local ROW permits remain incomplete; different source phases retained |
+| Road construction | CIP projects + optional NDOT | Transportation CIP lines added + optional NDOT | NDOT state routes only; unavailable: no local-road project/ROW layer found | Local ROW permits remain incomplete; different source phases retained |
 | Marriage licenses | Regional | Regional | Regional | County license issuance; no invented city/tract breakdown |
 | Tourism & gaming | Regional/reporting-area series | Regional/reporting-area series | Regional/reporting-area series | LVCVA reporting areas do not imply municipal parity |
 | Lake Mead | Shared regional context | Shared regional context | Shared regional context | Reservoir time series, not tract observations |
@@ -85,6 +85,75 @@ mapped tracts. Boundary/overlap ties are assigned once, to the lowest GEOID.
   public application/search access is not yet a verified reproducible bulk feed.
   [Business license information](https://www.cityofnorthlasvegas.com/business/business-licenses/business-license-faqs)
   also points to interactive search; bulk access remains unverified.
+
+## Phase 1 source discovery for the remaining gaps (2026-10-22)
+
+This was a metadata-only search: ArcGIS `?f=json` service/layer metadata, ArcGIS
+Online item search, and `returnCountOnly` queries. No records were fetched or
+displayed. Date spans come from count queries bucketed by date, and nothing below
+is wired into the build. Which candidates to build is Evan's call.
+
+Catalogs searched: the full Henderson `public` folder
+(`maps.cityofhenderson.com/arcgis/rest/services/public`, 49 map services), the
+complete North Las Vegas ArcGIS Online service directory
+(`services5.arcgis.com/Y7XI8T2pEBpNKRDw`, 12 feature services) and the public
+items owned by `CNLV_AGOL_Admin`. ArcGIS Online keyword searches covered NLV
+crime/calls/permits/licenses/art/fire and Henderson fire inspections.
+
+**Verified candidates**
+
+- [Henderson Other Permits](https://maps.cityofhenderson.com/arcgis/rest/services/public/OpenDevPermits/MapServer/2):
+  City of Henderson (EnerGov export), keyless MapServer query, polygon (parcel)
+  geometry. Fields: `CASENUMBER`, `CASEID`, `MODULENAME`, `CASETYPE`,
+  `CASEWORKCLASS`, `WORKCLASS`, `STATUS`, `DESCRIPTION`, `PROJECTNAME`,
+  `APPLICATIONDATE`, `ISSUEDATE`, `EXPIREDATE`, `LASTCHANGEDON`, address lines,
+  plus `OWNER` and `BUSINESSPHONE` (personal/contact fields to drop on ingest).
+  Grain: one permit case per parcel polygon. Count 8,633. By `ISSUEDATE`: 1,022 null,
+  a handful before 2016, about 1,000 a year in 2017–2019, 540–720 a year in 2020–2025,
+  and 450 so far in 2026. Same schema as the integrated residential layer (28,926),
+  so a case may appear in both. Deduplication by `CASENUMBER` and a review of what
+  `CASETYPE` covers (commercial, ROW/encroachment, other) are needed first. No
+  valuation field, no explicit license. **Status: candidate.**
+- [Henderson Grading Permits](https://maps.cityofhenderson.com/arcgis/rest/services/public/OpenDevPermits/MapServer/0)
+  and [Park Permits](https://maps.cityofhenderson.com/arcgis/rest/services/public/OpenDevPermits/MapServer/3):
+  same schema. Grading has 75 records, the last issued in 2024; Park has 5. Both are
+  too small or stale to stand alone. **Status: fold into the Other Permits review or skip.**
+- [North Las Vegas P1_Mapping_Data](https://services5.arcgis.com/Y7XI8T2pEBpNKRDw/arcgis/rest/services/P1_Mapping_Data/FeatureServer/0):
+  City of North Las Vegas ArcGIS Online (`CNLV_AGOL_Admin`), keyless FeatureServer
+  query, WGS84 points, `maxRecordCount` 2000. Fields: `INCIDENTNUMBER`,
+  `INCIDENTDATE`, `INITIALINCIDENTTYPECODE`, `INITIALINCIDENTTYPEDESCRIPTION`,
+  `HIGHCROSSSTREETNUMBER` (block-level location), `WARD`, `WARD_NAME`. Count 9,077
+  with 9,077 distinct incident numbers (one row per incident) and 103 distinct
+  initial type codes. `INCIDENTDATE` runs from 2026-09-29 to 2026-10-20, with the
+  last edit on 2026-10-21. 278 points fall outside the valley envelope (the layer
+  extent reaches 0,0, so some coordinates are missing or zeroed), and 868 have no
+  ward. The only public map using it is titled **"Crime Data Draft"**. There is no
+  description, license or documented retention window. The "initial incident type"
+  fields suggest dispatched police incidents (calls-like, priority 1). They are
+  not crime reports. **Status: candidate, not yet usable.** Before building it,
+  confirm with the city whether it is an official, ongoing or rolling feed, what
+  "P1" means, and whether history is kept. It must never be merged with LVMPD calls.
+
+**Unavailable (searched, nothing suitable)**
+
+- Henderson and North Las Vegas **fire inspections**: neither catalog has an
+  inspection layer. Henderson exposes fire stations/divisions, and NLV exposes fire
+  stations in `CNLV_General`. Facilities are not inspections.
+- North Las Vegas **public art**: no art layer in the CNLV catalog or in ArcGIS
+  Online search results.
+- North Las Vegas **crime reports**: no report feed. The P1 layer above is
+  incidents, not reports.
+- Henderson **calls for service**: no dispatch/CAD layer. Henderson publishes crime
+  reports only (`OpenDataPublicSafety`, plus an older `crimes` service with
+  2014–2023 and current/yesterday layers).
+- North Las Vegas **building permits** and **business licenses**: no layer in the
+  CNLV catalog. Only the interactive city portals linked above exist.
+- North Las Vegas **local road projects / ROW permits**: no CIP, construction or
+  ROW layer in the CNLV catalog. NDOT state routes remain the only road source.
+- NLV-named layers hosted by the City of Las Vegas Office of GIS
+  (`services1.arcgis.com/F1v0ufATbBQScMtY`: NLV dispensaries, resort hotels,
+  zoning, hydrants, short-term rentals) are not published by North Las Vegas.
+  None of them fills a gap topic (dispensary locations are not a license dataset).
 
 Live validation processes source data without displaying records. Human review
 of source meaning, coverage, and plausible totals remains separate from automated

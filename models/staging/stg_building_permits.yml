@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: stg_building_permits
+    description: >
+      City of Las Vegas archived building permits, one row per permit
+      application, typed from the ArcGIS layer.
+
+      Severity policy (DECISIONS 2026-09-26): all values are feed passthrough,
+      so tests are `warn` signals that never abort the production build.
+    columns:
+      - name: application_number
+        description: "Permit application number (feed passthrough; uniqueness not verified on live data)."
+        tests:
+          - not_null:
+              config:
+                severity: warn
+          - unique:
+              config:
+                severity: warn
+      - name: valuation
+        description: "Declared project valuation in USD."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              config:
+                severity: warn

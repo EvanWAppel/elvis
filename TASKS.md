@@ -44,10 +44,13 @@ coverage gaps. Preserve the snapshot architecture and current visual identity.
       integration from verified current source availability.
 - [x] Audit existing Henderson/North Las Vegas parks and rental integrations,
       Henderson permits/licenses, and regional feeds before adding duplicates.
-- [ ] Find and verify official public sources for missing city/topic pairs,
+- [x] Find and verify official public sources for missing city/topic pairs,
       including local road projects/ROW permits. Record publisher, endpoint,
       access/reuse requirements, fields, grain, dates, location precision, and
       source health. Record unavailable or incompatible sources with reasons.
+      (2026-10-22, metadata/counts only: see "Phase 1 source discovery" in
+      `docs/COVERAGE.md`. Candidates are Henderson Other Permits and the NLV
+      draft P1 incident layer. Choosing what to build is Evan's call; see `BLOCKED.md`.)
 - [x] Define comparable measures and reporting windows per topic; preserve
       differences such as calls versus crimes and missing permit valuations.
       Assess regional/station topics without inventing tract or city detail.
@@ -123,17 +126,23 @@ Direction & rationale in `DECISIONS.md`. Branch: `redesign/neon-strip`.
 Governing principle: **flash on the chrome, calm in the data** (legibility first).
 
 ### Phase 1 — Core palette flip (reskins ~80% at once)
-_Code items shipped in 5376b46 (config.toml, explorer.css tokens, light overrides removed,
-`atlas_chart` dark). Checked off 2026-10-17 after confirming on `main`._
+Implemented in `5376b46` (purple later tuned to `#9866ff` in `05c841f`); boxes
+ticked and verified 2026-10-05 on branch `redesign-neon-phase1`.
 - [x] `.streamlit/config.toml`: `base="dark"`, neon `primaryColor`, dark
       backgrounds, warm-white `textColor`.
 - [x] `explorer.css` `:root`: flip tokens to night-sky palette (bg `#0b0a14`,
       panel `#16141f`, text `#f4f1e9`, accents pink/cyan/gold/purple).
-- [x] `explorer.css` lines 3–13: remove/invert the "force light in dark sessions"
-      overrides — the app now embraces dark.
+- [x] `explorer.css` lines 3–13: the "force light in dark sessions" overrides
+      now pin text to the dark palette tokens instead.
 - [x] `ui.py:atlas_chart()`: dark background + warm-white labels + dim grid +
       neon categorical range.
-- [ ] Verify every page renders legibly on dark (local run + curl; no browser).
+- [x] Verify every page renders legibly on dark (no browser):
+      `tests/python/test_theme.py` locks config ↔ CSS tokens ↔ `ui.py` palette
+      and WCAG AA (≥4.5) for every text/surface pairing the app uses; a one-off
+      (uncommitted) `AppTest` run rendered all 17 pages on the local warehouse
+      with no exceptions; local
+      `streamlit run` serves `/_stcore/health` ok and `/` 200. Visual
+      eyeballing of the deployed site is left to Evan.
 
 ### Phase 2 — Neon chrome
 - [x] Add Monoton font import; apply to `.elvis-brand` wordmark + the cover
@@ -181,6 +190,13 @@ _Code items shipped in 5376b46 (config.toml, explorer.css tokens, light override
       comment in crime.py.
 
 ## Historical deploy failure (upstream outage, 2026-08-15)
+
+> **Superseded (2026-10-22 tidy).** The open question below ("Not decided yet")
+> was settled by `DECISIONS.md` 2026-10-04, "Flaky upstream sources: retry with
+> backoff, then fail loudly": transient ArcGIS failures retry 3 times with
+> backoff, then the build fails loudly and the previous deployment keeps
+> serving. Option (b), tolerating an empty source, was rejected. The empty CLV
+> license feed itself stays disabled (see `BLOCKED.md`). Kept as history only.
 
 Current branch: the failing CLV license feed and dependent models are disabled;
 the full local build passes. The incident below is historical, not a current
@@ -239,10 +255,24 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
       <1.5s; negative test (null latitude fixture) turns it red as required;
       `ruff check .` clean repo-wide (fixed a stray unused import; excluded the
       scratch notebook via `ruff.toml`).
-- [ ] Push branch + open PR so the checks actually run on GitHub (needs Evan —
-      not pushing without the ask).
-- [ ] Expand seed coverage beyond the 2 starter domains (restaurants, crime,
+- [x] Push branch + open PR so the checks actually run on GitHub. (Closed
+      2026-10-22: stale. Evan authorized PR pushes (see `BLOCKED.md`), and
+      `ci.yml` has run on every pull request since, e.g. PRs #31–#33.)
+- [x] Expand seed coverage beyond the 2 starter domains (restaurants, crime,
       permits…) as P2 adds tests — CI currently gates only the seeded lineages.
+      (Done 2026-10-24: synthetic `crime_calls`, `building_permits` and
+      `snhd_inspections`/`_establishments`/`_inspection_types`/`_violations`
+      seeds, all columns typed in `dbt_project.yml`; CI `--select` extended.
+      Hermetic build 49 → 111 nodes PASS; `tests/python/test_seed_coverage.py`
+      guards registration and CI coverage.)
+- [x] `uv run ty check` at zero diagnostics (was 37) and gated in CI's lint job
+      and the prek hooks. (Done 2026-10-24: Altair charts call `.encode()` before
+      `.mark_*()` because ty can't type altair's signature-copying `mark_*`
+      helpers; the layered Lake Mead chart passes `mark=alt.MarkDef(...)` instead.
+      Restaurants reads `event["selection"]["rows"]` (TypedDict keys). The
+      legacy `main.py`/`__init__.py`/`scratch.ipynb` are excluded in `[tool.ty.src]`.
+      One reasoned `ty: ignore` on the intentional `socket.getaddrinfo`
+      monkeypatch. Fixed test-first: `_clv_water_points` let `(lon, None)` through.)
 
 ### P2 — Data-quality test suite (`dbt_utils` / `dbt_expectations`)
 - [x] Add `packages.yml` (`dbt_utils` 1.x, `dbt_expectations` 0.10.x, pinned via
@@ -265,8 +295,11 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
 - [x] Verified hermetically (deps→seed→build): 29 tests PASS. TDD negatives:
       bogus `status` and off-valley latitude each **warn** (build still succeeds);
       bad `data_source` **errors**. `ruff` clean; local warehouse restored.
-- [ ] Extend the same test types to more domains as seed coverage grows (see the
+- [x] Extend the same test types to more domains as seed coverage grows (see the
       open P1 seed-expansion item) — CI still gates only the 2 seeded lineages.
+      (Done 2026-10-24 for crime, CLV permits and SNHD restaurants; severity per
+      DECISIONS 2026-10-24 draft. TDD negatives: a null inspection
+      `permit_number` fails the build; an hour of 25 only warns.)
 - [ ] (Optional, needs Evan to inspect live data) Harden `status`/coordinate
       tests to hard errors by enumerating the real distinct values + bounds.
 
@@ -283,9 +316,9 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
       section) and the README ("Live" section) to
       <https://evanwappel.github.io/elvis/>. Did NOT touch the hand-built site
       otherwise.
-- [ ] **Blocked on Evan:** enable GitHub Pages (source = GitHub Actions) so the
-      deploy job can publish — see `BLOCKED.md`. Until then the workflow builds but
-      the deploy step fails.
+- [x] Enable GitHub Pages (source = GitHub Actions) so the deploy job can
+      publish. (Closed 2026-10-22: stale. Evan enabled Pages on 2026-09-27 and
+      <https://evanwappel.github.io/elvis/> went live; resolved in `BLOCKED.md`.)
 - [ ] (Bonus, needs Evan's voice/register) `docs/ANALYTICS-ENGINEERING.md`
       explaining the layering + how an AI agent navigates the dbt metadata
       (primer P5 bonus for Samsara/dbt Labs). Deferred — needs Evan's input.
@@ -339,9 +372,12 @@ P6 freshness/exposures, P7 incremental + snapshot. Honesty guardrails in §6.
       past-end projects. Snapshot counts: 382 → 160 current (222 hidden = 135
       Closed + 87 past end date, incl. 29 lapsed `Construction`-phase). ruff + ty
       clean.
-- [ ] Henderson / North Las Vegas local surface-street construction: now tracked
-      in the planned valley expansion above (source availability unverified).
-      Additional unincorporated Clark County ROW coverage remains optional.
+- [x] Henderson / North Las Vegas local surface-street construction. (Closed
+      2026-10-22 as a duplicate: tracked by Phase 1 "Find and verify official
+      public sources… including local road projects/ROW permits" and the Phase 4
+      batch items above. Henderson's transportation CIP adapter already shipped
+      in the first increment.) Additional unincorporated Clark County ROW
+      coverage remains optional.
 - [x] Add the Road Construction dataset to the README dataset list. (Already
       done in fb0ca12 — the Datasets paragraph lists CLV CIP + Nevada 511/NDOT
       with the keyless/`NVROADS_API_KEY` note. Item was stale.)

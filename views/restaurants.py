@@ -115,7 +115,7 @@ event = st.dataframe(
 )
 
 # --- Drill-down: selected restaurant's history + violations ---
-selected = event.selection.rows
+selected = event["selection"]["rows"]
 if not selected:
     st.info(
         "Select a restaurant above to see its full inspection history and the "
@@ -180,7 +180,7 @@ else:
             },
         )
 
-        hist_selected = hist_event.selection.rows
+        hist_selected = hist_event["selection"]["rows"]
         if hist_selected and hist_selected[0] < len(history):
             h = history.iloc[hist_selected[0]]
             serial = _sql_literal(h["serial_number"])
@@ -234,12 +234,12 @@ grades = query(
 )
 grade_chart = (
     alt.Chart(grades)
-    .mark_bar(color=PINK)
     .encode(
         x=alt.X("grade:N", sort="-y", title="Grade"),
         y=alt.Y("restaurants:Q", title="Establishments"),
         tooltip=["grade", "restaurants"],
     )
+    .mark_bar(color=PINK)
 )
 atlas_chart(grade_chart, width="stretch")
 
@@ -260,12 +260,12 @@ top_violations = query(
 top_violations["label"] = top_violations["description"].str.slice(0, 70)
 violations_chart = (
     alt.Chart(top_violations)
-    .mark_bar(color=CYAN)
     .encode(
         x=alt.X("occurrences:Q", title="Occurrences"),
         y=alt.Y("label:N", sort="-x", title=None),
         tooltip=["violation_code", "description", "occurrences"],
     )
+    .mark_bar(color=CYAN)
 )
 atlas_chart(violations_chart, width="stretch")
 
@@ -292,11 +292,13 @@ lo, hi = int(years.min()), int(years.max())
 start, end = st.slider("Year range", lo, hi, (lo, hi))
 mask = (years >= start) & (years <= end)
 atlas_chart(
-    alt.Chart(compliance[mask]).mark_line().encode(
+    alt.Chart(compliance[mask])
+    .encode(
         x=alt.X("inspection_month:T", title=None),
         y=alt.Y("compliance_pct:Q", title="Compliant inspections (%)"),
         tooltip=["inspection_month:T", "compliance_pct:Q"],
-    ),
+    )
+    .mark_line(),
     width="stretch",
 )
 st.caption(

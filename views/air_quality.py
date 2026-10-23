@@ -43,7 +43,6 @@ monthly = query(
 st.subheader("Average AQI per month")
 trend = (
     alt.Chart(monthly)
-    .mark_line()
     .encode(
         x=alt.X("observed_month:T", title=None),
         y=alt.Y("avg_aqi:Q", title="Avg AQI"),
@@ -54,6 +53,7 @@ trend = (
             alt.Tooltip("avg_aqi:Q", title="Avg AQI"),
         ],
     )
+    .mark_line()
 )
 atlas_chart(trend, width="stretch")
 
@@ -77,7 +77,6 @@ cats = query(
 order = ["Good", "Moderate", "Unhealthy (sensitive)", "Unhealthy+"]
 cat_chart = (
     alt.Chart(cats)
-    .mark_bar()
     .encode(
         x=alt.X("observed_year:O", title=None),
         y=alt.Y("days:Q", title="Days"),
@@ -91,5 +90,6 @@ cat_chart = (
         ),
         tooltip=["observed_year", "category", "days"],
     )
+    .mark_bar()
 )
 atlas_chart(cat_chart, width="stretch")

@@ -42,7 +42,6 @@ monthly = query(
 st.subheader("Permits issued per month")
 permits_line = (
     alt.Chart(monthly)
-    .mark_area(color=CYAN, opacity=0.7)
     .encode(
         x=alt.X("issue_month:T", title=None),
         y=alt.Y("permit_count:Q", title="Permits"),
@@ -51,13 +50,13 @@ permits_line = (
             alt.Tooltip("permit_count:Q", title="Permits", format=","),
         ],
     )
+    .mark_area(color=CYAN, opacity=0.7)
 )
 atlas_chart(permits_line, width="stretch")
 
 st.subheader("Construction valuation per month")
 val_line = (
     alt.Chart(monthly)
-    .mark_line(color=GREEN)
     .encode(
         x=alt.X("issue_month:T", title=None),
         y=alt.Y("total_valuation:Q", title="Valuation ($)", axis=alt.Axis(format="~s")),
@@ -66,6 +65,7 @@ val_line = (
             alt.Tooltip("total_valuation:Q", title="Valuation", format="$,.0f"),
         ],
     )
+    .mark_line(color=GREEN)
 )
 atlas_chart(val_line, width="stretch")
 
@@ -81,7 +81,6 @@ by_type = query(
 st.subheader("Permits by application type")
 type_chart = (
     alt.Chart(by_type)
-    .mark_bar(color=CYAN)
     .encode(
         x=alt.X("permit_count:Q", title="Permits"),
         y=alt.Y("application_type:N", sort="-x", title=None),
@@ -91,6 +90,7 @@ type_chart = (
             alt.Tooltip("total_valuation:Q", title="Valuation", format="$,.0f"),
         ],
     )
+    .mark_bar(color=CYAN)
 )
 atlas_chart(type_chart, width="stretch")
 st.dataframe(by_type, width="stretch", hide_index=True)
@@ -114,7 +114,6 @@ hen_monthly = query(
 )
 hen_line = (
     alt.Chart(hen_monthly)
-    .mark_area(color=GOLD, opacity=0.7)
     .encode(
         x=alt.X("issue_month:T", title=None),
         y=alt.Y("permit_count:Q", title="Permits"),
@@ -123,6 +122,7 @@ hen_line = (
             alt.Tooltip("permit_count:Q", title="Permits", format=","),
         ],
     )
+    .mark_area(color=GOLD, opacity=0.7)
 )
 atlas_chart(hen_line, width="stretch")
 
@@ -137,11 +137,11 @@ hen_types = query(
 )
 hen_type_chart = (
     alt.Chart(hen_types)
-    .mark_bar(color=GOLD)
     .encode(
         x=alt.X("permit_count:Q", title="Permits"),
         y=alt.Y("case_type:N", sort="-x", title=None),
         tooltip=["case_type", alt.Tooltip("permit_count:Q", title="Permits", format=",")],
     )
+    .mark_bar(color=GOLD)
 )
 atlas_chart(hen_type_chart, width="stretch")

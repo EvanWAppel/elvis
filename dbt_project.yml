@@ -60,3 +60,71 @@ seeds:
         thumb_url: varchar
         latitude: double
         longitude: double
+    # Seed expansion (P1/P2): synthetic rows only, never copied from the live
+    # feeds. Types mirror what build_warehouse.py loads: ArcGIS layers keep
+    # numeric fields numeric and normalize date fields to strings (fetch_layer);
+    # the SNHD bundle is read as all-string columns (_read_delimited /
+    # _read_violations), so every SNHD column is varchar.
+    crime_calls:
+      +column_types:
+        IncidentNumber: varchar
+        IncidentDate: varchar
+        Classification: varchar
+        IncidentTypeDescription: varchar
+        Address: varchar
+        Disposition: varchar
+        Weekday: varchar
+        Hour: bigint
+        Month: bigint
+        Year: bigint
+        ZipCode: varchar
+        Latitude: double
+        Longitude: double
+    building_permits:
+      +column_types:
+        Application_Number: bigint
+        Application_Type: varchar
+        Work_Type: varchar
+        Applicant: varchar
+        Valuation: double
+        Issue_Date: varchar
+        Location: varchar
+    snhd_inspections:
+      +column_types:
+        serial_number: varchar
+        permit_number: varchar
+        facility_id: varchar
+        inspection_date: varchar
+        inspection_time: varchar
+        employee_id: varchar
+        inspection_type_id: varchar
+        inspection_demerits: varchar
+        inspection_grade: varchar
+        permit_status: varchar
+        inspection_result: varchar
+        violations: varchar
+        record_updated: varchar
+    snhd_inspection_types:
+      +column_types:
+        inspection_type_id: varchar
+        inspection_type: varchar
+    snhd_establishments:
+      +column_types:
+        permit_number: varchar
+        restaurant_name: varchar
+        location_name: varchar
+        address: varchar
+        city_name: varchar
+        zip_code: varchar
+        latitude: varchar
+        longitude: varchar
+        current_grade: varchar
+        current_demerits: varchar
+        date_current: varchar
+        previous_grade: varchar
+        record_status: varchar
+    snhd_violations:
+      +column_types:
+        violation_code: varchar
+        violation_demerits: varchar
+        violation_description: varchar

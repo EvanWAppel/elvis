@@ -32,3 +32,8 @@ dev = [
     "ruff>=0.16.2",
     "ty>=0.0.72",
 ]
+
+[tool.ty.src]
+# Legacy scratch files that import polars/feynman, which aren't dependencies.
+# They aren't part of the app; kept (not deleted) until Evan decides their fate.
+exclude = ["./main.py", "./__init__.py", "./scratch.ipynb"]

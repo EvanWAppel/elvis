@@ -143,15 +143,29 @@ models:
       - name: compliance_rate_pct
         data_type: double
         description: "compliant_count / total_inspections as a percentage (null when no inspections)."
+        tests:
+          # Computed ratio of two counts from the same rows: always 0-100 (hard).
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
       - name: failure_rate_pct
         data_type: double
         description: "failed_inspections / total_inspections as a percentage — the governed restaurant_failure_rate metric (null when no inspections)."
+        tests:
+          # Computed ratio of two counts from the same rows: always 0-100 (hard).
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
 
   - name: mart_inspections_over_time
     description: "Monthly inspection counts and compliance rates by inspection type."
     config:
       contract:
         enforced: true
+    tests:
+      # Grain is the GROUP BY: structural, so a hard error.
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [inspection_month, inspection_type]
     columns:
       - name: inspection_month
         data_type: timestamp
@@ -178,6 +192,11 @@ models:
       - name: compliance_rate_pct
         data_type: double
         description: "compliant_count / inspection_count as a percentage."
+        tests:
+          # Computed ratio of two counts from the same rows: always 0-100 (hard).
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
 
   - name: mart_inspection_history
     description: "One row per inspection, keyed on permit_number for per-restaurant drill-down (date, type, grade, result, demerits, violation count)."
@@ -377,6 +396,10 @@ models:
     config:
       contract:
         enforced: true
+    tests:
+      # Grain is the GROUP BY: structural, so a hard error.
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [classification, incident_type]
     columns:
       - name: classification
         data_type: varchar
@@ -395,6 +418,10 @@ models:
     config:
       contract:
         enforced: true
+    tests:
+      # Grain is the GROUP BY: structural, so a hard error.
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [weekday, hour_of_day]
     columns:
       - name: weekday
         data_type: varchar
@@ -419,6 +446,7 @@ models:
         description: "First day of the calendar month (timestamp)."
         tests:
           - not_null
+          - unique
       - name: incident_count
         data_type: bigint
         description: "Number of LVMPD calls for service in the month."
@@ -450,9 +478,18 @@ models:
       - name: latitude
         data_type: double
         description: "WGS84 latitude (bounded to the valley)."
+        tests:
+          # The model's own WHERE clause enforces these bounds: code-controlled (hard).
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 35.8
+              max_value: 36.4
       - name: longitude
         data_type: double
         description: "WGS84 longitude (bounded to the valley)."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -115.5
+              max_value: -114.9
 
   - name: mart_permits_monthly
     description: "City of Las Vegas building permits per month with total and average valuation."
@@ -465,6 +502,7 @@ models:
         description: "First day of the month the permits were issued (timestamp)."
         tests:
           - not_null
+          - unique
       - name: permit_count
         data_type: bigint
         description: "City of Las Vegas building permits issued in the month."
@@ -486,6 +524,7 @@ models:
         description: "City of Las Vegas permit application type ('Unknown' when missing)."
         tests:
           - not_null
+          - unique
       - name: permit_count
         data_type: bigint
         description: "Number of permits of this application type across all loaded years."

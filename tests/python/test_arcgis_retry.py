@@ -1,5 +1,6 @@
 """ArcGIS fetches retry transient server errors, then fail loudly (no silent gaps)."""
 
+import email.message
 import http.client
 import logging
 import urllib.error
@@ -14,7 +15,7 @@ PAGE = {"features": [{"attributes": {"id": 1}, "geometry": None}]}
 
 
 def _http_error(code):
-    return urllib.error.HTTPError(URL, code, "err", {}, None)
+    return urllib.error.HTTPError(URL, code, "err", email.message.Message(), None)
 
 
 def test_retries_http_5xx_then_succeeds(fake_arcgis):

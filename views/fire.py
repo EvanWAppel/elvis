@@ -105,12 +105,12 @@ st.caption("Properties with the most fire-prevention violations written, all-tim
 top15 = worst.head(15)
 worst_chart = (
     alt.Chart(top15)
-    .mark_bar(color=GOLD)
     .encode(
         x=alt.X("total_violations:Q", title="Total violations"),
         y=alt.Y("property_name:N", sort="-x", title=None),
         tooltip=["property_name", "address", "unit_count", "total_violations"],
     )
+    .mark_bar(color=GOLD)
 )
 atlas_chart(worst_chart, width="stretch")
 
