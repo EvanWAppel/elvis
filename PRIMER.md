@@ -6,74 +6,37 @@
 (public sources → DuckDB → dbt → Altair/PyDeck), and the portfolio's dbt-depth
 analytics-engineering flagship. It also hosts "Ask Tiresias", a text-to-SQL page.
 
-**Current state (main @ 865b888, 2026-10-22).**
-- Tests on `main`: `uv run pytest tests/python -q` gives **40 passed, 6 skipped**
-  (the skips need local dbt artifacts). `uv run ruff check .` is clean. The
-  hermetic dbt build (CI's seeds + `--select` list from `.github/workflows/ci.yml`)
-  gives **49/49 PASS**. `uv run ty check` reports **37 diagnostics**, so it is not
-  clean yet.
+**Current state (main @ b3c798d, 2026-10-23).**
+- Tests on `main` (measured 2026-10-24): `uv run pytest tests/python -q` gives
+  **149 passed, 6 skipped** (the skips need local dbt artifacts). `uv run ruff check .`
+  and `uv run ty check` are both clean, and CI's lint job now runs `ty check`.
+  The hermetic dbt build (CI's seeds + `--select` list from `.github/workflows/ci.yml`)
+  now also covers the crime, permits and SNHD lineages; its node count was not
+  re-measured here (it was 49/49 PASS on 2026-10-22, before those seeds were added).
 - **`main` auto-deploys to Railway** (elvis.evanappel.me). A merge is a deploy.
-- **In flight, not merged:** branch `redesign-neon-phase1` (pushed, **no PR yet**).
-  It adds `tests/python/test_theme.py` (a contract test covering theme tokens and
-  WCAG AA contrast) and ticks off redesign Phase 1 in TASKS/BLOCKED. Don't redo
-  that work. The local checkout `~/Documents/portfolio/geographic/elvis` sits on
-  it, so leave that checkout alone and work in a worktree.
-- No open PRs. Tract-map increment, Henderson crime, Tiresias v0.1.0 and the
-  ArcGIS retry are all merged.
+- No open PRs. PR #34 (weekend 2026-10-24) merged the `redesign-neon-phase1` branch
+  (theme contract test) and all six weekend tasks below. PR #35 bumped Tiresias to
+  v0.1.1 and confirmed the v0.1.0 ledger entry and key guardrail.
 - There is no repo `CLAUDE.md`. The house rules come from `~/Documents/portfolio/CLAUDE.md`.
 - `RECRUITER-PRIMER.md` is gitignored. It exists only in the main checkout, so read it there if you need it.
 
-### Autonomous tasks, in order
+### Autonomous tasks
 
-Each task gets its own branch off `origin/main` and opens one PR. Never merge.
+**None queued.** Every task from the 2026-10-24 weekend list merged in PR #34:
+1. ~~PR for `redesign-neon-phase1`~~ (merged in #34).
+2. ~~TASKS.md tidy~~ (#34).
+3. ~~Unit tests for the `build_warehouse.py` pure helpers~~ (`tests/python/test_build_helpers.py`, #34;
+   it also fixed water points whose centroid lacks a latitude).
+4. ~~Expand hermetic CI seed coverage~~ (crime, permits, SNHD seeds + dbt tests, #34).
+5. ~~Bring `ty check` to zero and gate it in CI~~ (#34).
+6. ~~Phase 1 source discovery, metadata only~~ (`docs/COVERAGE.md`, #34). Choosing which
+   candidates to build is Evan's call and sits in `BLOCKED.md`.
 
-1. **PR for `redesign-neon-phase1`** (S). Rebase it onto `origin/main`, then run
-   pytest and ruff, then open the PR. *Done:* the PR is open and CI is green.
-   *Test:* `uv run pytest tests/python -q && uv run ruff check .`
-2. **TASKS.md tidy** (S). Close or annotate the stale items:
-   - P1 "Push branch + open PR": CI already runs on PRs.
-   - P5 "Blocked on Evan: enable GitHub Pages": Pages went live 2026-09-27.
-   - The "Historical deploy failure" section: superseded by DECISIONS 2026-10-04
-     (retry with backoff, then fail loudly).
-   - The Road Construction "Henderson/NLV" item: it duplicates Phase 4.
-
-   Edit docs only, and leave the redesign Phase 1 section alone (task 1 changes it).
-   *Done:* every open `- [ ]` in TASKS.md is actually open. *Test:* none (docs).
-3. **Unit tests for the pure helpers in `build_warehouse.py`** (M). None are tested
-   today: `_decode_polyline`, `_iso_date`, `_epoch_to_date`, `_nv_clean`,
-   `_line_path`, `_path_centroid`, `_centroid`, `_point_in_ring`, `_parse_lvcva`
-   (use a synthetic xlsx/bytes fixture) and `_read_delimited`. Use synthetic inputs
-   only. Put shared fixtures in `conftest.py`. Fix a real bug only test-first, and
-   say so in the PR. *Done:* a new `tests/python/test_build_helpers.py` passes
-   with no network access. *Test:* `uv run pytest tests/python -q`
-4. **Expand hermetic CI seed coverage** (TASKS P1/P2 open items) (L). Add
-   **synthetic** seed CSVs for 2–3 more lineages (suggested: `crime_calls`,
-   `building_permits`, `snhd_*`). Take the column names and types from
-   `models/staging/sources.yml`, the staging SQL and `build_warehouse.py`, never
-   from real data. Register them in `dbt_project.yml` with `+column_types`. Add
-   `not_null`/`unique`/`accepted_values` tests, using severity by value provenance
-   (DECISIONS 2026-09-26). Extend CI's `--select`.
-   *Done:* the hermetic build is green with more nodes, and a TDD negative fixture
-   turns it red. *Test:* `uv run dbt deps --profiles-dir . && uv run dbt seed --profiles-dir . && uv run dbt build --profiles-dir . --select <ci list>`.
-   Run this **only in a worktree with no `vegas.duckdb`**. Never seed a real warehouse.
-5. **Bring `ty check` to zero on app code** (M). Of the 37 diagnostics, about 25 are
-   Altair `.encode` false positives in `views/*.py`. Others are in
-   `build_warehouse.py` (`_ipv4_first`, HTTPError), `tests/python/*` and the
-   `DataframeState.selection` calls. The legacy files `main.py`, `__init__.py` and
-   `scratch.ipynb` import polars and feynman, which aren't installed. **Exclude**
-   them in a `[tool.ty]` section of `pyproject.toml` and do not delete them (see
-   the NOT list). Prefer real fixes over `# ty: ignore`; where an ignore is needed,
-   give the reason on the same line.
-   *Done:* `uv run ty check` exits 0, and you may add a `ty` step to CI's lint job.
-   *Test:* `uv run ty check && uv run pytest tests/python -q`
-6. **Phase 1 source discovery, metadata only** (M). For the city/topic pairs still
-   missing in `docs/COVERAGE.md`, look for official Henderson and North Las Vegas
-   endpoints. Use **ArcGIS `?f=json` metadata and `returnCountOnly` only**, and
-   never fetch or print records. Record publisher, endpoint, fields, grain,
-   date span and status, or record the reason a pair is unavailable. Don't wire
-   any new source into the build; picking which sources to build is Evan's call.
-   *Done:* the COVERAGE.md gaps each have a verified-source or unavailable entry.
-   *Test:* none (docs).
+The open `- [ ]` items left in `TASKS.md` are Evan-owned (visual/source review, ledger
+confirmation, live-data hardening, the analytics-engineering doc), Phase 4 source batches
+that wait on his Phase 1 source pick in `BLOCKED.md`, or Phase 5 release validation.
+No new autonomous list has been written; check `BLOCKED.md` and `TASKS.md` (and ask Evan)
+before starting anything new.
 
 ### House rules (from portfolio CLAUDE.md, ROCRLL)
 - Use uv for everything (`uv run …`). Add dependencies with `uv add` or
