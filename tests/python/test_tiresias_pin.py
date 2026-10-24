@@ -5,12 +5,13 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-# v0.1.1: CTE-scope allowlist bypass fix + locked-down DuckDB connection.
-EXPECTED_COMMIT = "0ae91238f19070d6453762dee831d110d0f2e5f9"
+# v0.1.2: settings/introspection function ban in the SQL guard + rejection text
+# hidden in the public trace panel (on top of v0.1.1's CTE-scope fix).
+EXPECTED_COMMIT = "6d5de45cec83cb1f912263be0f968c5f38d76d75"
 ARCHIVE = f"https://github.com/EvanWAppel/tiresias/archive/{EXPECTED_COMMIT}.zip"
 
 
-def test_pyproject_pins_tiresias_v0_1_1():
+def test_pyproject_pins_tiresias_v0_1_2():
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
     assert pyproject["tool"]["uv"]["sources"]["tiresias"]["url"] == ARCHIVE
 

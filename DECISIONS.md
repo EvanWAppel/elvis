@@ -308,3 +308,18 @@ guardrail checklist is satisfied; recorded under `[keys]` in `project.toml`.
 
 **Rejected:** *staying on v0.1.0*, which is exposed to the allowlist bypass on a
 public, unauthenticated page.
+
+## 2026-10-24 — Bump Tiresias to v0.1.2; keep rejection text hidden (drafted by Claude, awaiting Evan's confirmation)
+
+**Chose:** pin Tiresias `v0.1.2` (commit `6d5de45`: the SQL guard bans settings,
+environment and introspection functions such as `current_setting`, `getenv`,
+`duckdb_*` and `pragma_*`; the chat trace panel hides guard and DuckDB rejection
+text by default) by the same commit-archive URL in `pyproject.toml` (via `uv add`),
+`uv.lock` and `requirements.txt`, still guarded by `tests/python/test_tiresias_pin.py`.
+`tiresias.yml` leaves `chat.show_rejections` unset, so it takes the library default
+(`false`): the page is public and unauthenticated, so error text that can leak
+schema detail stays hidden.
+
+**Rejected:** *setting `chat.show_rejections: true`*, which brings back the full
+rejection text but shows it to anonymous visitors; *staying on v0.1.1*, which lets a
+model-written query read DuckDB settings.
