@@ -38,3 +38,12 @@ key_confirmed_not_personal = "2026-10-23"  # personal-key guardrail checklist (i
 
 [platform]
 done = []
+
+[commands]
+dev = "dbt run"
+test = "dbt test"
+
+[meta]
+description = "Las Vegas open-data explorer (Streamlit + DuckDB + dbt)"
+language = "dbt"
+tags = ["portfolio"]
