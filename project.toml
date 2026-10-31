@@ -40,10 +40,19 @@ key_confirmed_not_personal = "2026-10-23"  # personal-key guardrail checklist (i
 done = []
 
 [commands]
+lint = "uv run ruff check . && uv run ty check"
+setup = "uv sync"
 dev = "dbt run"
-test = "dbt test"
+test = "uv run pytest tests/python -q"
 
 [meta]
 description = "Las Vegas open-data explorer (Streamlit + DuckDB + dbt)"
 language = "dbt"
 tags = ["portfolio"]
+
+[fleet]                     # joined 2026-10-31 (_system D-051); also has the `fleet` topic
+component = "elvis"
+agents = ["claude", "codex"]
+default_model = "sonnet"
+default_branch = "main"
+max_minutes = 45
