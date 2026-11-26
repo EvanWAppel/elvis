@@ -9,18 +9,18 @@ status = "active"
 repo = "EvanWAppel/elvis"
 visibility = "public"         # gh repo view, 2026-10-22
 on_site = true                # card in enki data/projects.ts (id "elvis")
-verified = false
+verified = true               # Evan confirmed service + auth target, EA-37 (2026-11-01)
 
 [deploy]
 host = "railway"              # Dockerfile; main auto-deploys
-services = ["elvis"]          # Railway project/service "elvis" per BLOCKED.md; origin elvis-production-e07a.up.railway.app
+services = ["elvis"]          # Railway project/service "elvis"; Evan confirmed EA-37 (2026-11-01); origin elvis-production-e07a.up.railway.app
 domain = "elvis.evanappel.me" # HTTP 200, 2026-10-22
 origin_urls_closed = false    # elvis-production-e07a.up.railway.app still serves (HTTP 200, 2026-10-22)
 
 [auth]
 scheme = "none"               # no auth code in the app; fully public explorer
 access_list = ""
-target = "unknown"            # no recorded decision on Cloudflare Access for elvis
+target = "none"               # stays a public portfolio demo; Evan chose option A, EA-37 (2026-11-01)
 
 [data]
 db = "duckdb"                 # vegas.duckdb baked at Docker build time
