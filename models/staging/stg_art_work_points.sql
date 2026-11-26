@@ -23,8 +23,8 @@ parsed as (
 
         -- Cleaned, trimmed, non-empty parts (DuckDB lists are 1-indexed).
         list_filter(
-            list_transform(string_split(description, '|'), x -> trim(x)),
-            x -> x <> ''
+            list_transform(string_split(description, '|'), lambda x: trim(x)),
+            lambda x: x <> ''
         ) as parts,
 
         -- 1-based index of the (last) part that contains a "Ward N" token.
@@ -32,12 +32,12 @@ parsed as (
             list_filter(
                 list_transform(
                     list_filter(
-                        list_transform(string_split(description, '|'), x -> trim(x)),
-                        x -> x <> ''
+                        list_transform(string_split(description, '|'), lambda x: trim(x)),
+                        lambda x: x <> ''
                     ),
-                    (x, i) -> case when regexp_matches(x, 'Ward\s+\d+') then i end
+                    lambda x, i: case when regexp_matches(x, 'Ward\s+\d+') then i end
                 ),
-                x -> x is not null
+                lambda x: x is not null
             )
         ) as ward_pos,
 
