@@ -323,3 +323,42 @@ schema detail stays hidden.
 **Rejected:** *setting `chat.show_rejections: true`*, which brings back the full
 rejection text but shows it to anonymous visitors; *staying on v0.1.1*, which lets a
 model-written query read DuckDB settings.
+
+## 2026-11-25 — Railway builds broke on DuckDB 2.0: fix the SQL, don't pin below 2 (drafted by Claude, awaiting Evan's confirmation)
+
+**Chose:** rewrite the arrow lambdas in `stg_art_work_points` (`x -> expr`) to
+`lambda x: expr`, which DuckDB has accepted since 1.3 and 2.0 requires. Add
+`tests/python/test_sql_syntax.py` to stop the old form coming back. The Dockerfile
+installs `duckdb>=1.5` unpinned from `requirements.txt`, so Railway picked up 2.0.1
+while the lockfile stayed on 1.5.5. Every deploy from 2026-10-24 through 2026-11-24
+failed in `dbt build`, and the site kept serving the 2026-10-17 image (Tiresias
+v0.1.0). Verified: a full `dbt build` and `dbt docs generate` pass under 2.0.1
+(155 pass, 0 errors), and the Python suite passes on both 1.5.5 and 2.0.1. One test
+used `relation.fetchone()`, which 2.0 removed; it now uses `fetchall()[0][0]`.
+
+**Rejected:** *pinning `duckdb<2` in `requirements.txt`*. It would unblock the deploy
+just as fast, but it would freeze the image on an old major and widen the gap with
+the lockfile. Open question for Evan: should the Docker image install from
+`uv.lock` (`uv export`) so Railway runs exactly what is tested locally?
+
+## 2026-11-25 — elvis stays public: `[auth] target = "none"` (Evan, EA-37, 2026-11-01)
+
+**Chose:** option A. elvis stays a fully public portfolio demo with no login, and
+`project.toml` is now `verified = true` with Railway service `elvis`. Cost exposure
+on Ask Tiresias is already bounded by the isolated, $10-capped `elvis` workspace key
+and the per-day query cap.
+
+**Rejected:** *Cloudflare Access* (B). Visitors and the enki project card would hit a
+login wall, which defeats a recruiter-facing demo.
+
+## 2026-11-25 — Phase 1 candidates: build Henderson Other Permits now, NLV P1 incidents only once the city confirms (Evan, EA-39, 2026-11-01)
+
+**Chose:** option C. Build Henderson `OpenDevPermits/MapServer/2` (Other Permits),
+deduped against the residential layer by `CASENUMBER`, with `OWNER`/`BUSINESSPHONE`
+dropped. Do it only after Evan scopes which `CASETYPE` values are in. Hold NLV
+`P1_Mapping_Data` until North Las Vegas confirms it is an official, ongoing feed. It
+is never merged with LVMPD calls.
+
+**Rejected:** *A alone* (drops NLV for good) and *D* (closes Phase 1 with a usable
+Henderson source left unbuilt). *B now* was rejected because the NLV layer may be a
+short rolling draft window.

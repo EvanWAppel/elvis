@@ -107,7 +107,7 @@ def test_henderson_crime_is_count_only_and_separate_from_calls(modeled_tracts):
     assert (
         con.sql(
             "select count(*) from mart_tract_metrics where topic='calls'"
-        ).fetchone()[0]
+        ).fetchall()[0][0]
         == 3
     )
 
