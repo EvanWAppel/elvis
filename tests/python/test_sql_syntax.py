@@ -17,12 +17,14 @@ SQL_FILES = sorted(
     p for d in ("models", "macros", "tests") for p in (ROOT / d).rglob("*.sql")
 )
 
-# `x -> ...` or `(x, i) -> ...`; excludes the JSON `->>` operator.
-ARROW_LAMBDA = re.compile(r"(\b\w+|\([\w\s,]+\))\s*->(?!>)")
+# `x -> ...` or `(x, i) -> ...`; excludes the JSON `->>` operator and JSON
+# `-> '$.path'` / `-> 0` extraction, which DuckDB 2 still accepts.
+ARROW_LAMBDA = re.compile(r"(\b\w+|\([\w\s,]+\))\s*->(?!>)(?!\s*['\d])")
 
 
 def _code(sql: str) -> str:
-    """Strip line comments so prose like 'From -> To' doesn't trip the check."""
+    """Strip comments so prose like 'From -> To' doesn't trip the check."""
+    sql = re.sub(r"/\*.*?\*/|\{#.*?#\}", "", sql, flags=re.DOTALL)
     return "\n".join(line.split("--", 1)[0] for line in sql.splitlines())
 
 

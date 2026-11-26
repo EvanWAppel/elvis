@@ -1,5 +1,5 @@
-# Drafted by elvis's weekend-prep session on 2026-10-22 (unverified until Evan's / the
-# project session's check flips `verified`). Format: ~/Documents/_system/docs/project-toml.md
+# Drafted by elvis's weekend-prep session on 2026-10-22; verified by Evan via EA-37
+# (2026-11-01). Format: ~/Documents/_system/docs/project-toml.md
 
 [project]
 name = "elvis"
